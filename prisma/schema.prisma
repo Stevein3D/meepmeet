@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  avatar    String?
+  createdAt DateTime @default(now())
+  
+  ownedGames    UserGame[]
+  hostedEvents  Event[]        @relation("EventHost")
+  eventRsvps    EventAttendee[]
+  playSessions  SessionPlayer[]
+  sessionWins   PlaySession[]  @relation("SessionWinner")
+}
+
+model Game {
+  id            String   @id @default(cuid())
+  bggId         Int?     @unique
+  name          String
+  image         String?
+  minPlayers    Int
+  maxPlayers    Int
+  playtime      Int
+  complexity    Float?
+  yearPublished Int?
+  createdAt     DateTime @default(now())
+  
+  owners       UserGame[]
+  playSessions PlaySession[]
+}
+
+model UserGame {
+  userId String
+  gameId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  
+  @@id([userId, gameId])
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  title     String
+  date      DateTime
+  location  String?
+  notes     String?
+  hostId    String
+  host      User     @relation("EventHost", fields: [hostId], references: [id])
+  createdAt DateTime @default(now())
+  
+  attendees    EventAttendee[]
+  playSessions PlaySession[]
+}
+
+model EventAttendee {
+  eventId String
+  userId  String
+  rsvpStatus String  // "yes", "no", "maybe"
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@id([eventId, userId])
+}
+
+model PlaySession {
+  id        String   @id @default(cuid())
+  gameId    String
+  eventId   String?
+  date      DateTime
+  duration  Int?     // minutes
+  notes     String?
+  winnerId  String?
+  createdAt DateTime @default(now())
+  
+  game    Game            @relation(fields: [gameId], references: [id])
+  event   Event?          @relation(fields: [eventId], references: [id])
+  winner  User?           @relation("SessionWinner", fields: [winnerId], references: [id])
+  players SessionPlayer[]
+}
+
+model SessionPlayer {
+  sessionId String
+  userId    String
+  session   PlaySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@id([sessionId, userId])
+}
