@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@clerk/nextjs/server'
 
 export async function DELETE(
   request: Request,
@@ -31,6 +32,9 @@ export async function GET(
     
     const game = await prisma.game.findUnique({
       where: { id },
+      include: {
+        owners: true,  // Include the owners relationship
+      },
     })
 
     if (!game) {
@@ -55,9 +59,19 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { userId } = await auth()
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const { id } = await params
     const body = await request.json()
     
+    // Update game details
     const game = await prisma.game.update({
       where: { id },
       data: {
@@ -70,6 +84,36 @@ export async function PUT(
         image: body.image,
       },
     })
+
+    // Handle ownership
+    const existingOwnership = await prisma.userGame.findUnique({
+      where: {
+        userId_gameId: {
+          userId: userId,
+          gameId: id,
+        },
+      },
+    })
+
+    if (body.iOwn && !existingOwnership) {
+      // Add ownership
+      await prisma.userGame.create({
+        data: {
+          userId: userId,
+          gameId: id,
+        },
+      })
+    } else if (!body.iOwn && existingOwnership) {
+      // Remove ownership
+      await prisma.userGame.delete({
+        where: {
+          userId_gameId: {
+            userId: userId,
+            gameId: id,
+          },
+        },
+      })
+    }
 
     return NextResponse.json(game)
   } catch (error) {

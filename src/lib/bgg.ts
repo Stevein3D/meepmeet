@@ -1,5 +1,20 @@
-// BGG API helper with rate limiting
+import { XMLParser } from 'fast-xml-parser'
+import { cache } from './cache'
+
+const parser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: '@_'
+})
+
+// BGG API helper with authentication
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+const BGG_USERNAME = process.env.BGG_USERNAME
+const BGG_API_TOKEN = process.env.BGG_API_TOKEN
+
+// Cache durations
+const SEARCH_CACHE_TTL = 60 * 60 // 1 hour in seconds
+const GAME_CACHE_TTL = 24 * 60 * 60 // 24 hours in seconds
 
 export interface BGGSearchResult {
   id: number
@@ -19,33 +34,25 @@ export interface BGGGame {
   description: string
 }
 
-async function parseXML(xml: string): Promise<any> {
-  // Simple XML parsing for BGG's format
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(xml, 'text/xml')
-  return doc
-}
-
-function xmlToJson(xml: Document): any {
-  // Helper to convert XML to usable JSON structure
-  const items = xml.getElementsByTagName('item')
-  if (items.length === 0) return null
-  
-  return Array.from(items)
-}
-
 export async function searchBGG(query: string): Promise<BGGSearchResult[]> {
+  // Check cache first
+  const cacheKey = `bgg:search:${query.toLowerCase()}`
+  const cached = cache.get<BGGSearchResult[]>(cacheKey)
+  if (cached) {
+    console.log('Returning cached search results for:', query)
+    return cached
+  }
+
   try {
-    console.log('Searching BGG for:', query)
+    console.log('Searching BGG API for:', query)
     
-    // Add delay to respect rate limits
-    await delay(1000)
+    await delay(1000) // Rate limiting
     
     const url = `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(query)}&type=boardgame`
     
     const response = await fetch(url, {
-      method: 'GET',
       headers: {
+        'Authorization': `Bearer ${BGG_API_TOKEN}`,
         'Accept': 'application/xml',
       },
     })
@@ -59,32 +66,26 @@ export async function searchBGG(query: string): Promise<BGGSearchResult[]> {
     }
     
     const xml = await response.text()
-    console.log('BGG XML (first 500 chars):', xml.substring(0, 500))
+    const result = parser.parse(xml)
     
-    const doc = new DOMParser().parseFromString(xml, 'text/xml')
-    const items = doc.getElementsByTagName('item')
-    
-    if (items.length === 0) {
+    if (!result.items?.item) {
       return []
     }
     
-    const results: BGGSearchResult[] = []
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]
-      const id = item.getAttribute('id')
-      const nameEl = item.getElementsByTagName('name')[0]
-      const name = nameEl?.getAttribute('value')
-      const yearEl = item.getElementsByTagName('yearpublished')[0]
-      const year = yearEl?.getAttribute('value')
-      
-      if (id && name) {
-        results.push({
-          id: parseInt(id),
-          name,
-          yearPublished: year ? parseInt(year) : 0,
-        })
-      }
-    }
+    // Handle both single result (object) and multiple results (array)
+    const items = Array.isArray(result.items.item) 
+      ? result.items.item 
+      : [result.items.item]
+    
+    const results = items.map((item: any) => ({
+      id: parseInt(item['@_id']),
+      name: item.name['@_value'],
+      yearPublished: item.yearpublished ? parseInt(item.yearpublished['@_value']) : 0,
+    }))
+
+    // Cache the results
+    cache.set(cacheKey, results, SEARCH_CACHE_TTL)
+    console.log(`Cached search results for "${query}" (${results.length} results)`)
     
     return results
   } catch (error) {
@@ -94,17 +95,24 @@ export async function searchBGG(query: string): Promise<BGGSearchResult[]> {
 }
 
 export async function getBGGGame(id: number): Promise<BGGGame | null> {
+  // Check cache first
+  const cacheKey = `bgg:game:${id}`
+  const cached = cache.get<BGGGame>(cacheKey)
+  if (cached) {
+    console.log('Returning cached game details for ID:', id)
+    return cached
+  }
+
   try {
-    console.log('Fetching BGG game:', id)
+    console.log('Fetching BGG game from API:', id)
     
-    // Add delay to respect rate limits
-    await delay(1000)
+    await delay(1000) // Rate limiting
     
     const url = `https://boardgamegeek.com/xmlapi2/thing?id=${id}&stats=1`
     
     const response = await fetch(url, {
-      method: 'GET',
       headers: {
+        'Authorization': `Bearer ${BGG_API_TOKEN}`,
         'Accept': 'application/xml',
       },
     })
@@ -116,47 +124,35 @@ export async function getBGGGame(id: number): Promise<BGGGame | null> {
     }
     
     const xml = await response.text()
-    const doc = new DOMParser().parseFromString(xml, 'text/xml')
-    const items = doc.getElementsByTagName('item')
+    const result = parser.parse(xml)
     
-    if (items.length === 0) {
+    if (!result.items?.item) {
       return null
     }
     
-    const item = items[0]
+    const item = result.items.item
     
-    // Get primary name
-    const names = item.getElementsByTagName('name')
-    let primaryName = ''
-    for (let i = 0; i < names.length; i++) {
-      if (names[i].getAttribute('type') === 'primary') {
-        primaryName = names[i].getAttribute('value') || ''
-        break
-      }
-    }
+    // Find primary name
+    const names = Array.isArray(item.name) ? item.name : [item.name]
+    const primaryName = names.find((n: any) => n['@_type'] === 'primary')
     
-    const imageEl = item.getElementsByTagName('image')[0]
-    const minPlayersEl = item.getElementsByTagName('minplayers')[0]
-    const maxPlayersEl = item.getElementsByTagName('maxplayers')[0]
-    const playingTimeEl = item.getElementsByTagName('playingtime')[0]
-    const yearEl = item.getElementsByTagName('yearpublished')[0]
-    const descEl = item.getElementsByTagName('description')[0]
-    
-    // Get complexity from stats
-    const ratingsEl = item.getElementsByTagName('ratings')[0]
-    const avgWeightEl = ratingsEl?.getElementsByTagName('averageweight')[0]
-    
-    return {
+    const game: BGGGame = {
       id,
-      name: primaryName,
-      image: imageEl?.textContent || '',
-      minPlayers: parseInt(minPlayersEl?.getAttribute('value') || '1'),
-      maxPlayers: parseInt(maxPlayersEl?.getAttribute('value') || '1'),
-      playingTime: parseInt(playingTimeEl?.getAttribute('value') || '0'),
-      yearPublished: parseInt(yearEl?.getAttribute('value') || '0'),
-      averageWeight: parseFloat(avgWeightEl?.getAttribute('value') || '0'),
-      description: descEl?.textContent || '',
+      name: primaryName['@_value'],
+      image: item.image || '',
+      minPlayers: parseInt(item.minplayers['@_value']),
+      maxPlayers: parseInt(item.maxplayers['@_value']),
+      playingTime: parseInt(item.playingtime['@_value']),
+      yearPublished: parseInt(item.yearpublished['@_value']),
+      averageWeight: parseFloat(item.statistics.ratings.averageweight['@_value']),
+      description: item.description || '',
     }
+
+    // Cache the game details
+    cache.set(cacheKey, game, GAME_CACHE_TTL)
+    console.log(`Cached game details for "${game.name}" (ID: ${id})`)
+    
+    return game
   } catch (error) {
     console.error('BGG fetch error:', error)
     throw error

@@ -12,6 +12,7 @@ interface Game {
   complexity: number | null
   yearPublished: number | null
   image: string | null
+  owners: { userId: string }[]
 }
 
 export default function EditGamePage() {
@@ -23,21 +24,23 @@ export default function EditGamePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [iOwn, setIOwn] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    console.log('Fetching game:', gameId)
-    fetch(`/api/games/${gameId}`)
-      .then(res => {
-        console.log('Response status:', res.status)
-        return res.json()
-      })
-      .then(data => {
-        console.log('Game data:', data)
-        setGame(data)
+    // Fetch current user and game data
+    Promise.all([
+      fetch(`/api/games/${gameId}`).then(res => res.json()),
+      fetch('/api/user/current').then(res => res.json()),
+    ])
+      .then(([gameData, userData]) => {
+        setGame(gameData)
+        setCurrentUserId(userData.userId)
+        setIOwn(gameData.owners.some((o: any) => o.userId === userData.userId))
         setLoading(false)
       })
       .catch(err => {
-        console.error('Failed to load game:', err)
+        console.error('Failed to load:', err)
         setError('Failed to load game')
         setLoading(false)
       })
@@ -57,6 +60,7 @@ export default function EditGamePage() {
       complexity: formData.get('complexity') ? parseFloat(formData.get('complexity') as string) : null,
       yearPublished: formData.get('yearPublished') ? parseInt(formData.get('yearPublished') as string) : null,
       image: formData.get('image') as string || null,
+      iOwn: iOwn,
     }
 
     try {
@@ -211,6 +215,19 @@ export default function EditGamePage() {
             placeholder="https://..."
             className="w-full px-4 py-2 border rounded-lg"
           />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="iOwn"
+            checked={iOwn}
+            onChange={(e) => setIOwn(e.target.checked)}
+            className="w-4 h-4"
+          />
+          <label htmlFor="iOwn" className="text-sm font-medium">
+            I own this game
+          </label>
         </div>
 
         <div className="flex gap-4">
