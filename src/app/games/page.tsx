@@ -3,8 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import DeleteGameButton from '@/components/DeleteGameButton'
 import OwnershipButton from '@/components/OwnershipButton'
-import { UserButton } from '@clerk/nextjs'  // ← Remove /server
-import { auth } from '@clerk/nextjs/server'  // ← Keep /server for auth
+import Header from '@/components/Header'
+import { auth } from '@clerk/nextjs/server'
 
 export default async function GamesPage() {
   const { userId } = await auth()
@@ -22,14 +22,7 @@ export default async function GamesPage() {
 
   return (
     <>
-      <header className="border-b">
-        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold">
-            MeepMeet
-          </Link>
-          <UserButton />
-        </div>
-      </header>
+      <Header />
       <main className="min-h-screen p-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold">Game Collection</h1>

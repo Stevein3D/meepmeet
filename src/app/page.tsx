@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs'
 
 export default function Home() {
@@ -6,7 +7,15 @@ export default function Home() {
     <>
       <header className="border-b">
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">MeepMeet</h1>
+          <div className="relative w-12 h-12">
+              <Image 
+              src="/mm-logo-sm.png" 
+              alt="Meep Meet" 
+              fill
+              className="object-contain"
+              />
+          </div>
+          <h1 className="text-2xl font-bold">Meep Meet</h1>
           <div className="flex items-center gap-4">
             <SignedIn>
               <UserButton />
