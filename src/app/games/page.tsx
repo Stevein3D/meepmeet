@@ -1,10 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import Image from 'next/image'
-import DeleteGameButton from '@/components/DeleteGameButton'
-import OwnershipButton from '@/components/OwnershipButton'
 import Header from '@/components/Header'
 import { auth } from '@clerk/nextjs/server'
+import GameCard from '@/components/GameCard'
 
 export default async function GamesPage() {
   const { userId } = await auth()
@@ -37,51 +35,17 @@ export default async function GamesPage() {
         {games.length === 0 ? (
           <p className="text-gray-600">No games in the collection yet.</p>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {games.map((game) => {
               const userOwnsGame = userId ? game.owners.some(o => o.userId === userId) : false
-              
+
               return (
-                <div key={game.id} className="border rounded-lg p-4 flex flex-col">
-                  {game.image && (
-                    <div className="relative w-full h-48 mb-4 bg-gray-100 rounded">
-                      <Image
-                        src={game.image}
-                        alt={game.name}
-                        fill
-                        className="object-contain"
-                        unoptimized
-                      />
-                    </div>
-                  )}
-                  <h2 className="text-xl font-semibold">{game.name}</h2>
-                  <div className="mt-2 text-sm text-gray-600 space-y-1 flex-grow">
-                    <p>{game.minPlayers}-{game.maxPlayers} players • {game.playtime} min</p>
-                    {game.yearPublished && <p>Published: {game.yearPublished}</p>}
-                    {game.complexity && <p>Complexity: {game.complexity.toFixed(1)}/5</p>}
-                    {game.owners.length > 0 && (
-                      <p className="mt-1">
-                        Owned by: {game.owners.map(o => o.user.name).join(', ')}
-                      </p>
-                    )}
-                  </div>
-                  
-                  {userId && (
-                    <div className="mt-3 mb-2">
-                      <OwnershipButton gameId={game.id} initialOwned={userOwnsGame} />
-                    </div>
-                  )}
-                  
-                  <div className="flex gap-2 mt-2">
-                    <Link
-                      href={`/games/${game.id}/edit`}
-                      className="flex-1 px-3 py-2 text-center border border-blue-600 text-blue-600 rounded hover:bg-blue-50"
-                    >
-                      Edit
-                    </Link>
-                    <DeleteGameButton gameId={game.id} gameName={game.name} />
-                  </div>
-                </div>
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  userId={userId}
+                  userOwnsGame={userOwnsGame}
+                />
               )
             })}
           </div>

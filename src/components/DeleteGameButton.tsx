@@ -40,7 +40,12 @@ export default function DeleteGameButton({ gameId, gameName }: DeleteGameButtonP
     <button
       onClick={handleDelete}
       disabled={deleting}
-      className="flex-1 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-400"
+      className="flex-1 px-3 py-2 rounded font-medium transition-all disabled:opacity-50"
+      style={{
+        border: '2px solid #8B4513',
+        background: 'rgba(139,69,19,0.2)',
+        color: '#CD6839',
+      }}
     >
       {deleting ? 'Deleting...' : 'Delete'}
     </button>

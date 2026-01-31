@@ -40,11 +40,12 @@ export default function OwnershipButton({ gameId, initialOwned }: OwnershipButto
     <button
       onClick={toggleOwnership}
       disabled={loading}
-      className={`px-3 py-1 text-sm rounded border transition-colors ${
-        owned
-          ? 'bg-green-50 border-green-600 text-green-700 hover:bg-green-100'
-          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-      } disabled:opacity-50`}
+      className="px-3 py-2 text-sm rounded font-medium transition-all disabled:opacity-50"
+      style={{
+        border: owned ? '2px solid #8FBC8F' : '2px solid #C9A961',
+        background: owned ? 'rgba(143,188,143,0.2)' : 'rgba(201,169,97,0.1)',
+        color: owned ? '#8FBC8F' : '#C9A961',
+      }}
     >
       {loading ? '...' : owned ? '✓ I own this' : '+ I own this'}
     </button>

@@ -44,33 +44,36 @@ export default function RsvpButton({ eventId, initialStatus }: RsvpButtonProps) 
       <button
         onClick={() => handleRsvp('yes')}
         disabled={loading}
-        className={`flex-1 px-3 py-2 text-sm rounded font-medium transition-colors ${
-          status === 'yes'
-            ? 'bg-green-600 text-white'
-            : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-        } disabled:opacity-50`}
+        className="flex-1 px-3 py-2 text-sm rounded font-medium transition-all disabled:opacity-50"
+        style={{
+          border: status === 'yes' ? '2px solid #8FBC8F' : '2px solid rgba(201,169,97,0.5)',
+          background: status === 'yes' ? 'rgba(143,188,143,0.3)' : 'rgba(201,169,97,0.1)',
+          color: status === 'yes' ? '#8FBC8F' : '#C9A961',
+        }}
       >
         {loading && status === 'yes' ? '...' : 'Yes'}
       </button>
       <button
         onClick={() => handleRsvp('maybe')}
         disabled={loading}
-        className={`flex-1 px-3 py-2 text-sm rounded font-medium transition-colors ${
-          status === 'maybe'
-            ? 'bg-yellow-500 text-white'
-            : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-        } disabled:opacity-50`}
+        className="flex-1 px-3 py-2 text-sm rounded font-medium transition-all disabled:opacity-50"
+        style={{
+          border: status === 'maybe' ? '2px solid #DAA520' : '2px solid rgba(201,169,97,0.5)',
+          background: status === 'maybe' ? 'rgba(218,165,32,0.3)' : 'rgba(201,169,97,0.1)',
+          color: status === 'maybe' ? '#DAA520' : '#C9A961',
+        }}
       >
         {loading && status === 'maybe' ? '...' : 'Maybe'}
       </button>
       <button
         onClick={() => handleRsvp('no')}
         disabled={loading}
-        className={`flex-1 px-3 py-2 text-sm rounded font-medium transition-colors ${
-          status === 'no'
-            ? 'bg-gray-400 text-white'
-            : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-        } disabled:opacity-50`}
+        className="flex-1 px-3 py-2 text-sm rounded font-medium transition-all disabled:opacity-50"
+        style={{
+          border: status === 'no' ? '2px solid #8B6F47' : '2px solid rgba(201,169,97,0.5)',
+          background: status === 'no' ? 'rgba(139,111,71,0.3)' : 'rgba(201,169,97,0.1)',
+          color: status === 'no' ? '#8B6F47' : '#C9A961',
+        }}
       >
         {loading && status === 'no' ? '...' : 'No'}
       </button>
