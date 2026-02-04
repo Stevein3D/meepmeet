@@ -1,3 +1,4 @@
+// Updated schema for PostgreSQL (replace your current schema)
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -9,11 +10,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql"  // Changed from sqlite
   url      = env("DATABASE_URL")
 }
 
-// Add this enum for user roles
+// Add this enum for user roles (if not already there)
 enum UserRole {
   VISITOR
   MEMBER
@@ -25,7 +26,7 @@ model User {
   name      String
   email     String   @unique
   avatar    String?
-  role      UserRole @default(VISITOR)  // Add this line
+  role      UserRole @default(VISITOR)  // Add this if not already there
   createdAt DateTime @default(now())
   
   ownedGames    UserGame[]

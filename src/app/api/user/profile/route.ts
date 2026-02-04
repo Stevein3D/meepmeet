@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
 import { getUserById } from '@/lib/user-service';
 
 export async function GET() {
