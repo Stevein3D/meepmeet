@@ -2,6 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { 
+  MemberOnly, 
+  GameMasterOnly, 
+  CanAddGames, 
+  CanCreateEvents 
+} from '@/components/RoleGuard';
 
 interface BGGSearchResult {
   id: number
@@ -147,6 +153,7 @@ export default function AddGamePage() {
         >
           Manual Entry
         </button>
+        <MemberOnly>
         <button
           onClick={() => setMode('search')}
           className={`px-4 py-2 rounded-lg ${
@@ -157,6 +164,7 @@ export default function AddGamePage() {
         >
           Search BGG
         </button>
+        </MemberOnly>
       </div>
 
       {error && (
