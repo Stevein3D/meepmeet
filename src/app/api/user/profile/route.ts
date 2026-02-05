@@ -1,36 +1,38 @@
 import { NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
-import { getUserById } from '@/lib/user-service';
+import { getDatabaseUserId } from '@/lib/user-helper';
 
 export async function GET() {
   try {
     // Get the current user from Clerk
-    const { userId } = await auth();
+    const { userId: clerkUserId } = await auth();
     const clerkUser = await currentUser();
-    
-    if (!userId || !clerkUser) {
+
+    if (!clerkUserId || !clerkUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Try to find user in your database by email
-    // You might need to adjust this based on how you're storing users
-    const dbUser = await prisma.user.findFirst({
-      where: { email: clerkUser.emailAddresses[0]?.emailAddress }
+    // Get or create database user using their Clerk ID
+    // This ensures consistency with the webhook
+    const userId = await getDatabaseUserId(clerkUserId);
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Failed to create user record' },
+        { status: 500 }
+      );
+    }
+
+    // Fetch the user from database
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId }
     });
 
     if (!dbUser) {
-      // If user doesn't exist in your DB, create them with default VISITOR role
-      const newUser = await prisma.user.create({
-        data: {
-          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Unknown User',
-          email: clerkUser.emailAddresses[0]?.emailAddress || '',
-          avatar: clerkUser.imageUrl,
-          role: 'VISITOR',
-        },
-      });
-      
-      return NextResponse.json(newUser);
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(dbUser);

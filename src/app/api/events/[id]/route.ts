@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
+import { getDatabaseUserId } from '@/lib/user-helper'
 
 export async function GET(
   request: Request,
@@ -50,12 +51,21 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth()
+    const { userId: clerkUserId } = await auth()
 
-    if (!userId) {
+    if (!clerkUserId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      )
+    }
+
+    // Get or create database user
+    const userId = await getDatabaseUserId(clerkUserId)
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Failed to create user record' },
+        { status: 500 }
       )
     }
 
@@ -107,12 +117,21 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth()
+    const { userId: clerkUserId } = await auth()
 
-    if (!userId) {
+    if (!clerkUserId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      )
+    }
+
+    // Get or create database user
+    const userId = await getDatabaseUserId(clerkUserId)
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Failed to create user record' },
+        { status: 500 }
       )
     }
 
