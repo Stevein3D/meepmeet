@@ -41,3 +41,24 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Build outputs
+.next/
+out/
+build/
+
+# Zip files
+*.zip
+
+# Dependencies
+node_modules/
+
+# Environment variables
+.env*
+
+# Database
+*.db
+*.sqlite
+
+# Logs
+*.log
