@@ -17,14 +17,16 @@ The Clerk webhook creates users with their Clerk ID as the primary key, but:
 ### 1. Created User Helper (`src/lib/user-helper.ts`)
 A new utility module with two key functions:
 
-**`getOrCreateDatabaseUser(clerkUserId)`**
+**`getOrCreateDatabaseUser(clerkUserId, clerkUserData?)`**
 - Gets or creates a database user from a Clerk user ID
-- If user doesn't exist in database, creates a placeholder record
-- The webhook will later update it with full details (name, email, avatar)
+- Optional `clerkUserData` parameter allows passing email, name, and avatar when available
+- If user doesn't exist in database, creates a proper record with provided data
+- Falls back to placeholder values only if data isn't available
 - Ensures user always exists before creating foreign key relationships
 
-**`getDatabaseUserId(clerkUserId)`**
+**`getDatabaseUserId(clerkUserId, clerkUserData?)`**
 - Wrapper that returns the database user ID
+- Accepts same optional `clerkUserData` parameter
 - Returns the same ID since Clerk ID is used as primary key
 - Ensures user exists before returning the ID
 
@@ -55,16 +57,26 @@ All routes that create foreign key relationships now:
 
 ### 3. Key Design Decisions
 
-**Automatic User Creation:**
-- Rather than failing if a user doesn't exist, the helper creates a placeholder
-- This prevents race conditions with the webhook
-- Email field uses temporary value: `clerk-{clerkUserId}@temp.local`
-- The webhook will update name, email, and avatar when it fires
+**Smart User Creation with Available Data:**
+- When Clerk user data is available (e.g., from `currentUser()`), it's passed to the helper
+- User is created with actual name, email, and avatar from the start
+- Only uses placeholder values as fallback when data isn't available
+- This ensures users have complete data even if webhook hasn't fired yet
+
+**Webhook Uses Upsert:**
+- Updated `user.created` webhook to use `upsert` instead of `create`
+- If user was already created with placeholder data, webhook updates it with real data
+- If webhook fires first, user is created with full data immediately
+- Eliminates race condition where webhook would fail trying to create a user that already exists
 
 **No Database ID Changes:**
 - The User model still uses `@id @default(cuid())` but the webhook sets it to the Clerk ID
 - This means Clerk ID and database ID are the same
 - All foreign keys now correctly reference the database user
+
+**No New Columns Needed:**
+- Existing `name`, `email`, and `avatar` columns are properly populated
+- No additional Clerk-specific columns required
 
 **Backward Compatibility:**
 - Works with both SQLite (local) and PostgreSQL (production)
@@ -93,33 +105,78 @@ If you have existing code that also uses Clerk IDs directly for database operati
    import { getDatabaseUserId } from '@/lib/user-helper'
    ```
 
-2. **Update your code:**
+2. **For routes with Clerk user data (recommended):**
    ```typescript
-   // Before
-   const { userId } = await auth()
-   await prisma.something.create({
-     data: { userId: userId, ... }
+   import { currentUser } from '@clerk/nextjs/server'
+
+   const { userId: clerkUserId } = await auth()
+   const clerkUser = await currentUser()
+
+   // Pass Clerk user data to ensure complete user creation
+   const userId = await getDatabaseUserId(clerkUserId, {
+     email: clerkUser?.emailAddresses?.[0]?.emailAddress,
+     name: `${clerkUser?.firstName || ''} ${clerkUser?.lastName || ''}`.trim() ||
+            clerkUser?.emailAddresses?.[0]?.emailAddress,
+     avatar: clerkUser?.imageUrl
    })
 
-   // After
-   const { userId: clerkUserId } = await auth()
-   const userId = await getDatabaseUserId(clerkUserId)
-   if (!userId) return NextResponse.json({ error: '...' }, { status: 500 })
    await prisma.something.create({
      data: { userId: userId, ... }
    })
    ```
 
+3. **For routes without Clerk user data (fallback):**
+   ```typescript
+   // If Clerk user data isn't available, just pass clerkUserId
+   const userId = await getDatabaseUserId(clerkUserId)
+   if (!userId) return NextResponse.json({ error: '...' }, { status: 500 })
+
+   await prisma.something.create({
+     data: { userId: userId, ... }
+   })
+   ```
+
+   Note: The webhook will update user details when it fires, so this is still safe.
+
 ## Files Modified
 
-- `src/lib/user-helper.ts` - **NEW**: User lookup/creation helper
+- `src/lib/user-helper.ts` - **UPDATED**: Enhanced to accept optional Clerk user data
+- `src/app/api/webhooks/clerk/route.ts` - Updated to use upsert for user.created event
 - `src/app/api/events/route.ts` - Updated POST handler
 - `src/app/api/events/[id]/route.ts` - Updated PUT and DELETE handlers
 - `src/app/api/events/[id]/rsvp/route.ts` - Updated POST handler
 - `src/app/api/games/route.ts` - Updated POST handler
 - `src/app/api/games/[id]/route.ts` - Updated PUT handler
 - `src/app/api/games/[id]/ownership/route.ts` - Updated POST handler
-- `src/app/api/user/profile/route.ts` - Updated GET handler
+- `src/app/api/user/profile/route.ts` - **UPDATED** to pass Clerk user data to helper
+
+## Data Population Flow
+
+**When user signs up via Clerk:**
+
+1. User fills signup form with email, name, etc.
+2. Clerk creates account and fires `user.created` webhook
+3. Webhook uses `upsert` to create/update user in database with full data:
+   - `id`: Clerk user ID
+   - `email`: From Clerk account
+   - `name`: From Clerk account
+   - `avatar`: From Clerk account
+
+**When user tries to create an event/game before webhook fires:**
+
+1. User calls API (e.g., POST /api/events)
+2. Helper's `getOrCreateDatabaseUser()` is called with:
+   - Clerk ID (always available from `auth()`)
+   - Optional Clerk user data (if endpoint has access to `currentUser()`)
+3. If Clerk data is provided, user created with real email/name/avatar
+4. If Clerk data isn't provided, user created with placeholder email only
+5. When webhook fires, it upserts and updates user with real data
+
+**Result:**
+- User always has correct email, name, and avatar in database
+- No more `clerk-{id}@temp.local` placeholder emails
+- Foreign key constraints never violated
+- Database stays in sync with Clerk
 
 ## Rollback
 

@@ -51,16 +51,24 @@ export async function POST(req: Request) {
   if (eventType === 'user.created') {
     const { id, email_addresses, first_name, last_name, image_url } = evt.data
 
-    await prisma.user.create({
-      data: {
+    // Use upsert to handle race conditions where user might have been created
+    // with placeholder data by the API helper before webhook fires
+    await prisma.user.upsert({
+      where: { id },
+      create: {
         id: id,
+        email: email_addresses[0].email_address,
+        name: `${first_name || ''} ${last_name || ''}`.trim() || email_addresses[0].email_address,
+        avatar: image_url,
+      },
+      update: {
         email: email_addresses[0].email_address,
         name: `${first_name || ''} ${last_name || ''}`.trim() || email_addresses[0].email_address,
         avatar: image_url,
       },
     })
 
-    console.log('User created in database:', id)
+    console.log('User created or updated in database:', id)
   }
 
   if (eventType === 'user.updated') {

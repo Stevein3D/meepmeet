@@ -13,9 +13,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get or create database user using their Clerk ID
-    // This ensures consistency with the webhook
-    const userId = await getDatabaseUserId(clerkUserId);
+    // Extract Clerk user data for proper database initialization
+    const clerkUserData = {
+      email: clerkUser.emailAddresses?.[0]?.emailAddress,
+      name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.emailAddresses?.[0]?.emailAddress,
+      avatar: clerkUser.imageUrl
+    };
+
+    // Get or create database user with full Clerk data
+    const userId = await getDatabaseUserId(clerkUserId, clerkUserData);
     if (!userId) {
       return NextResponse.json(
         { error: 'Failed to create user record' },
