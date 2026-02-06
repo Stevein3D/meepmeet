@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
 
   if (!WEBHOOK_SECRET) {
-    throw new Error('Please add CLERK_WEBHOOK_SECRET to .env.local')
+    throw new Error('Please add CLERK_WEBHOOK_SECRET to .env')
   }
 
   // Get the headers
@@ -51,24 +51,41 @@ export async function POST(req: Request) {
   if (eventType === 'user.created') {
     const { id, email_addresses, first_name, last_name, image_url } = evt.data
 
-    // Use upsert to handle race conditions where user might have been created
-    // with placeholder data by the API helper before webhook fires
+    const email = email_addresses[0]?.email_address
+    const name = `${first_name || ''} ${last_name || ''}`.trim() || email
+
+    // Use upsert to handle race conditions
     await prisma.user.upsert({
       where: { id },
       create: {
         id: id,
-        email: email_addresses[0].email_address,
-        name: `${first_name || ''} ${last_name || ''}`.trim() || email_addresses[0].email_address,
+        email: email,
+        name: name,
         avatar: image_url,
       },
       update: {
-        email: email_addresses[0].email_address,
-        name: `${first_name || ''} ${last_name || ''}`.trim() || email_addresses[0].email_address,
+        email: email,
+        name: name,
         avatar: image_url,
       },
     })
 
     console.log('User created or updated in database:', id)
+
+    // Send Discord notification
+    try {
+      await fetch(process.env.DISCORD_WEBHOOK_URL!, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `🎉 **New signup on Meep Meet!**\n**Name:** ${name}\n**Email:** ${email}`,
+        }),
+      })
+      console.log('Discord notification sent')
+    } catch (discordError) {
+      console.error('Error sending Discord notification:', discordError)
+      // Don't throw - we want the webhook to succeed even if Discord notification fails
+    }
   }
 
   if (eventType === 'user.updated') {
