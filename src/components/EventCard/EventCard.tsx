@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import RsvpButton from './RsvpButton'
-import DeleteEventButton from './DeleteEventButton'
+import RsvpButton from '../RsvpButton'
+import DeleteEventButton from '../DeleteEventButton'
 
 interface EventCardProps {
   event: {

@@ -1,13 +1,14 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import HeaderAuth from './HeaderAuth'
+import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs'
+// import HeaderAuth from './HeaderAuth'
 
 export default function Header() {
   return (
-    <header className="border-b bg-white">
-      <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-        <Link href="/games" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <div className="relative w-12 h-12">
+    <header className="">
+      <div className="mx-auto px-8 py-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div className="relative w-12 sm:w-30 h-12 sm:h-30 ">
               <Image 
               src="/mm-logo-sm.png" 
               alt="Meep Meet" 
@@ -15,17 +16,24 @@ export default function Header() {
               className="object-contain"
               />
           </div>
-          <span className="text-2xl font-bold text-black">Meep Meet</span>
         </Link>
         
         <nav className="flex items-center gap-6">
-          <Link href="/games" className="text-gray-700 hover:text-blue-600 transition-colors">
+          <Link href="/games" className="text-white-700 hover:text-blue-600 transition-colors">
             Games
           </Link>
-          <Link href="/events" className="text-gray-700 hover:text-blue-600 transition-colors">
+          <Link href="/events" className="text-white-700 hover:text-blue-600 transition-colors">
             Events
           </Link>
-          <HeaderAuth />
+          {/* <HeaderAuth /> */}
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+          <SignedOut>
+            <Link href="/sign-in" className="text-blue-600 hover:underline">
+              Sign In
+            </Link>
+          </SignedOut>
         </nav>
       </div>
     </header>

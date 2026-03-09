@@ -6,6 +6,17 @@ const parser = new XMLParser({
   attributeNamePrefix: '@_'
 })
 
+// Decode HTML entities returned by the BGG XML API (e.g. &#039; → ')
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&#0*39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+}
+
 // BGG API helper with authentication
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -79,7 +90,7 @@ export async function searchBGG(query: string): Promise<BGGSearchResult[]> {
     
     const results = items.map((item: any) => ({
       id: parseInt(item['@_id']),
-      name: item.name['@_value'],
+      name: decodeHtmlEntities(item.name['@_value']),
       yearPublished: item.yearpublished ? parseInt(item.yearpublished['@_value']) : 0,
     }))
 
@@ -138,7 +149,7 @@ export async function getBGGGame(id: number): Promise<BGGGame | null> {
     
     const game: BGGGame = {
       id,
-      name: primaryName['@_value'],
+      name: decodeHtmlEntities(primaryName['@_value']),
       image: item.image || '',
       minPlayers: parseInt(item.minplayers['@_value']),
       maxPlayers: parseInt(item.maxplayers['@_value']),

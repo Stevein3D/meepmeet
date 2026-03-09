@@ -5,7 +5,19 @@ import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs'
 export default function Home() {
   return (
     <>
-      <header className="border-b">
+      <header>
+        <div className="max-w-7xl mx-auto px-8 py-4 mt-4 flex items-center justify-center">
+          <div className="relative w-40 sm:w-80 h-40 sm:h-80">
+              <Image 
+              src="/mm-logo-sm.png" 
+              alt="Meep Meet" 
+              fill
+              className="object-contain"
+              />
+          </div>
+        </div>
+      </header>
+      {/* <header className="border-b">
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
           <div className="relative w-12 h-12">
               <Image 
@@ -27,13 +39,19 @@ export default function Home() {
             </SignedOut>
           </div>
         </div>
-      </header>
-      <main className="min-h-screen p-8">
-        <p className="mt-4 text-gray-600">Board game night planner for your local group</p>
+      </header> */}
+      <main className="p-8">
+        <p className="mt-4 text-white-600 text-center">Meet the Meeps for some tailored fun at our next Board Game Meepup!</p>
         
-        <nav className="mt-8 space-x-4">
-          <Link href="/games" className="text-blue-600 hover:underline">
+        <nav className="mt-8 space-x-4 text-center">
+          <Link href="/games" className="text-yellow-600 hover:underline">
             View Games
+          </Link>
+          <Link href="/games" className="text-yellow-600 hover:underline">
+            View Meeps
+          </Link>
+          <Link href="/events" className="text-yellow-600 hover:underline">
+            View Events
           </Link>
         </nav>
       </main>

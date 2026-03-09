@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { auth } from '@clerk/nextjs/server'
-import EventCard from '@/components/EventCard'
+import EventCard from '@/components/EventCard/EventCard'
 
 export default async function EventsPage() {
   const { userId } = await auth()

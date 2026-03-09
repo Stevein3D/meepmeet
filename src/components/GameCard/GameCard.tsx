@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import DeleteGameButton from './DeleteGameButton'
-import OwnershipButton from './OwnershipButton'
+import DeleteGameButton from '../DeleteGameButton'
+import OwnershipButton from '../OwnershipButton'
 
 interface GameCardProps {
   game: {
