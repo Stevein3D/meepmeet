@@ -1,13 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Header from '@/components/Header'
+
+interface GameMaster {
+  id: string
+  name: string
+}
 
 export default function AddEventPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rsvpAsYes, setRsvpAsYes] = useState(true)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [isGameMaster, setIsGameMaster] = useState(false)
+  const [gameMasters, setGameMasters] = useState<GameMaster[]>([])
+  const [selectedHostId, setSelectedHostId] = useState<string>('')
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/user/profile').then(r => r.json()),
+      fetch('/api/admin/users').then(r => r.json()),
+    ]).then(([profile, allUsers]) => {
+      setCurrentUserId(profile.id)
+      setSelectedHostId(profile.id)
+      if (profile.role === 'GAME_MASTER') {
+        setIsGameMaster(true)
+        setGameMasters(allUsers.filter((u: { role: string; id: string; name: string }) => u.role === 'GAME_MASTER'))
+      }
+    }).catch(console.error)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -15,12 +39,16 @@ export default function AddEventPage() {
     setError(null)
 
     const formData = new FormData(e.currentTarget)
-    const eventData = {
+    const eventData: Record<string, unknown> = {
       title: formData.get('title') as string,
       date: new Date(formData.get('date') as string).toISOString(),
       location: formData.get('location') as string || null,
       notes: formData.get('notes') as string || null,
-      rsvpAsYes: rsvpAsYes,
+      rsvpAsYes,
+    }
+
+    if (isGameMaster && selectedHostId && selectedHostId !== currentUserId) {
+      eventData.hostId = selectedHostId
     }
 
     try {
@@ -45,8 +73,10 @@ export default function AddEventPage() {
   }
 
   return (
+    <>
+    <Header />
     <main className="min-h-screen p-8">
-      <h1 className="text-4xl text-white-700 mb-8">Create Game Night</h1>
+      <h1 className="text-4xl font-bold text-white-700 mb-8">Create Game Night</h1>
 
       {error && (
         <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
@@ -54,90 +84,69 @@ export default function AddEventPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="max-w-2xl space-y-4">
-        <div>
-          <label htmlFor="title" className="block text-sm text-white-600 font-medium mb-1">
-            Event Title *
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            required
-            placeholder="Friday Game Night"
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="max-w-2xl">
+        <div className="wood-panel space-y-4 mb-6">
+          <div className="field-group">
+            <label htmlFor="title">Event Title *</label>
+            <input type="text" id="title" name="title" required placeholder="Friday Game Night" />
+          </div>
 
-        <div>
-          <label htmlFor="date" className="block text-sm text-white-600 font-medium mb-1">
-            Date & Time *
-          </label>
-          <input
-            type="datetime-local"
-            id="date"
-            name="date"
-            required
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
+          <div className="field-group">
+            <label htmlFor="date">Date & Time *</label>
+            <input type="datetime-local" id="date" name="date" required />
+          </div>
 
-        <div>
-          <label htmlFor="location" className="block text-sm text-white-600 font-medium mb-1">
-            Location
-          </label>
-          <input
-            type="text"
-            id="location"
-            name="location"
-            placeholder="123 Main St or Online"
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
+          <div className="field-group">
+            <label htmlFor="location">Location</label>
+            <input type="text" id="location" name="location" placeholder="123 Main St or Online" />
+          </div>
 
-        <div>
-          <label htmlFor="notes" className="block text-sm text-white-600 font-medium mb-1">
-            Notes
-          </label>
-          <textarea
-            id="notes"
-            name="notes"
-            rows={4}
-            placeholder="Bring snacks! We'll play Wingspan and Catan."
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
+          {isGameMaster && gameMasters.length > 0 && (
+            <div className="field-group">
+              <label htmlFor="hostId">Host</label>
+              <select
+                id="hostId"
+                value={selectedHostId}
+                onChange={(e) => setSelectedHostId(e.target.value)}
+              >
+                {gameMasters.map(gm => (
+                  <option key={gm.id} value={gm.id}>
+                    {gm.name}{gm.id === currentUserId ? ' (you)' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="rsvpAsYes"
-            checked={rsvpAsYes}
-            onChange={(e) => setRsvpAsYes(e.target.checked)}
-            className="w-4 h-4"
-          />
-          <label htmlFor="rsvpAsYes" className="text-sm text-white-600 font-medium">
-            I'm attending
-          </label>
+          <div className="field-group">
+            <label htmlFor="notes">Notes</label>
+            <textarea id="notes" name="notes" rows={4} placeholder="Bring snacks! We'll play Wingspan and Catan." />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="rsvpAsYes"
+              checked={rsvpAsYes}
+              onChange={(e) => setRsvpAsYes(e.target.checked)}
+              className="w-4 h-4 accent-[#C9A961]"
+            />
+            <label htmlFor="rsvpAsYes" style={{ textTransform: 'none', letterSpacing: 'normal', fontSize: '0.9rem' }}>
+              I&apos;m attending
+            </label>
+          </div>
         </div>
 
         <div className="flex gap-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-          >
+          <button type="submit" disabled={loading} className="btn btn-md btn-primary disabled:opacity-50">
             {loading ? 'Creating...' : 'Create Event'}
           </button>
-          <button
-            type="button"
-            onClick={() => router.push('/events')}
-            className="px-6 py-2 border rounded-lg hover:bg-gray-100"
-          >
+          <button type="button" onClick={() => router.push('/events')} className="btn btn-md btn-secondary">
             Cancel
           </button>
         </div>
       </form>
     </main>
+    </>
   )
 }

@@ -3,6 +3,31 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --bg: #1a2e1a;
+  --bg-deep: #12200f;
+  --surface: #223322;
+  --border-wood: #5c3d2e;
+  --border-wood-light: #7a5640;
+  --gold: #c9a84c;
+  --gold-bright: #e2c364;
+  --gold-dim: #8b7432;
+  --bronze: #a67c52;
+  --bronze-light: #c4956a;
+  --copper: #b87333;
+  --parchment: #e8d5b0;
+  --parchment-dim: #bfa97a;
+  --ember: #c44d2a;
+  --ember-bright: #d4593a;
+  --ember-deep: #8a3018;
+  --moss: #5a7a4a;
+  --moss-bright: #6d9458;
+  --moss-dim: #3d5432;
+  --text: #d4c9a8;
+  --text-dim: #8a7e62;
+  --ash: #6b6860;
+  --ash-light: #8a8578;
+  --charcoal: #3a3632;
   
    /* Wood theme colors */
   --wood-border: #8B6F47;
@@ -44,6 +69,90 @@
   box-shadow: var(--shadow-card);
 }
 
+/* Wood panel — form container with gold border */
+.wood-panel {
+  background-image: url(/wood-bg.jpg);
+  background-size: 100%;
+  background-repeat: repeat-y;
+  background-position: center;
+  background-color: rgba(28, 16, 8, 0.65);
+  background-blend-mode: multiply;
+  border: 2px solid var(--wood-accent);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(201, 169, 97, 0.2);
+  padding: 1.75rem;
+}
+
+/* Inputs/textareas inside a wood panel */
+.wood-panel input:not([type="checkbox"]),
+.wood-panel textarea,
+.wood-panel select {
+  width: 100%;
+  background: rgba(10, 6, 2, 0.55);
+  border: 1px solid rgba(201, 169, 97, 0.35);
+  border-radius: 4px;
+  color: var(--wood-text-light);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-caudex);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.wood-panel input:not([type="checkbox"]):focus,
+.wood-panel textarea:focus,
+.wood-panel select:focus {
+  border-color: var(--wood-accent);
+  box-shadow: 0 0 0 2px rgba(201, 169, 97, 0.15);
+}
+
+.wood-panel input::placeholder,
+.wood-panel textarea::placeholder {
+  color: rgba(232, 212, 184, 0.35);
+}
+
+/* Date/time picker icon — make it parchment colored */
+.wood-panel input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+.wood-panel input[type="date"]::-webkit-calendar-picker-indicator,
+.wood-panel input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(0.75) sepia(1) saturate(2) hue-rotate(5deg);
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.wood-panel input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+.wood-panel input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.wood-panel input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Labels inside a wood panel */
+.wood-panel label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--wood-accent);
+  font-family: var(--font-cinzel);
+}
+.wood-panel .field-group label {
+  margin-bottom: 0.5rem;
+}
+
+/* Divider line between fields */
+.wood-panel .field-group {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.12);
+  margin-bottom: 1rem;
+}
+
+.wood-panel .field-group:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -64,8 +173,17 @@
     background-attachment: fixed;
     min-height: 100vh;
     color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--font-cinzel);
   }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
 }
 
 @keyframes fadeIn {
@@ -112,3 +230,307 @@
 .animate-slideDown {
   animation: slideDown 0.3s ease-out;
 }
+
+@layer components {
+
+  p { 
+    font-family: var(--font-caudex);
+    font-size: 1.1rem;
+  }
+  h1 { 
+    font-family: var(--font-cinzel);
+  }
+  h2 { 
+    font-family: var(--font-caudex);
+  }
+  .parchment-text {
+    color: var(--parchment);
+  }
+  .main-nav-link {
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+  }
+  .main-nav-link:hover {
+    color: var(--parchment);
+  }
+
+  .wobble {
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out; 
+  }
+
+  .wobble:hover {
+    /* Apply the animation on hover */
+    animation: subtle-wobble 0.5s 2; 
+  }
+
+  @keyframes subtle-wobble {
+    0%, 100% {
+      /* Slightly rotate at the start and end of the cycle */
+      transform: rotate(0deg);
+    }
+    25% {
+      /* Rotate slightly left */
+      transform: rotate(-1deg); 
+    }
+    75% {
+      /* Rotate slightly right */
+      transform: rotate(1deg);
+    }
+  }
+
+  @keyframes subtle-shake {
+    10%, 90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    20%, 80% {
+      transform: translate3d(2px, 0, 0);
+    }
+    30%, 50%, 70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+    40%, 60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
+/* ═══════════════════════════════════════════════
+     BASE — shared tavern sign structure
+     ═══════════════════════════════════════════════ */
+  .btn {
+    position: relative;
+    font-family: var(--font-cinzel);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+
+  .btn-md {
+    padding: 14px 36px;
+    font-size: 0.88rem;
+    border-radius: 4px;
+  }
+
+  .btn-sm {
+    padding: 9px 22px;
+    font-size: 0.76rem;
+    border-radius: 3px;
+  }
+
+  .btn-lg {
+    padding: 18px 48px;
+    font-size: 1rem;
+    border-radius: 5px;
+  }
+
+/* ═══════════════════════════════════════════════
+     PRIMARY — warm wood with parchment text
+     ═══════════════════════════════════════════════ */
+  .btn-primary {
+    color: var(--parchment);
+    background: linear-gradient(180deg, #4a3525 0%, #3a2818 40%, #2e1f12 100%);
+    border: 3px solid var(--border-wood-light);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      inset 0 -2px 4px rgba(0,0,0,0.3),
+      0 4px 12px rgba(0,0,0,0.4);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(180deg, #5a4230 0%, #4a3525 40%, #3a2818 100%);
+    border-color: var(--bronze-light);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.1),
+      0 6px 20px rgba(0,0,0,0.5),
+      0 0 15px rgba(166,124,82,0.1);
+  }
+  .btn-primary:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 2px 4px rgba(0,0,0,0.4),
+      0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  /* ═══════════════════════════════════════════════
+     SECONDARY — muted wood, lower emphasis
+     ═══════════════════════════════════════════════ */
+  .btn-secondary {
+    color: var(--parchment-dim);
+    background: linear-gradient(180deg, #36302a 0%, #2c2620 40%, #242018 100%);
+    border: 2px solid var(--charcoal);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.04),
+      inset 0 -2px 3px rgba(0,0,0,0.25),
+      0 3px 8px rgba(0,0,0,0.3);
+  }
+  .btn-secondary:hover {
+    background: linear-gradient(180deg, #403830 0%, #36302a 40%, #2c2620 100%);
+    border-color: var(--border-wood);
+    color: var(--parchment);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 5px 16px rgba(0,0,0,0.4);
+  }
+  .btn-secondary:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 2px 4px rgba(0,0,0,0.35),
+      0 1px 4px rgba(0,0,0,0.25);
+  }
+
+  /* ═══════════════════════════════════════════════
+     DANGER — scorched / charred wood
+     ═══════════════════════════════════════════════ */
+  .btn-danger {
+    color: #f0c4b4;
+    background: linear-gradient(180deg, #5a2a1a 0%, #4a2014 40%, #381810 100%);
+    border: 3px solid var(--ember-deep);
+    box-shadow:
+      inset 0 1px 0 rgba(255,200,160,0.06),
+      inset 0 -2px 4px rgba(0,0,0,0.35),
+      0 4px 12px rgba(0,0,0,0.4);
+  }
+  .btn-danger:hover {
+    background: linear-gradient(180deg, #6a3220 0%, #5a2a1a 40%, #4a2014 100%);
+    border-color: var(--ember);
+    color: #ffd6c4;
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,200,160,0.08),
+      0 6px 20px rgba(0,0,0,0.5),
+      0 0 20px rgba(196,77,42,0.1);
+  }
+  .btn-danger:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 2px 5px rgba(0,0,0,0.45),
+      0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  /* ═══════════════════════════════════════════════
+     GHOST — outline only, minimal presence
+     ═══════════════════════════════════════════════ */
+  .btn-ghost {
+    color: var(--parchment-dim);
+    background: transparent;
+    border: 1.5px solid var(--border-wood);
+    box-shadow: none;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .btn-ghost:hover {
+    color: var(--parchment);
+    border-color: var(--border-wood-light);
+    background: rgba(92,61,46,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transform: translateY(-1px);
+  }
+  .btn-ghost:active {
+    transform: translateY(1px);
+    background: rgba(92,61,46,0.15);
+    box-shadow: none;
+  }
+
+  /* ═══════════════════════════════════════════════
+     SUCCESS — moss / forest wood
+     ═══════════════════════════════════════════════ */
+  .btn-success {
+    color: #c8e0b4;
+    background: linear-gradient(180deg, #2e4a24 0%, #264020 40%, #1e3418 100%);
+    border: 3px solid var(--moss-dim);
+    box-shadow:
+      inset 0 1px 0 rgba(180,255,140,0.05),
+      inset 0 -2px 4px rgba(0,0,0,0.3),
+      0 4px 12px rgba(0,0,0,0.4);
+  }
+  .btn-success:hover {
+    background: linear-gradient(180deg, #3a5a2e 0%, #2e4a24 40%, #264020 100%);
+    border-color: var(--moss);
+    color: #daf0c8;
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(180,255,140,0.07),
+      0 6px 20px rgba(0,0,0,0.5),
+      0 0 15px rgba(90,122,74,0.08);
+  }
+  .btn-success:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 2px 4px rgba(0,0,0,0.4),
+      0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  /* ═══════════════════════════════════════════════
+     DISABLED — weathered, faded plank
+     ═══════════════════════════════════════════════ */
+  .btn-disabled {
+    color: var(--ash);
+    background: linear-gradient(180deg, #2e2c28 0%, #282624 40%, #222020 100%);
+    border: 2px solid #33302c;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.02),
+      inset 0 -1px 2px rgba(0,0,0,0.15);
+    cursor: not-allowed;
+    text-shadow: none;
+    opacity: 0.7;
+  }
+  .btn-disabled:hover {
+    transform: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.02),
+      inset 0 -1px 2px rgba(0,0,0,0.15);
+  }
+
+  /* ═══════════════════════════════════════════
+     7. RUNE BORDER — Fantasy rune outline
+     ═══════════════════════════════════════════ */
+  .btn-rune {
+    position: relative;
+    padding: 14px 40px;
+    font-family: var(--font-cinzel);
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    background: transparent;
+    border: 1.5px solid var(--gold-dim);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.35s ease;
+  }
+  .btn-rune::before,
+  .btn-rune::after {
+    content: '';
+    position: absolute;
+    width: 10px; height: 10px;
+    border: 1.5px solid var(--gold);
+    transition: all 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+  }
+  .btn-rune::before {
+    top: -5px; left: -5px;
+    border-right: none; border-bottom: none;
+  }
+  .btn-rune::after {
+    bottom: -5px; right: -5px;
+    border-left: none; border-top: none;
+  }
+  .btn-rune:hover {
+    color: var(--gold-bright);
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.06);
+    box-shadow: 0 0 20px rgba(201,168,76,0.08);
+    text-shadow: 0 0 10px rgba(201,168,76,0.3);
+  }
+  .btn-rune:hover::before {
+    width: 16px; height: 16px;
+    top: -8px; left: -8px;
+  }
+  .btn-rune:hover::after {
+    width: 16px; height: 16px;
+    bottom: -8px; right: -8px;
+  }
+  .btn-rune:active { transform: scale(0.97); }
+
+} /* end @layer components */

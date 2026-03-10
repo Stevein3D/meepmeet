@@ -43,7 +43,7 @@ export default async function EventsPage() {
           <h1 className="text-4xl font-bold">Game Nights</h1>
           <Link
             href="/events/add"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="btn btn-md btn-primary"
           >
             Add Event
           </Link>
@@ -56,7 +56,7 @@ export default async function EventsPage() {
             {/* Upcoming Events */}
             {upcoming.length > 0 && (
               <div className="mb-12">
-                <h2 className="text-2xl font-semibold mb-4">Upcoming Events</h2>
+                <h2 className="text-2xl font-semibold text-white-600 mb-4">Upcoming Events</h2>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {upcoming.map((event) => {
                     const userRsvp = userId ? event.attendees.find(a => a.userId === userId) || null : null
@@ -80,7 +80,7 @@ export default async function EventsPage() {
             {/* Past Events */}
             {past.length > 0 && (
               <div>
-                <h2 className="text-2xl font-semibold mb-4 text-gray-600">Past Events</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-white-600">Past Events</h2>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 opacity-75">
                   {past.map((event) => {
                     const userRsvp = userId ? event.attendees.find(a => a.userId === userId) || null : null

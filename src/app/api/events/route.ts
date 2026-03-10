@@ -56,13 +56,22 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
+    // Game Masters can assign a different host
+    let hostId = userId
+    if (body.hostId && body.hostId !== userId) {
+      const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+      if (currentUser?.role === 'GAME_MASTER') {
+        hostId = body.hostId
+      }
+    }
+
     const event = await prisma.event.create({
       data: {
         title: body.title,
         date: new Date(body.date),
         location: body.location || null,
         notes: body.notes || null,
-        hostId: userId,
+        hostId,
         attendees: body.rsvpAsYes ? {
           create: {
             userId: userId,

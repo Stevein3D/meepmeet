@@ -26,7 +26,7 @@ export default async function GamesPage() {
           <h1 className="text-4xl font-bold">Game Collection</h1>
           <Link
             href="/games/add"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 btn btn-md btn-primary"
           >
             Add Game
           </Link>

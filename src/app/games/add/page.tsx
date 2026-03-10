@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Header from '@/components/Header'
 import { 
   MemberOnly, 
   GameMasterOnly, 
@@ -138,6 +139,8 @@ export default function AddGamePage() {
   }
 
   return (
+    <>
+    <Header />
     <main className="min-h-screen p-8">
       <h1 className="text-4xl font-bold mb-8">Add Game</h1>
 
@@ -145,10 +148,10 @@ export default function AddGamePage() {
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setMode('manual')}
-          className={`px-4 py-2 rounded-lg ${
+          className={`btn btn-md ${
             mode === 'manual'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'btn-primary'
+              : 'btn-success'
           }`}
         >
           Manual Entry
@@ -156,10 +159,10 @@ export default function AddGamePage() {
         <MemberOnly>
         <button
           onClick={() => setMode('search')}
-          className={`px-4 py-2 rounded-lg ${
+          className={`btn btn-md ${
             mode === 'search'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'btn-primary'
+              : 'btn-success'
           }`}
         >
           Search BGG
@@ -187,14 +190,14 @@ export default function AddGamePage() {
               <button
                 type="submit"
                 disabled={searching}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+                className="btn btn-sm btn-primary"
               >
                 {searching ? 'Searching...' : 'Search'}
               </button>
               <button
                 type="button"
                 onClick={() => router.push('/games')}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-100"
+                className="btn btn-sm btn-secondary"
               >
                 Cancel
               </button>
@@ -210,7 +213,7 @@ export default function AddGamePage() {
                 >
                   <div className="flex-1">
                     <h3 className="font-semibold">{game.name}</h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm font-medium parchment-text">
                       {game.yearPublished || 'Year unknown'}
                     </p>
                   </div>
@@ -220,19 +223,19 @@ export default function AddGamePage() {
                         type="checkbox"
                         checked={ownedGames[game.id] || false}
                         onChange={() => toggleGameOwnership(game.id)}
-                        className="w-4 h-4"
+                        className="w-4 h-4 accent-[#C9A961]"
                       />
                       I own this
                     </label>
                     <button
                       onClick={() => handleAddFromBGG(game.id, ownedGames[game.id] || false)}
                       disabled={addingGameId !== null}
-                      className={`px-4 py-2 rounded ${
+                      className={`btn btn-sm ${
                         addingGameId === game.id
-                          ? 'bg-gray-400 text-white cursor-wait'
+                          ? 'btn-success cursor-wait'
                           : addingGameId !== null
-                          ? 'bg-green-600 text-white opacity-50 cursor-not-allowed'
-                          : 'bg-green-600 text-white hover:bg-green-700'
+                          ? 'btn-success opacity-50 cursor-not-allowed'
+                          : 'btn-success hover:bg-green-700'
                       }`}
                     >
                       {addingGameId === game.id ? 'Adding...' : 'Add'}
@@ -245,130 +248,133 @@ export default function AddGamePage() {
         </>
       ) : (
         <form onSubmit={handleManualSubmit} className="max-w-2xl space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1">
-              Game Name *
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              required
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
+          <div className='wood-panel mb-6 space-y-4'>
+            <div className="field-group">
+              <label htmlFor="name" className="block text-sm font-medium mb-1">
+                Game Name *
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="minPlayers" className="block text-sm font-medium mb-1">
-                Min Players *
+            <div className="grid grid-cols-2 gap-4">
+              <div className="field-group">
+                <label htmlFor="minPlayers" className="block text-sm font-medium mb-1">
+                  Min Players *
+                </label>
+                <input
+                  type="number"
+                  id="minPlayers"
+                  name="minPlayers"
+                  required
+                  min="1"
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+              </div>
+
+              <div className="field-group">
+                <label htmlFor="maxPlayers" className="block text-sm font-medium mb-1">
+                  Max Players *
+                </label>
+                <input
+                  type="number"
+                  id="maxPlayers"
+                  name="maxPlayers"
+                  required
+                  min="1"
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div className="field-group">
+              <label htmlFor="playtime" className="block text-sm font-medium mb-1">
+                Playtime (minutes) *
               </label>
               <input
                 type="number"
-                id="minPlayers"
-                name="minPlayers"
+                id="playtime"
+                name="playtime"
                 required
                 min="1"
                 className="w-full px-4 py-2 border rounded-lg"
               />
             </div>
 
-            <div>
-              <label htmlFor="maxPlayers" className="block text-sm font-medium mb-1">
-                Max Players *
+            <div className="field-group">
+              <label htmlFor="complexity" className="block text-sm font-medium mb-1">
+                Complexity (1-5)
               </label>
               <input
                 type="number"
-                id="maxPlayers"
-                name="maxPlayers"
-                required
+                id="complexity"
+                name="complexity"
+                step="0.1"
                 min="1"
+                max="5"
                 className="w-full px-4 py-2 border rounded-lg"
               />
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="playtime" className="block text-sm font-medium mb-1">
-              Playtime (minutes) *
-            </label>
-            <input
-              type="number"
-              id="playtime"
-              name="playtime"
-              required
-              min="1"
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
+            <div className="field-group">
+              <label htmlFor="yearPublished" className="block text-sm font-medium mb-1">
+                Year Published
+              </label>
+              <input
+                type="number"
+                id="yearPublished"
+                name="yearPublished"
+                min="1900"
+                max={new Date().getFullYear()}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="complexity" className="block text-sm font-medium mb-1">
-              Complexity (1-5)
-            </label>
-            <input
-              type="number"
-              id="complexity"
-              name="complexity"
-              step="0.1"
-              min="1"
-              max="5"
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
+            <div className="field-group">
+              <label htmlFor="image" className="block text-sm font-medium mb-1">
+                Image URL
+              </label>
+              <input
+                type="url"
+                id="image"
+                name="image"
+                placeholder="https://..."
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="yearPublished" className="block text-sm font-medium mb-1">
-              Year Published
-            </label>
-            <input
-              type="number"
-              id="yearPublished"
-              name="yearPublished"
-              min="1900"
-              max={new Date().getFullYear()}
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="iOwn"
+                checked={iOwn}
+                onChange={(e) => setIOwn(e.target.checked)}
+                className="w-4 h-4 accent-[#C9A961]"
+              />
+              <label htmlFor="iOwn" className="text-sm font-medium">
+                I own this game
+              </label>
+            </div>
 
-          <div>
-            <label htmlFor="image" className="block text-sm font-medium mb-1">
-              Image URL
-            </label>
-            <input
-              type="url"
-              id="image"
-              name="image"
-              placeholder="https://..."
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="iOwn"
-              checked={iOwn}
-              onChange={(e) => setIOwn(e.target.checked)}
-              className="w-4 h-4"
-            />
-            <label htmlFor="iOwn" className="text-sm font-medium">
-              I own this game
-            </label>
           </div>
 
           <div className="flex gap-4">
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+              className="btn btn-md btn-primary disabled:opacity-50"
             >
               {loading ? 'Adding...' : 'Add Game'}
             </button>
             <button
               type="button"
               onClick={() => router.push('/games')}
-              className="px-6 py-2 border rounded-lg hover:bg-gray-100"
+              className="btn btn-md btn-secondary"
             >
               Cancel
             </button>
@@ -376,5 +382,6 @@ export default function AddGamePage() {
         </form>
       )}
     </main>
+    </>
   )
 }

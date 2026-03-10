@@ -107,12 +107,28 @@ export default function EventCard({ event, userId, isHost, canManage = isHost, u
       )}
 
       <div className="p-4 flex flex-col h-full">
-        <h3 className="text-xl font-bold mb-3" style={{
+        <div className="flex justify-between mb-2">
+          <h3 className="text-xl font-bold mb-3" style={{
           color: '#F5E6D3',
           textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
         }}>
           {event.title}
         </h3>
+          <div>
+            {/* Details link */}
+            <Link
+              href={`/events/${event.id}`}
+              className="block text-center py-2 px-4 rounded text-sm font-medium transition-all"
+              style={{
+                border: '1px solid rgba(201,169,97,0.4)',
+                color: '#C9A961',
+                background: 'rgba(201,169,97,0.06)',
+              }}
+            >
+              View Details
+            </Link>
+          </div>
+        </div>
 
         <div className="text-sm space-y-1 flex-grow" style={{ color: '#E8D4B8' }}>
           <p className="font-medium" style={{ color: '#C9A961' }}>{formatDate(event.date)}</p>
@@ -132,19 +148,6 @@ export default function EventCard({ event, userId, isHost, canManage = isHost, u
             </p>
           </div>
         </div>
-
-        {/* Details link */}
-        <Link
-          href={`/events/${event.id}`}
-          className="mt-3 block text-center py-1.5 rounded text-sm font-medium transition-all"
-          style={{
-            border: '1px solid rgba(201,169,97,0.4)',
-            color: '#C9A961',
-            background: 'rgba(201,169,97,0.06)',
-          }}
-        >
-          View Details
-        </Link>
 
         {/* RSVP Buttons */}
         {userId && (

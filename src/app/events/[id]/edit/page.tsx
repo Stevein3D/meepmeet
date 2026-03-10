@@ -146,94 +146,97 @@ export default function EditEventPage() {
         )}
 
         <form onSubmit={handleSubmit} className="max-w-2xl space-y-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-1">
-              Event Title *
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              required
-              defaultValue={event.title}
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="date" className="block text-sm font-medium mb-1">
-              Date & Time *
-            </label>
-            <input
-              type="datetime-local"
-              id="date"
-              name="date"
-              required
-              defaultValue={formatDateTimeLocal(event.date)}
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium mb-1">
-              Location
-            </label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              defaultValue={event.location || ''}
-              placeholder="123 Main St or Online"
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="notes" className="block text-sm font-medium mb-1">
-              Notes
-            </label>
-            <textarea
-              id="notes"
-              name="notes"
-              rows={4}
-              defaultValue={event.notes || ''}
-              placeholder="Bring snacks! We'll play Wingspan and Catan."
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-
-          {currentUserRole === 'GAME_MASTER' && gameMasters.length > 0 && (
-            <div>
-              <label htmlFor="hostId" className="block text-sm font-medium mb-1">
-                Host
+          <div className="wood-panel mb-6 space-y-4">
+            <div className="field-group">
+              <label htmlFor="title" className="block text-sm font-medium mb-1">
+                Event Title *
               </label>
-              <select
-                id="hostId"
-                name="hostId"
-                defaultValue={event.hostId}
+              <input
+                type="text"
+                id="title"
+                name="title"
+                required
+                defaultValue={event.title}
                 className="w-full px-4 py-2 border rounded-lg"
-              >
-                {gameMasters.map(gm => (
-                  <option key={gm.id} value={gm.id}>
-                    {gm.name}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
-          )}
+
+            <div className="field-group">
+              <label htmlFor="date" className="block text-sm font-medium mb-1">
+                Date & Time *
+              </label>
+              <input
+                type="datetime-local"
+                id="date"
+                name="date"
+                required
+                defaultValue={formatDateTimeLocal(event.date)}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div className="field-group">
+              <label htmlFor="location" className="block text-sm font-medium mb-1">
+                Location
+              </label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                defaultValue={event.location || ''}
+                placeholder="123 Main St or Online"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
+
+            {currentUserRole === 'GAME_MASTER' && gameMasters.length > 0 && (
+              <div className="field-group">
+                <label htmlFor="hostId" className="block text-sm font-medium mb-1">
+                  Host
+                </label>
+                <select
+                  id="hostId"
+                  name="hostId"
+                  defaultValue={event.hostId}
+                  className="w-full px-4 py-2 border rounded-lg"
+                >
+                  {gameMasters.map(gm => (
+                    <option key={gm.id} value={gm.id}>
+                      {gm.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="field-group">
+              <label htmlFor="notes" className="block text-sm font-medium mb-1">
+                Notes
+              </label>
+              <textarea
+                id="notes"
+                name="notes"
+                rows={4}
+                defaultValue={event.notes || ''}
+                placeholder="Bring snacks! We'll play Wingspan and Catan."
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
+
+          </div>
 
           <div className="flex gap-4">
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+              className="btn btn-md btn-primary disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
             <button
               type="button"
               onClick={() => router.push('/events')}
-              className="px-6 py-2 border rounded-lg hover:bg-gray-100"
+              className="btn btn-md btn-secondary"
             >
               Cancel
             </button>

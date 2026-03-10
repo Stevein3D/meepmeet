@@ -43,14 +43,14 @@ export default function Home() {
       <main className="p-8">
         <p className="mt-4 text-white-600 text-center">Meet the Meeps for some tailored fun at our next Board Game Meepup!</p>
         
-        <nav className="mt-8 space-x-4 text-center">
-          <Link href="/games" className="text-yellow-600 hover:underline">
+        <nav className="mt-2 space-x-4 text-center">
+          <Link href="/games" className="inline-block mt-4 btn btn-md btn-primary">
             View Games
           </Link>
-          <Link href="/meeps" className="text-yellow-600 hover:underline">
+          <Link href="/meeps" className="inline-block mt-4 btn btn-md btn-primary">
             View Meeps
           </Link>
-          <Link href="/events" className="text-yellow-600 hover:underline">
+          <Link href="/events" className="inline-block mt-4 btn btn-md btn-primary">
             View Events
           </Link>
         </nav>
