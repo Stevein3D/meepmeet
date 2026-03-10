@@ -114,7 +114,7 @@ export default function EventCard({ event, userId, isHost, canManage = isHost, u
         }}>
           {event.title}
         </h3>
-          <div>
+          <div className="min-w-fit">
             {/* Details link */}
             <Link
               href={`/events/${event.id}`}

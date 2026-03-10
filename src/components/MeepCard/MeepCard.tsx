@@ -16,6 +16,7 @@ interface MeepCardProps {
       eventRsvps: number
     }
   }
+  wins?: number
   canEdit?: boolean
 }
 
@@ -31,7 +32,7 @@ const roleColors: Record<string, string> = {
   GAME_MASTER: '#7a3b3b',
 }
 
-export default function MeepCard({ user, canEdit = false }: MeepCardProps) {
+export default function MeepCard({ user, wins = 0, canEdit = false }: MeepCardProps) {
   const initials = user.name
     .split(' ')
     .map((n) => n[0])
@@ -94,7 +95,7 @@ export default function MeepCard({ user, canEdit = false }: MeepCardProps) {
 
         {/* Stats */}
         <div
-          className="w-full grid grid-cols-3 gap-2 mt-1 pt-3 text-sm"
+          className="w-full grid grid-cols-4 gap-2 mt-1 pt-3 text-sm"
           style={{ borderTop: '1px solid rgba(201,169,97,0.3)', color: '#E8D4B8' }}
         >
           <div className="flex flex-col items-center">
@@ -114,6 +115,12 @@ export default function MeepCard({ user, canEdit = false }: MeepCardProps) {
               {user._count.eventRsvps}
             </span>
             <span className="text-xs opacity-70">Events</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
+              {wins}
+            </span>
+            <span className="text-xs opacity-70">Wins</span>
           </div>
         </div>
 

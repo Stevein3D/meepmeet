@@ -26,6 +26,8 @@ interface TablePlayerData {
   userId: string | null
   playerName: string | null
   isGM: boolean
+  isWinner: boolean
+  score: number | null
   user: AttendeeUser | null
 }
 
@@ -49,6 +51,7 @@ interface TablePlannerProps {
   initialRounds: RoundData[]
   canManage: boolean
   attendees: AttendeeUser[]
+  allMembers: AttendeeUser[]
   games: GameOption[]
   savedLabels: string[]
 }
@@ -264,6 +267,7 @@ function AddPlayerModal({
   roundId,
   table,
   attendees,
+  allMembers,
   onClose,
   onAdd,
 }: {
@@ -271,6 +275,7 @@ function AddPlayerModal({
   roundId: string
   table: TableData
   attendees: AttendeeUser[]
+  allMembers: AttendeeUser[]
   onClose: () => void
   onAdd: (player: TablePlayerData, updatedTable: TableData) => void
 }) {
@@ -278,12 +283,16 @@ function AddPlayerModal({
   const [saving, setSaving] = useState(false)
 
   const alreadyIds = new Set(table.players.map((p) => p.userId).filter(Boolean))
+  const attendingIds = new Set(attendees.map((a) => a.id))
 
-  const filtered = attendees.filter((a) => {
+  function matchesQuery(a: AttendeeUser) {
     if (alreadyIds.has(a.id)) return false
     const q = query.toLowerCase()
     return a.name.toLowerCase().includes(q) || (a.alias?.toLowerCase().includes(q) ?? false)
-  })
+  }
+
+  const attending = allMembers.filter((a) => attendingIds.has(a.id) && matchesQuery(a))
+  const others = allMembers.filter((a) => !attendingIds.has(a.id) && matchesQuery(a))
 
   async function addPlayer(body: { userId?: string; playerName?: string }) {
     setSaving(true)
@@ -303,36 +312,57 @@ function AddPlayerModal({
     setSaving(false)
   }
 
+  function renderMember(a: AttendeeUser) {
+    return (
+      <li
+        key={a.id}
+        className={styles.pickerItem}
+        onClick={() => !saving && addPlayer({ userId: a.id })}
+      >
+        {a.avatar ? (
+          <Image src={a.avatar} alt={a.name} width={28} height={28} className={styles.avatar} unoptimized />
+        ) : (
+          <span className={styles.initials}>{getInitials(a.name)}</span>
+        )}
+        {displayName(a)}
+      </li>
+    )
+  }
+
+  const hasNoResults = attending.length === 0 && others.length === 0
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <p className={styles.modalTitle}>Add Player</p>
         <input
           className={styles.input}
-          placeholder="Search attendees or type a name…"
+          placeholder="Search members or type a name…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoFocus
           style={{ marginBottom: '0.5rem' }}
         />
         <ul className={styles.pickerList}>
-          {filtered.length === 0 && query === '' && (
-            <li className={styles.emptyPicker}>No attendees to add</li>
+          {hasNoResults && query === '' && (
+            <li className={styles.emptyPicker}>No members to add</li>
           )}
-          {filtered.map((a) => (
-            <li
-              key={a.id}
-              className={styles.pickerItem}
-              onClick={() => !saving && addPlayer({ userId: a.id })}
-            >
-              {a.avatar ? (
-                <Image src={a.avatar} alt={a.name} width={28} height={28} className={styles.avatar} unoptimized />
-              ) : (
-                <span className={styles.initials}>{getInitials(a.name)}</span>
-              )}
-              {displayName(a)}
-            </li>
-          ))}
+          {hasNoResults && query !== '' && !query && null}
+
+          {attending.length > 0 && (
+            <>
+              <li className={styles.pickerGroupHeader}>Attending</li>
+              {attending.map(renderMember)}
+            </>
+          )}
+
+          {others.length > 0 && (
+            <>
+              <li className={styles.pickerGroupHeader}>Other Members</li>
+              {others.map(renderMember)}
+            </>
+          )}
+
           {query && (
             <li
               className={styles.pickerGuestItem}
@@ -359,6 +389,7 @@ function TableCard({
   tableIndex,
   canManage,
   attendees,
+  allMembers,
   games,
   savedLabels,
   onUpdate,
@@ -370,12 +401,16 @@ function TableCard({
   tableIndex: number
   canManage: boolean
   attendees: AttendeeUser[]
+  allMembers: AttendeeUser[]
   games: GameOption[]
   savedLabels: string[]
   onUpdate: (updated: TableData) => void
   onDelete: (tableId: string) => void
 }) {
   const [modal, setModal] = useState<'edit' | 'addPlayer' | null>(null)
+  const [scoreMap, setScoreMap] = useState<Record<string, string>>(() =>
+    Object.fromEntries(table.players.map((p) => [p.id, p.score != null ? String(p.score) : '']))
+  )
 
   async function handleDeleteTable() {
     const res = await fetch(`/api/events/${eventId}/rounds/${roundId}/tables/${table.id}`, {
@@ -409,11 +444,50 @@ function TableCard({
     )
     if (res.ok) {
       const updated: TablePlayerData = await res.json()
-      // If setting GM, clear it from all others; otherwise just update the target
       const newPlayers = !currentIsGM
         ? table.players.map((p) => p.id === playerId ? updated : { ...p, isGM: false })
         : table.players.map((p) => p.id === playerId ? updated : p)
       onUpdate({ ...table, players: newPlayers })
+    }
+  }
+
+  async function handleToggleWinner(playerId: string, currentIsWinner: boolean) {
+    const res = await fetch(
+      `/api/events/${eventId}/rounds/${roundId}/tables/${table.id}/players`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId, isWinner: !currentIsWinner }),
+      }
+    )
+    if (res.ok) {
+      const updated: TablePlayerData = await res.json()
+      const newPlayers = !currentIsWinner
+        ? table.players.map((p) => p.id === playerId ? updated : { ...p, isWinner: false })
+        : table.players.map((p) => p.id === playerId ? updated : p)
+      onUpdate({ ...table, players: newPlayers })
+    } else {
+      const err = await res.json().catch(() => ({}))
+      console.error('Failed to toggle winner:', res.status, err)
+    }
+  }
+
+  async function handleScoreBlur(playerId: string, currentScore: number | null) {
+    const raw = scoreMap[playerId] ?? ''
+    const newScore = raw === '' ? null : Number(raw)
+    if (typeof newScore === 'number' && isNaN(newScore)) return
+    if (newScore === currentScore) return
+    const res = await fetch(
+      `/api/events/${eventId}/rounds/${roundId}/tables/${table.id}/players`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId, score: newScore }),
+      }
+    )
+    if (res.ok) {
+      const updated: TablePlayerData = await res.json()
+      onUpdate({ ...table, players: table.players.map((p) => p.id === playerId ? updated : p) })
     }
   }
 
@@ -472,6 +546,32 @@ function TableCard({
                       {!p.userId && <span className={styles.guestBadge}> (guest)</span>}
                     </span>
                   </div>
+                  <div className={styles.playerControls}>
+                    {canManage ? (
+                      <input
+                        type="number"
+                        className={styles.scoreInput}
+                        value={scoreMap[p.id] ?? ''}
+                        onChange={(e) => setScoreMap((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                        onBlur={() => handleScoreBlur(p.id, p.score)}
+                        placeholder="–"
+                        min={0}
+                      />
+                    ) : (
+                      p.score != null && <span className={styles.scoreDisplay}>{p.score}</span>
+                    )}
+                    {canManage ? (
+                      <button
+                        className={p.isWinner ? styles.winnerBtnActive : styles.winnerBtn}
+                        onClick={() => handleToggleWinner(p.id, p.isWinner)}
+                        title={p.isWinner ? 'Unset winner' : 'Mark as winner'}
+                      >
+                        👑
+                      </button>
+                    ) : (
+                      p.isWinner && <span className={styles.winnerCrownReadonly}>👑</span>
+                    )}
+                  </div>
                   {canManage && (
                     <button className={styles.removeBtn} onClick={() => handleRemovePlayer(p.id)} title="Remove">✕</button>
                   )}
@@ -505,8 +605,12 @@ function TableCard({
           roundId={roundId}
           table={table}
           attendees={attendees}
+          allMembers={allMembers}
           onClose={() => setModal(null)}
-          onAdd={(_, updatedTable) => onUpdate(updatedTable)}
+          onAdd={(player, updatedTable) => {
+            setScoreMap((prev) => ({ ...prev, [player.id]: '' }))
+            onUpdate(updatedTable)
+          }}
         />
       )}
     </>
@@ -520,6 +624,7 @@ export default function TablePlanner({
   initialRounds,
   canManage,
   attendees,
+  allMembers,
   games,
   savedLabels,
 }: TablePlannerProps) {
@@ -633,6 +738,7 @@ export default function TablePlanner({
                 tableIndex={idx}
                 canManage={canManage}
                 attendees={attendees}
+                allMembers={allMembers}
                 games={games}
                 savedLabels={savedLabels}
                 onUpdate={(updated) => updateTableInRound(round.id, updated)}

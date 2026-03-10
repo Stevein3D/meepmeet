@@ -17,9 +17,9 @@ export default async function MeepsPage() {
     })
   }
 
-  const [users, currentUser] = await Promise.all([
+  const [users, currentUser, winRows] = await Promise.all([
     prisma.user.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: { alias: 'asc' },
       select: {
         id: true,
         name: true,
@@ -39,7 +39,14 @@ export default async function MeepsPage() {
     userId
       ? prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
       : null,
+    prisma.tablePlayer.groupBy({
+      by: ['userId'],
+      where: { isWinner: true, userId: { not: null } },
+      _count: { _all: true },
+    }),
   ])
+
+  const winMap = new Map(winRows.map((r) => [r.userId!, r._count._all]))
 
   return (
     <>
@@ -47,7 +54,7 @@ export default async function MeepsPage() {
       <main className="min-h-screen p-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold">Meeps</h1>
-          <p className="text-gray-500 mt-1">{users.length} member{users.length !== 1 ? 's' : ''}</p>
+          <p className="parchment-text font-semibold mt-1">{users.length} member{users.length !== 1 ? 's' : ''}</p>
         </div>
 
         {users.length === 0 ? (
@@ -57,7 +64,7 @@ export default async function MeepsPage() {
             {users.map((user) => {
               const canEdit =
                 userId === user.id || currentUser?.role === 'GAME_MASTER'
-              return <MeepCard key={user.id} user={user} canEdit={canEdit} />
+              return <MeepCard key={user.id} user={user} wins={winMap.get(user.id) ?? 0} canEdit={canEdit} />
             })}
           </div>
         )}

@@ -19,7 +19,7 @@ export default async function EventDetailPage({
 
   const { id } = await params
 
-  const [event, currentUser, allGames, labelRows] = await Promise.all([
+  const [event, currentUser, allGames, labelRows, memberRows] = await Promise.all([
     prisma.event.findUnique({
       where: { id },
       include: {
@@ -61,6 +61,11 @@ export default async function EventDetailPage({
       distinct: ['label'],
       orderBy: { label: 'asc' },
     }),
+    prisma.user.findMany({
+      where: { role: { not: 'VISITOR' } },
+      select: { id: true, name: true, alias: true, avatar: true },
+      orderBy: { name: 'asc' },
+    }),
   ])
 
   if (!event) notFound()
@@ -79,6 +84,7 @@ export default async function EventDetailPage({
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
+    timeZone: 'America/New_York',
   })
 
   return (
@@ -137,9 +143,16 @@ export default async function EventDetailPage({
           </div>
 
           {attendees.length > 0 && (
-            <p style={{ color: 'rgba(232,212,184,0.7)', fontSize: '0.875rem' }}>
-              {attendees.length} confirmed attendee{attendees.length !== 1 ? 's' : ''}
-            </p>
+            <div style={{ color: 'rgba(232,212,184,0.7)', fontSize: '0.875rem' }}>
+              <p>{attendees.length} confirmed attendee{attendees.length !== 1 ? 's' : ''}</p>
+              <p style={{ marginTop: '0.25rem' }}>
+                {attendees.map((a, i) => (
+                  <span key={a.id}>
+                    {a.alias || a.name}{i < attendees.length - 1 ? ', ' : ''}
+                  </span>
+                ))}
+              </p>
+            </div>
           )}
         </div>
 
@@ -153,6 +166,7 @@ export default async function EventDetailPage({
             initialRounds={event.rounds}
             canManage={canManage}
             attendees={attendees}
+            allMembers={memberRows}
             games={allGames}
             savedLabels={savedLabels}
           />

@@ -147,6 +147,8 @@ model TablePlayer {
   userId     String?
   playerName String?
   isGM       Boolean    @default(false)
+  isWinner   Boolean    @default(false)
+  score      Int?
 
   table EventTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
   user  User?      @relation(fields: [userId], references: [id], onDelete: SetNull)

@@ -465,3 +465,89 @@
   color: rgba(232, 212, 184, 0.5);
   font-size: 0.85rem;
 }
+
+.pickerGroupHeader {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(201, 169, 97, 0.6);
+  background: rgba(201, 169, 97, 0.06);
+  border-top: 1px solid rgba(201, 169, 97, 0.15);
+  list-style: none;
+}
+
+/* Score & winner controls */
+.playerControls {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.scoreInput {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 3px;
+  color: #E8D4B8;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.3rem;
+  width: 44px;
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.scoreInput::-webkit-outer-spin-button,
+.scoreInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.scoreInput:focus {
+  border-color: #C9A961;
+}
+
+.scoreDisplay {
+  font-size: 0.8rem;
+  color: #E8D4B8;
+  min-width: 28px;
+  text-align: right;
+}
+
+.winnerBtn {
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  filter: grayscale(1) opacity(0.3);
+  transition: filter 0.15s;
+  flex-shrink: 0;
+}
+
+.winnerBtn:hover {
+  filter: grayscale(0.4) opacity(0.7);
+}
+
+.winnerBtnActive {
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  filter: none;
+  transition: filter 0.15s;
+  flex-shrink: 0;
+}
+
+.winnerBtnActive:hover {
+  filter: opacity(0.8);
+}
+
+.winnerCrownReadonly {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}

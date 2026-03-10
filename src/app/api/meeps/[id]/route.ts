@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { getDatabaseUserId } from '@/lib/user-helper'
 
 export async function GET(
   _request: Request,
@@ -41,13 +42,18 @@ export async function PUT(
 
   const { id } = await params
 
+  const dbUserId = await getDatabaseUserId(clerkUserId)
+  if (!dbUserId) {
+    return NextResponse.json({ error: 'Failed to resolve user' }, { status: 500 })
+  }
+
   // Fetch the current user's role from the DB
   const currentUser = await prisma.user.findUnique({
-    where: { id: clerkUserId },
+    where: { id: dbUserId },
     select: { role: true },
   })
 
-  const isOwner = clerkUserId === id
+  const isOwner = dbUserId === id
   const isGameMaster = currentUser?.role === 'GAME_MASTER'
 
   if (!isOwner && !isGameMaster) {
@@ -55,7 +61,7 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const { name, alias, bggId, role } = body
+  const { name, alias, bggId, role, avatar } = body
 
   // Only GAME_MASTERs can change another user's role
   const updateData: Record<string, string | null | undefined> = {
@@ -66,6 +72,10 @@ export async function PUT(
 
   if (isGameMaster && role) {
     updateData.role = role
+  }
+
+  if (avatar !== undefined) {
+    updateData.avatar = avatar || null
   }
 
   const updated = await prisma.user.update({

@@ -126,10 +126,13 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { playerId, isGM } = body
+    const { playerId, isGM, isWinner, score } = body
 
-    if (!playerId || typeof isGM !== 'boolean') {
-      return NextResponse.json({ error: 'playerId and isGM required' }, { status: 400 })
+    if (!playerId) {
+      return NextResponse.json({ error: 'playerId required' }, { status: 400 })
+    }
+    if (typeof isGM !== 'boolean' && typeof isWinner !== 'boolean' && score === undefined) {
+      return NextResponse.json({ error: 'At least one of isGM, isWinner, or score is required' }, { status: 400 })
     }
 
     const player = await prisma.tablePlayer.findUnique({ where: { id: playerId } })
@@ -137,23 +140,36 @@ export async function PATCH(
       return NextResponse.json({ error: 'Player not found' }, { status: 404 })
     }
 
-    if (isGM) {
-      // Clear GM from all other players at this table first (exclusive)
+    // Exclusive GM: clear all others first
+    if (typeof isGM === 'boolean' && isGM) {
       await prisma.tablePlayer.updateMany({
         where: { tableId, id: { not: playerId } },
         data: { isGM: false },
       })
     }
 
+    // Exclusive winner: clear all others first
+    if (typeof isWinner === 'boolean' && isWinner) {
+      await prisma.tablePlayer.updateMany({
+        where: { tableId, id: { not: playerId } },
+        data: { isWinner: false },
+      })
+    }
+
+    const updateData: Record<string, unknown> = {}
+    if (typeof isGM === 'boolean') updateData.isGM = isGM
+    if (typeof isWinner === 'boolean') updateData.isWinner = isWinner
+    if (score !== undefined) updateData.score = score === null ? null : Number(score)
+
     const updated = await prisma.tablePlayer.update({
       where: { id: playerId },
-      data: { isGM },
+      data: updateData,
       include: { user: { select: { id: true, name: true, alias: true, avatar: true } } },
     })
 
     return NextResponse.json(updated)
   } catch (error) {
-    console.error('Failed to update GM status:', error)
-    return NextResponse.json({ error: 'Failed to update GM status' }, { status: 500 })
+    console.error('Failed to update player:', error)
+    return NextResponse.json({ error: 'Failed to update player' }, { status: 500 })
   }
 }

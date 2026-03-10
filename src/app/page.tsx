@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import Footer from '@/components/Footer'
 import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs'
 
 export default function Home() {
@@ -40,7 +41,7 @@ export default function Home() {
           </div>
         </div>
       </header> */}
-      <main className="p-8">
+      <main className="p-8 min-h-[calc(100vh-626px)]">
         <p className="mt-4 text-white-600 text-center">Meet the Meeps for some tailored fun at our next Board Game Meepup!</p>
         
         <nav className="mt-2 space-x-4 text-center">
@@ -55,6 +56,7 @@ export default function Home() {
           </Link>
         </nav>
       </main>
+      <Footer />
     </>
   )
 }
