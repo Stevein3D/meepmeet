@@ -1,0 +1,467 @@
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.tableCard {
+  border: 2px solid #8B6F47;
+  border-radius: 8px;
+  overflow: hidden;
+  background-image: url(/wood-bg.jpg);
+  background-size: 100%;
+  background-repeat: repeat-y;
+  background-position: center;
+  background-color: rgba(28, 16, 8, 0.6);
+  background-blend-mode: multiply;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(201, 169, 97, 0.3);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.3);
+}
+
+.tableLabel {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #F5E6D3;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.iconBtn {
+  background: rgba(201, 169, 97, 0.1);
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  border-radius: 4px;
+  color: #C9A961;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  transition: background 0.15s;
+}
+
+.iconBtn:hover {
+  background: rgba(201, 169, 97, 0.25);
+}
+
+.iconBtnDanger {
+  composes: iconBtn;
+  border-color: rgba(180, 60, 60, 0.5);
+  color: #d97070;
+}
+
+.iconBtnDanger:hover {
+  background: rgba(180, 60, 60, 0.2);
+}
+
+.gameInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.15);
+}
+
+.gameThumb {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  flex-shrink: 0;
+}
+
+.gameName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #E8D4B8;
+}
+
+.gameMeta {
+  font-size: 0.75rem;
+  color: rgba(232, 212, 184, 0.6);
+}
+
+.noGame {
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
+  color: rgba(232, 212, 184, 0.45);
+  font-style: italic;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.15);
+}
+
+.playerSection {
+  padding: 0.75rem 1rem;
+}
+
+.playerCount {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #C9A961;
+  margin-bottom: 0.5rem;
+}
+
+.playerList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.6rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.playerItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.playerName {
+  font-size: 0.85rem;
+  color: #E8D4B8;
+}
+
+.guestBadge {
+  font-size: 0.7rem;
+  color: rgba(232, 212, 184, 0.5);
+  font-style: italic;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: rgba(217, 112, 112, 0.6);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.3rem;
+  line-height: 1;
+  border-radius: 3px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.removeBtn:hover {
+  color: #d97070;
+}
+
+.addPlayerBtn {
+  background: rgba(201, 169, 97, 0.08);
+  border: 1px dashed rgba(201, 169, 97, 0.4);
+  border-radius: 4px;
+  color: #C9A961;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.addPlayerBtn:hover {
+  background: rgba(201, 169, 97, 0.18);
+}
+
+/* Round section */
+.roundSection {
+  margin-bottom: 2.5rem;
+}
+
+.roundHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid rgba(139, 111, 71, 0.6);
+}
+
+.roundTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #C9A961;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.02em;
+}
+
+/* Add Round button */
+.addRoundBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  background: rgba(201, 169, 97, 0.12);
+  border: 2px solid #C9A961;
+  border-radius: 6px;
+  color: #C9A961;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s;
+  margin-bottom: 2rem;
+}
+
+.addRoundBtn:hover {
+  background: rgba(201, 169, 97, 0.25);
+}
+
+/* Add Table button */
+.addTableBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  background: rgba(201, 169, 97, 0.08);
+  border: 1px dashed rgba(201, 169, 97, 0.5);
+  border-radius: 5px;
+  color: #C9A961;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.15s;
+  margin-bottom: 1rem;
+}
+
+.addTableBtn:hover {
+  background: rgba(201, 169, 97, 0.2);
+}
+
+/* GM controls */
+.playerNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.gmBtn {
+  background: none;
+  border: none;
+  color: rgba(201, 169, 97, 0.4);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.gmBtn:hover {
+  color: #C9A961;
+}
+
+.gmBtnActive {
+  composes: gmBtn;
+  color: #C9A961;
+}
+
+.gmStarReadonly {
+  color: #C9A961;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.gmBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #C9A961;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.errorText {
+  color: #d97070;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.modal {
+  background: #1c1008;
+  border: 2px solid #8B6F47;
+  border-radius: 10px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+}
+
+.modalTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #F5E6D3;
+  margin-bottom: 1.2rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #C9A961;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input,
+.select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  border-radius: 5px;
+  color: #F5E6D3;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #C9A961;
+}
+
+.select option {
+  background: #1c1008;
+  color: #F5E6D3;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.btnPrimary {
+  flex: 1;
+  padding: 0.55rem 1rem;
+  background: #8B6F47;
+  border: none;
+  border-radius: 5px;
+  color: #F5E6D3;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #a07d50;
+}
+
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  padding: 0.55rem 1rem;
+  background: none;
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  border-radius: 5px;
+  color: #C9A961;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+
+.btnSecondary:hover {
+  background: rgba(201, 169, 97, 0.1);
+}
+
+/* Player picker */
+.searchInput {
+  composes: input;
+  margin-bottom: 0.5rem;
+}
+
+.pickerList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  border-radius: 5px;
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.12s;
+  color: #E8D4B8;
+  font-size: 0.875rem;
+}
+
+.pickerItem:hover {
+  background: rgba(201, 169, 97, 0.12);
+}
+
+.pickerItem + .pickerItem {
+  border-top: 1px solid rgba(201, 169, 97, 0.1);
+}
+
+.pickerGuestItem {
+  composes: pickerItem;
+  color: #C9A961;
+  font-style: italic;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  flex-shrink: 0;
+}
+
+.initials {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3a2010, #5c3a1e);
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #F5E6D3;
+  flex-shrink: 0;
+}
+
+.emptyPicker {
+  padding: 0.75rem;
+  text-align: center;
+  color: rgba(232, 212, 184, 0.5);
+  font-size: 0.85rem;
+}

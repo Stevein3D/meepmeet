@@ -133,9 +133,22 @@ export default function EventCard({ event, userId, isHost, canManage = isHost, u
           </div>
         </div>
 
+        {/* Details link */}
+        <Link
+          href={`/events/${event.id}`}
+          className="mt-3 block text-center py-1.5 rounded text-sm font-medium transition-all"
+          style={{
+            border: '1px solid rgba(201,169,97,0.4)',
+            color: '#C9A961',
+            background: 'rgba(201,169,97,0.06)',
+          }}
+        >
+          View Details
+        </Link>
+
         {/* RSVP Buttons */}
         {userId && (
-          <div className="mt-3" style={{ paddingRight: '34px' }}>
+          <div className="mt-2" style={{ paddingRight: '34px' }}>
             <RsvpButton
               eventId={event.id}
               initialStatus={(userRsvp?.rsvpStatus as 'yes' | 'no' | 'maybe') || null}

@@ -36,6 +36,7 @@ model User {
   eventRsvps    EventAttendee[]
   playSessions  SessionPlayer[]
   sessionWins   PlaySession[]  @relation("SessionWinner")
+  tablePlayers  TablePlayer[]
 }
 
 model Game {
@@ -52,6 +53,7 @@ model Game {
   
   owners       UserGame[]
   playSessions PlaySession[]
+  eventTables  EventTable[]
 }
 
 model UserGame {
@@ -75,6 +77,7 @@ model Event {
   
   attendees    EventAttendee[]
   playSessions PlaySession[]
+  rounds       EventRound[]
 }
 
 model EventAttendee {
@@ -108,6 +111,43 @@ model SessionPlayer {
   userId    String
   session   PlaySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@id([sessionId, userId])
+}
+
+model EventRound {
+  id        String      @id @default(cuid())
+  eventId   String
+  number    Int
+  label     String?
+  createdAt DateTime    @default(now())
+
+  event  Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tables EventTable[]
+
+  @@unique([eventId, number])
+}
+
+model EventTable {
+  id        String      @id @default(cuid())
+  roundId   String
+  gameId    String?
+  label     String?
+  seats     Int
+  createdAt DateTime    @default(now())
+
+  round   EventRound    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  game    Game?         @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  players TablePlayer[]
+}
+
+model TablePlayer {
+  id         String     @id @default(cuid())
+  tableId    String
+  userId     String?
+  playerName String?
+  isGM       Boolean    @default(false)
+
+  table EventTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  user  User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
