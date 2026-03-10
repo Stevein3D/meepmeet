@@ -6,7 +6,7 @@ interface MeepCardProps {
   user: {
     id: string
     name: string
-    alias: string
+    alias: string | null
     avatar: string | null
     role: 'VISITOR' | 'MEMBER' | 'GAME_MASTER'
     createdAt: Date
