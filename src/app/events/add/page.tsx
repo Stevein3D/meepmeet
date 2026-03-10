@@ -46,7 +46,7 @@ export default function AddEventPage() {
 
   return (
     <main className="min-h-screen p-8">
-      <h1 className="text-4xl font-bold mb-8">Create Game Night</h1>
+      <h1 className="text-4xl text-white-700 mb-8">Create Game Night</h1>
 
       {error && (
         <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
@@ -56,7 +56,7 @@ export default function AddEventPage() {
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-4">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
+          <label htmlFor="title" className="block text-sm text-white-600 font-medium mb-1">
             Event Title *
           </label>
           <input
@@ -70,7 +70,7 @@ export default function AddEventPage() {
         </div>
 
         <div>
-          <label htmlFor="date" className="block text-sm font-medium mb-1">
+          <label htmlFor="date" className="block text-sm text-white-600 font-medium mb-1">
             Date & Time *
           </label>
           <input
@@ -83,7 +83,7 @@ export default function AddEventPage() {
         </div>
 
         <div>
-          <label htmlFor="location" className="block text-sm font-medium mb-1">
+          <label htmlFor="location" className="block text-sm text-white-600 font-medium mb-1">
             Location
           </label>
           <input
@@ -96,7 +96,7 @@ export default function AddEventPage() {
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium mb-1">
+          <label htmlFor="notes" className="block text-sm text-white-600 font-medium mb-1">
             Notes
           </label>
           <textarea
@@ -116,7 +116,7 @@ export default function AddEventPage() {
             onChange={(e) => setRsvpAsYes(e.target.checked)}
             className="w-4 h-4"
           />
-          <label htmlFor="rsvpAsYes" className="text-sm font-medium">
+          <label htmlFor="rsvpAsYes" className="text-sm text-white-600 font-medium">
             I'm attending
           </label>
         </div>

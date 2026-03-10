@@ -33,7 +33,7 @@ export default async function EventsPage() {
 
   const now = new Date()
   const upcoming = events.filter(e => new Date(e.date) >= now)
-  const past = events.filter(e => new Date(e.date) < now)
+  const past = events.filter(e => new Date(e.date) < now).reverse()
 
   return (
     <>
