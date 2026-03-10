@@ -24,8 +24,10 @@ enum UserRole {
 model User {
   id        String   @id @default(cuid())
   name      String
+  alias     String?
   email     String   @unique
   avatar    String?
+  bggId     String?
   role      UserRole @default(VISITOR)  // Add this if not already there
   createdAt DateTime @default(now())
   

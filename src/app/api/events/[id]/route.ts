@@ -72,10 +72,11 @@ export async function PUT(
     const { id } = await params
     const body = await request.json()
 
-    // Check if user is the host
-    const existingEvent = await prisma.event.findUnique({
-      where: { id }
-    })
+    // Check if user is the host or a Game Master
+    const [existingEvent, currentUser] = await Promise.all([
+      prisma.event.findUnique({ where: { id } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+    ])
 
     if (!existingEvent) {
       return NextResponse.json(
@@ -84,22 +85,32 @@ export async function PUT(
       )
     }
 
-    if (existingEvent.hostId !== userId) {
+    const isHost = existingEvent.hostId === userId
+    const isGameMaster = currentUser?.role === 'GAME_MASTER'
+
+    if (!isHost && !isGameMaster) {
       return NextResponse.json(
-        { error: 'Forbidden: Only the event host can edit this event' },
+        { error: 'Forbidden: Only the event host or a Game Master can edit this event' },
         { status: 403 }
       )
+    }
+
+    const updateData: Record<string, unknown> = {
+      title: body.title,
+      date: new Date(body.date),
+      location: body.location || null,
+      notes: body.notes || null,
+    }
+
+    // Only Game Masters can reassign the host
+    if (isGameMaster && body.hostId) {
+      updateData.hostId = body.hostId
     }
 
     // Update event details
     const event = await prisma.event.update({
       where: { id },
-      data: {
-        title: body.title,
-        date: new Date(body.date),
-        location: body.location || null,
-        notes: body.notes || null
-      }
+      data: updateData,
     })
 
     return NextResponse.json(event)

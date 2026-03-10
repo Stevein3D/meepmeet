@@ -30,10 +30,11 @@ interface EventCardProps {
   }
   userId: string | null
   isHost: boolean
+  canManage?: boolean
   userRsvp: { rsvpStatus: string } | null
 }
 
-export default function EventCard({ event, userId, isHost, userRsvp }: EventCardProps) {
+export default function EventCard({ event, userId, isHost, canManage = isHost, userRsvp }: EventCardProps) {
   const [showControls, setShowControls] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
 
@@ -81,7 +82,7 @@ export default function EventCard({ event, userId, isHost, userRsvp }: EventCard
       boxShadow: '0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,169,97,0.3)'
     }}>
       {/* Toggle button aligned with RSVP buttons */}
-      {userId && isHost && (
+      {userId && canManage && (
         <button
           onClick={handleToggle}
           className="absolute right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center"
@@ -143,7 +144,7 @@ export default function EventCard({ event, userId, isHost, userRsvp }: EventCard
         )}
 
         {/* Action Buttons - overlay from bottom */}
-        {(showControls || isClosing) && userId && isHost && (
+        {(showControls || isClosing) && userId && canManage && (
           <div
             className={`absolute bottom-0 left-0 right-0 flex gap-2 p-4 ${isClosing ? 'animate-slideDown' : 'animate-slideUp'}`}
             style={{

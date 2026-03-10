@@ -47,7 +47,7 @@ export default function Home() {
           <Link href="/games" className="text-yellow-600 hover:underline">
             View Games
           </Link>
-          <Link href="/games" className="text-yellow-600 hover:underline">
+          <Link href="/meeps" className="text-yellow-600 hover:underline">
             View Meeps
           </Link>
           <Link href="/events" className="text-yellow-600 hover:underline">

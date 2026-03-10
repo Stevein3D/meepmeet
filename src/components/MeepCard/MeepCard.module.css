@@ -1,0 +1,26 @@
+/* components/MeepCard/MeepCard.module.css */
+
+.displayAlias {
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    cursor: default;
+}
+
+.displayName {
+    opacity: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.displayAlias:hover {
+    opacity: 0;
+}
+
+.displayAlias:hover + .displayName {
+    opacity: 1;
+}

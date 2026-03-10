@@ -1,0 +1,136 @@
+import Image from 'next/image'
+import Link from 'next/link'
+import styles from './MeepCard.module.css'
+
+interface MeepCardProps {
+  user: {
+    id: string
+    name: string
+    alias: string
+    avatar: string | null
+    role: 'VISITOR' | 'MEMBER' | 'GAME_MASTER'
+    createdAt: Date
+    _count: {
+      ownedGames: number
+      hostedEvents: number
+      eventRsvps: number
+    }
+  }
+  canEdit?: boolean
+}
+
+const roleLabel: Record<string, string> = {
+  VISITOR: 'Visitor',
+  MEMBER: 'Member',
+  GAME_MASTER: 'Game Master',
+}
+
+const roleColors: Record<string, string> = {
+  VISITOR: '#8B6F47',
+  MEMBER: '#4a7c59',
+  GAME_MASTER: '#7a3b3b',
+}
+
+export default function MeepCard({ user, canEdit = false }: MeepCardProps) {
+  const initials = user.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+
+  return (
+    <div
+      className="flex flex-col overflow-hidden shadow-xl"
+      style={{
+        border: '4px solid #8B6F47',
+        borderRadius: '8px',
+        backgroundImage: 'url(/wood-bg.jpg)',
+        backgroundSize: '100%',
+        backgroundRepeat: 'repeat-y',
+        backgroundPosition: 'center',
+        backgroundColor: 'rgba(28, 16, 8, 0.6)',
+        backgroundBlendMode: 'multiply',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,169,97,0.3)',
+      }}
+    >
+      <div className="p-4 flex flex-col items-center text-center gap-3">
+        {/* Avatar */}
+        <div
+          className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center text-2xl font-bold flex-shrink-0"
+          style={{
+            border: '3px solid #C9A961',
+            background: 'linear-gradient(135deg, #3a2010, #5c3a1e)',
+            color: '#F5E6D3',
+          }}
+        >
+          {user.avatar ? (
+            <Image src={user.avatar} alt={user.name} fill className="object-cover" unoptimized />
+          ) : (
+            <span>{initials}</span>
+          )}
+        </div>
+
+        {/* Name */}
+        <h2
+          className="text-xl font-bold leading-tight relative"
+          style={{ color: '#F5E6D3', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+        >
+          {user.alias ? <span className={styles.displayAlias}>{user.alias}</span> : <span>{user.name}</span>}
+          <span className={styles.displayName}>{user.name}</span>
+        </h2>
+
+        {/* Role badge */}
+        <span
+          className="text-xs font-semibold px-3 py-1 rounded-full"
+          style={{
+            background: roleColors[user.role] + '33',
+            border: `1px solid ${roleColors[user.role]}`,
+            color: '#E8D4B8',
+          }}
+        >
+          {roleLabel[user.role]}
+        </span>
+
+        {/* Stats */}
+        <div
+          className="w-full grid grid-cols-3 gap-2 mt-1 pt-3 text-sm"
+          style={{ borderTop: '1px solid rgba(201,169,97,0.3)', color: '#E8D4B8' }}
+        >
+          <div className="flex flex-col items-center">
+            <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
+              {user._count.ownedGames}
+            </span>
+            <span className="text-xs opacity-70">Games</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
+              {user._count.hostedEvents}
+            </span>
+            <span className="text-xs opacity-70">Hosted</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
+              {user._count.eventRsvps}
+            </span>
+            <span className="text-xs opacity-70">Events</span>
+          </div>
+        </div>
+
+        {canEdit && (
+          <Link
+            href={`/meeps/${user.id}/edit`}
+            className="mt-3 w-full text-center py-2 rounded text-sm font-medium transition-all"
+            style={{
+              border: '2px solid #C9A961',
+              color: '#C9A961',
+              background: 'rgba(201,169,97,0.1)',
+            }}
+          >
+            Edit
+          </Link>
+        )}
+      </div>
+    </div>
+  )
+}

@@ -22,6 +22,9 @@ export default function Header() {
           <Link href="/games" className="text-white-700 hover:text-blue-600 transition-colors">
             Games
           </Link>
+          <Link href="/meeps" className="text-white-700 hover:text-blue-600 transition-colors">
+            Meeps
+          </Link>
           <Link href="/events" className="text-white-700 hover:text-blue-600 transition-colors">
             Events
           </Link>

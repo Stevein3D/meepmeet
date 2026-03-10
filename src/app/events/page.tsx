@@ -7,6 +7,11 @@ import EventCard from '@/components/EventCard/EventCard'
 export default async function EventsPage() {
   const { userId } = await auth()
 
+  const currentUser = userId
+    ? await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+    : null
+  const isGameMaster = currentUser?.role === 'GAME_MASTER'
+
   const events = await prisma.event.findMany({
     orderBy: { date: 'asc' },
     include: {
@@ -63,6 +68,7 @@ export default async function EventsPage() {
                         event={event}
                         userId={userId}
                         isHost={isHost}
+                        canManage={isHost || isGameMaster}
                         userRsvp={userRsvp}
                       />
                     )
@@ -84,8 +90,9 @@ export default async function EventsPage() {
                       <EventCard
                         key={event.id}
                         event={event}
-                        userId={null}
-                        isHost={false}
+                        userId={userId}
+                        isHost={isHost}
+                        canManage={isHost || isGameMaster}
                         userRsvp={userRsvp}
                       />
                     )
