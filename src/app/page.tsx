@@ -43,13 +43,13 @@ export default function Home() {
       <main className="p-8 flex-1">
         <nav className="mt-2 space-x-0 flex flex-wrap flex-col sm:flex-row justify-center sm:space-x-4 text-center">
           <Link href="/events" className="inline-block mt-4 btn btn-md btn-primary">
-            View Events
+            Events
           </Link>
           <Link href="/meeps" className="inline-block mt-4 btn btn-md btn-primary">
-            View Meeps
+            Meeps
           </Link>
           <Link href="/games" className="inline-block mt-4 btn btn-md btn-primary">
-            View Games
+            Games
           </Link>
         </nav>
       </main>

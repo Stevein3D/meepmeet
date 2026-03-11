@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { clerkClient } from '@clerk/nextjs/server'
 
 interface ClerkUserData {
   email?: string
@@ -6,14 +7,22 @@ interface ClerkUserData {
   avatar?: string | null
 }
 
+async function fetchFromClerk(clerkUserId: string): Promise<ClerkUserData | null> {
+  try {
+    const client = await clerkClient()
+    const u = await client.users.getUser(clerkUserId)
+    const email = u.emailAddresses[0]?.emailAddress
+    const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || email
+    return { email, name, avatar: u.imageUrl }
+  } catch {
+    return null
+  }
+}
+
 /**
  * Gets or creates a database user from a Clerk user ID.
- * This ensures the user exists in the database before we create foreign key relationships.
- *
- * @param clerkUserId - The Clerk user ID from auth()
- * @param clerkUserData - Optional Clerk user data (email, name, avatar) for proper initialization
- * @returns The database user, or null if user is not authenticated
- * @throws Error if database operations fail
+ * Falls back to the Clerk API when no local user data is provided,
+ * and heals any existing placeholder records on the fly.
  */
 export async function getOrCreateDatabaseUser(
   clerkUserId: string | null,
@@ -24,21 +33,34 @@ export async function getOrCreateDatabaseUser(
   }
 
   try {
-    // Try to find existing user
-    let user = await prisma.user.findUnique({
-      where: { id: clerkUserId }
-    })
+    let user = await prisma.user.findUnique({ where: { id: clerkUserId } })
 
-    // If user doesn't exist, create with provided data or placeholder
     if (!user) {
+      // Fetch real data from Clerk rather than storing a placeholder
+      const data = (clerkUserData?.email ? clerkUserData : null)
+        ?? await fetchFromClerk(clerkUserId)
       user = await prisma.user.create({
         data: {
           id: clerkUserId,
-          name: clerkUserData?.name || 'User',
-          email: clerkUserData?.email || `clerk-${clerkUserId}@temp.local`,
-          avatar: clerkUserData?.avatar || null
-        }
+          name: data?.name || 'User',
+          email: data?.email || `clerk-${clerkUserId}@temp.local`,
+          avatar: data?.avatar ?? null,
+        },
       })
+    } else if (user.email?.endsWith('@temp.local')) {
+      // Heal existing placeholder records
+      const data = (clerkUserData?.email ? clerkUserData : null)
+        ?? await fetchFromClerk(clerkUserId)
+      if (data?.email && !data.email.endsWith('@temp.local')) {
+        user = await prisma.user.update({
+          where: { id: clerkUserId },
+          data: {
+            email: data.email,
+            name: data.name || user.name,
+            avatar: data.avatar ?? user.avatar,
+          },
+        })
+      }
     }
 
     return user
