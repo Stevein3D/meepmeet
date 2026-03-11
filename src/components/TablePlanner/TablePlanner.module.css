@@ -1,7 +1,7 @@
 .grid {
   display: grid;
   gap: 1.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
 .tableCard {
@@ -563,5 +563,35 @@
 
 .winnerCrownReadonly {
   font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(232, 212, 184, 0.7);
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: #C9A961;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.unrankedBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(232, 212, 184, 0.55);
+  border: 1px solid rgba(232, 212, 184, 0.25);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
   flex-shrink: 0;
 }

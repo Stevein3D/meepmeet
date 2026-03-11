@@ -135,6 +135,8 @@ model EventTable {
   gameId    String?
   label     String?
   seats     Int
+  order     Int         @default(0)
+  unranked  Boolean     @default(false)
   createdAt DateTime    @default(now())
 
   round   EventRound    @relation(fields: [roundId], references: [id], onDelete: Cascade)

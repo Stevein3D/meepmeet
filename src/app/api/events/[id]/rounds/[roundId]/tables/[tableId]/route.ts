@@ -48,7 +48,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { label, gameId, seats } = body
+    const { label, gameId, seats, unranked } = body
 
     if (seats !== undefined && Number(seats) < 1) {
       return NextResponse.json({ error: 'seats must be at least 1' }, { status: 400 })
@@ -60,6 +60,7 @@ export async function PUT(
         label: label !== undefined ? label || null : undefined,
         gameId: gameId !== undefined ? gameId || null : undefined,
         seats: seats !== undefined ? Number(seats) : undefined,
+        unranked: unranked !== undefined ? unranked === true : undefined,
       },
       include: tableIncludes,
     })

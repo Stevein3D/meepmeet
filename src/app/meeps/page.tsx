@@ -17,7 +17,7 @@ export default async function MeepsPage() {
     })
   }
 
-  const [users, currentUser, goldRows, silverRows, bronzeRows, teachRows, playedRows] = await Promise.all([
+  const [users, currentUser, goldRows, silverRows, bronzeRows, teachRows, playedRows, rankedPlayedRows] = await Promise.all([
     prisma.user.findMany({
       orderBy: { alias: 'asc' },
       select: {
@@ -41,17 +41,17 @@ export default async function MeepsPage() {
       : null,
     prisma.tablePlayer.groupBy({
       by: ['userId'],
-      where: { placement: 1, userId: { not: null } },
+      where: { placement: 1, userId: { not: null }, table: { unranked: false } },
       _count: { _all: true },
     }),
     prisma.tablePlayer.groupBy({
       by: ['userId'],
-      where: { placement: 2, userId: { not: null } },
+      where: { placement: 2, userId: { not: null }, table: { unranked: false } },
       _count: { _all: true },
     }),
     prisma.tablePlayer.groupBy({
       by: ['userId'],
-      where: { placement: 3, userId: { not: null } },
+      where: { placement: 3, userId: { not: null }, table: { unranked: false } },
       _count: { _all: true },
     }),
     prisma.tablePlayer.groupBy({
@@ -64,6 +64,11 @@ export default async function MeepsPage() {
       where: { userId: { not: null } },
       _count: { _all: true },
     }),
+    prisma.tablePlayer.groupBy({
+      by: ['userId'],
+      where: { userId: { not: null }, table: { unranked: false } },
+      _count: { _all: true },
+    }),
   ])
 
   type CountRow = { userId: string | null; _count: { _all: number } }
@@ -72,8 +77,9 @@ export default async function MeepsPage() {
   const goldMap   = toMap(goldRows   as CountRow[])
   const silverMap = toMap(silverRows as CountRow[])
   const bronzeMap = toMap(bronzeRows as CountRow[])
-  const teachMap  = toMap(teachRows  as CountRow[])
-  const playedMap = toMap(playedRows as CountRow[])
+  const teachMap        = toMap(teachRows        as CountRow[])
+  const playedMap       = toMap(playedRows       as CountRow[])
+  const rankedPlayedMap = toMap(rankedPlayedRows  as CountRow[])
 
   return (
     <>
@@ -94,9 +100,10 @@ export default async function MeepsPage() {
               const gold    = goldMap.get(user.id)   ?? 0
               const silver  = silverMap.get(user.id) ?? 0
               const bronze  = bronzeMap.get(user.id) ?? 0
-              const teaches = teachMap.get(user.id)  ?? 0
-              const mmr     = played > 0
-                ? (gold * 10 + silver * 5 + bronze * 1.5) / played
+              const teaches       = teachMap.get(user.id)        ?? 0
+              const rankedPlayed  = rankedPlayedMap.get(user.id) ?? 0
+              const mmr     = rankedPlayed > 0
+                ? (gold * 5 + silver * 2.5 + bronze * 1) / rankedPlayed
                 : 0
               return (
                 <MeepCard

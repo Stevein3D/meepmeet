@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
-import TablePlanner from '@/components/TablePlanner'
+import TablePlanner from '@/components/TablePlanner/TablePlannerClient'
 import { getDatabaseUserId } from '@/lib/user-helper'
 
 export default async function EventDetailPage({
@@ -41,12 +41,13 @@ export default async function EventDetailPage({
                   include: {
                     user: { select: { id: true, name: true, alias: true, avatar: true } },
                   },
+                  orderBy: { order: 'asc' },
                 },
               },
-              orderBy: { createdAt: 'asc' },
+              orderBy: { order: 'asc' },
             },
           },
-          orderBy: { number: 'asc' },
+          orderBy: { order: 'asc' },
         },
       },
     }),

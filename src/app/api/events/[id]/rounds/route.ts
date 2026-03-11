@@ -14,7 +14,7 @@ const roundIncludes = {
         orderBy: { order: 'asc' as const },
       },
     },
-    orderBy: { createdAt: 'asc' as const },
+    orderBy: { order: 'asc' as const },
   },
 }
 

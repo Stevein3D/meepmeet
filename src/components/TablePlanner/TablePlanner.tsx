@@ -15,6 +15,7 @@ import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
+  rectSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -51,6 +52,7 @@ interface TableData {
   id: string
   label: string | null
   seats: number
+  unranked: boolean
   game: GameOption | null
   players: TablePlayerData[]
 }
@@ -290,6 +292,7 @@ function TableFormModal({
   const [label, setLabel] = useState(initial?.label ?? '')
   const [gameId, setGameId] = useState(initial?.game?.id ?? '')
   const [seats, setSeats] = useState(String(initial?.seats ?? 4))
+  const [unranked, setUnranked] = useState(initial?.unranked ?? false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const isEdit = !!initial
@@ -299,7 +302,7 @@ function TableFormModal({
     setSaving(true)
     setError(null)
 
-    const body = { label: label || null, gameId: gameId || null, seats: Number(seats) }
+    const body = { label: label || null, gameId: gameId || null, seats: Number(seats), unranked }
     const url = isEdit
       ? `/api/events/${eventId}/rounds/${roundId}/tables/${initial!.id}`
       : `/api/events/${eventId}/rounds/${roundId}/tables`
@@ -362,6 +365,15 @@ function TableFormModal({
               onChange={(e) => setSeats(e.target.value)}
             />
           </div>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              className={styles.checkbox}
+              checked={unranked}
+              onChange={(e) => setUnranked(e.target.checked)}
+            />
+            Unranked — plays count, placements don&apos;t affect MMR
+          </label>
           <div className={styles.modalActions}>
             <button type="submit" className={styles.btnPrimary} disabled={saving}>
               {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Table'}
@@ -509,6 +521,7 @@ function TableCard({
   savedLabels,
   onUpdate,
   onDelete,
+  dragHandleProps,
 }: {
   eventId: string
   roundId: string
@@ -521,6 +534,7 @@ function TableCard({
   savedLabels: string[]
   onUpdate: (updated: TableData) => void
   onDelete: (tableId: string) => void
+  dragHandleProps?: React.HTMLAttributes<Element>
 }) {
   const [modal, setModal] = useState<'edit' | 'addPlayer' | null>(null)
   const [players, setPlayers] = useState<TablePlayerData[]>(table.players)
@@ -643,9 +657,19 @@ function TableCard({
       <div className={styles.tableCard}>
         {/* Header */}
         <div className={styles.cardHeader}>
-          <span className={styles.tableLabel}>
-            {table.label || `Table ${tableIndex + 1}`}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            {canManage && dragHandleProps && (
+              <span className={styles.dragHandle} {...dragHandleProps} title="Drag to reorder table">
+                ⠿
+              </span>
+            )}
+            <span className={styles.tableLabel}>
+              {table.label || `Table ${tableIndex + 1}`}
+            </span>
+            {table.unranked && (
+              <span className={styles.unrankedBadge}>Unranked</span>
+            )}
+          </div>
           {canManage && (
             <div className={styles.headerActions}>
               <button className={styles.iconBtn} onClick={() => setModal('edit')}>Edit</button>
@@ -737,6 +761,41 @@ function TableCard({
   )
 }
 
+// ─── Sortable Table Card ──────────────────────────────────────────────────────
+
+function SortableTableCard(props: {
+  eventId: string
+  roundId: string
+  table: TableData
+  tableIndex: number
+  canManage: boolean
+  attendees: AttendeeUser[]
+  allMembers: AttendeeUser[]
+  games: GameOption[]
+  savedLabels: string[]
+  onUpdate: (updated: TableData) => void
+  onDelete: (tableId: string) => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.table.id,
+  })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <TableCard
+        {...props}
+        dragHandleProps={props.canManage ? { ...attributes, ...listeners } : undefined}
+      />
+    </div>
+  )
+}
+
 // ─── Sortable Round Section ───────────────────────────────────────────────────
 
 function SortableRoundSection({
@@ -753,6 +812,7 @@ function SortableRoundSection({
   updateTable,
   addTable,
   deleteTable,
+  reorderTables,
 }: {
   round: RoundData
   roundIndex: number
@@ -767,11 +827,29 @@ function SortableRoundSection({
   updateTable: (t: TableData) => void
   addTable: (t: TableData) => void
   deleteTable: (id: string) => void
+  reorderTables: (tables: TableData[]) => void
 }) {
   const [showTableModal, setShowTableModal] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: round.id,
   })
+  const tableSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  async function handleTableDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = round.tables.findIndex((t) => t.id === active.id)
+    const newIndex = round.tables.findIndex((t) => t.id === over.id)
+    const reordered = arrayMove(round.tables, oldIndex, newIndex)
+    reorderTables(reordered)
+
+    await fetch(`/api/events/${eventId}/rounds/${round.id}/tables`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tableIds: reordered.map((t) => t.id) }),
+    })
+  }
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -812,24 +890,32 @@ function SortableRoundSection({
         </p>
       )}
 
-      <div className={styles.grid}>
-        {round.tables.map((table, idx) => (
-          <TableCard
-            key={table.id}
-            eventId={eventId}
-            roundId={round.id}
-            table={table}
-            tableIndex={idx}
-            canManage={canManage}
-            attendees={attendees}
-            allMembers={allMembers}
-            games={games}
-            savedLabels={savedLabels}
-            onUpdate={updateTable}
-            onDelete={deleteTable}
-          />
-        ))}
-      </div>
+      <DndContext
+        sensors={tableSensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleTableDragEnd}
+      >
+        <SortableContext items={round.tables.map((t) => t.id)} strategy={rectSortingStrategy}>
+          <div className={styles.grid}>
+            {round.tables.map((table, idx) => (
+              <SortableTableCard
+                key={table.id}
+                eventId={eventId}
+                roundId={round.id}
+                table={table}
+                tableIndex={idx}
+                canManage={canManage}
+                attendees={attendees}
+                allMembers={allMembers}
+                games={games}
+                savedLabels={savedLabels}
+                onUpdate={updateTable}
+                onDelete={deleteTable}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {showTableModal && (
         <TableFormModal
@@ -921,6 +1007,12 @@ export default function TablePlanner({
     )
   }
 
+  function reorderTablesInRound(roundId: string, tables: TableData[]) {
+    setRounds((prev) =>
+      prev.map((r) => (r.id === roundId ? { ...r, tables } : r))
+    )
+  }
+
   return (
     <div>
       {canManage && (
@@ -957,6 +1049,7 @@ export default function TablePlanner({
               updateTable={(t) => updateTableInRound(round.id, t)}
               addTable={(t) => addTableToRound(round.id, t)}
               deleteTable={(id) => deleteTableFromRound(round.id, id)}
+              reorderTables={(tables) => reorderTablesInRound(round.id, tables)}
             />
           ))}
         </SortableContext>
