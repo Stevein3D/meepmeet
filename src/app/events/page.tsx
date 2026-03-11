@@ -40,10 +40,10 @@ export default async function EventsPage() {
       <Header />
       <main className="min-h-screen p-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold">Game Nights</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold">Game Nights</h1>
           <Link
             href="/events/add"
-            className="btn btn-md btn-primary"
+            className="btn btn-md btn-primary min-w-fit"
           >
             Add Event
           </Link>

@@ -23,10 +23,10 @@ export default async function GamesPage() {
       <Header />
       <main className="min-h-screen p-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold">Game Collection</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold">Game Collection</h1>
           <Link
             href="/games/add"
-            className="px-4 py-2 btn btn-md btn-primary"
+            className="px-4 py-2 btn btn-md btn-primary min-w-fit"
           >
             Add Game
           </Link>

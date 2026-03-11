@@ -53,7 +53,7 @@ export default async function MeepsPage() {
       <Header />
       <main className="min-h-screen p-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold">Meeps</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold">Meeps</h1>
           <p className="parchment-text font-semibold mt-1">{users.length} member{users.length !== 1 ? 's' : ''}</p>
         </div>
 

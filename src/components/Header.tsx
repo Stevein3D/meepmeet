@@ -18,14 +18,14 @@ export default function Header() {
           </div>
         </Link>
         
-        <nav className="flex items-center gap-6">
-          <Link href="/games" className="main-nav-link">
+        <nav className="flex items-center gap-4 sm:gap-6">
+          <Link href="/games" className="main-nav-link text-sm sm:text-lg">
             Games
           </Link>
-          <Link href="/meeps" className="main-nav-link">
+          <Link href="/meeps" className="main-nav-link text-sm sm:text-lg">
             Meeps
           </Link>
-          <Link href="/events" className="main-nav-link">
+          <Link href="/events" className="main-nav-link text-sm sm:text-lg">
             Events
           </Link>
           {/* <HeaderAuth /> */}
@@ -33,7 +33,7 @@ export default function Header() {
             <UserButton />
           </SignedIn>
           <SignedOut>
-            <Link href="/sign-in" className="text-blue-600 hover:underline">
+            <Link href="/sign-in" className="main-nav-link text-sm sm:text-lg">
               Sign In
             </Link>
           </SignedOut>
