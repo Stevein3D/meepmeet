@@ -3,6 +3,21 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import styles from './TablePlanner.module.css'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -26,8 +41,9 @@ interface TablePlayerData {
   userId: string | null
   playerName: string | null
   isGM: boolean
-  isWinner: boolean
+  placement: number | null
   score: number | null
+  order: number
   user: AttendeeUser | null
 }
 
@@ -43,6 +59,7 @@ interface RoundData {
   id: string
   number: number
   label: string | null
+  order: number
   tables: TableData[]
 }
 
@@ -74,8 +91,107 @@ function displayName(user: AttendeeUser) {
   return user.alias || user.name
 }
 
-function roundTitle(round: RoundData) {
-  return round.label || `Round ${round.number}`
+const MEDALS = [
+  { value: 1, emoji: '🥇' },
+  { value: 2, emoji: '🥈' },
+  { value: 3, emoji: '🥉' },
+]
+
+// ─── Sortable Player Row ──────────────────────────────────────────────────────
+
+function SortablePlayerRow({
+  player,
+  canManage,
+  onToggleGM,
+  onTogglePlacement,
+  onScoreChange,
+  onScoreBlur,
+  scoreValue,
+  onRemove,
+}: {
+  player: TablePlayerData
+  canManage: boolean
+  onToggleGM: () => void
+  onTogglePlacement: (medal: number) => void
+  onScoreChange: (val: string) => void
+  onScoreBlur: () => void
+  scoreValue: string
+  onRemove: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: player.id,
+  })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <li ref={setNodeRef} style={style} className={styles.playerItem}>
+      {canManage && (
+        <span className={styles.dragHandle} {...attributes} {...listeners} title="Drag to reorder">
+          ⠿
+        </span>
+      )}
+      <div className={styles.playerNameRow}>
+        {canManage && (
+          <button
+            className={player.isGM ? styles.gmBtnActive : styles.gmBtn}
+            onClick={onToggleGM}
+            title={player.isGM ? 'Unset GM' : 'Set as GM'}
+          >
+            {player.isGM ? '★' : '☆'}
+          </button>
+        )}
+        {!canManage && player.isGM && <span className={styles.gmStarReadonly}>★</span>}
+        <span className={styles.playerName}>
+          {player.user ? displayName(player.user) : player.playerName}
+          {player.isGM && <span className={styles.gmBadge}> GM</span>}
+          {!player.userId && <span className={styles.guestBadge}> (guest)</span>}
+        </span>
+      </div>
+      <div className={styles.playerControls}>
+        {canManage ? (
+          <input
+            type="number"
+            className={styles.scoreInput}
+            value={scoreValue}
+            onChange={(e) => onScoreChange(e.target.value)}
+            onBlur={onScoreBlur}
+            placeholder="–"
+            min={0}
+          />
+        ) : (
+          player.score != null && <span className={styles.scoreDisplay}>{player.score}</span>
+        )}
+        {canManage
+          ? MEDALS.map(({ value, emoji }) => (
+              <button
+                key={value}
+                className={player.placement === value ? styles.medalBtnActive : styles.medalBtn}
+                onClick={() => onTogglePlacement(value)}
+                title={
+                  player.placement === value
+                    ? `Remove ${emoji} placement`
+                    : `Mark as ${emoji}`
+                }
+              >
+                {emoji}
+              </button>
+            ))
+          : player.placement != null && (
+              <span className={styles.winnerCrownReadonly}>
+                {MEDALS.find((m) => m.value === player.placement)?.emoji}
+              </span>
+            )}
+      </div>
+      {canManage && (
+        <button className={styles.removeBtn} onClick={onRemove} title="Remove">✕</button>
+      )}
+    </li>
+  )
 }
 
 // ─── Round Form Modal ─────────────────────────────────────────────────────────
@@ -347,7 +463,6 @@ function AddPlayerModal({
           {hasNoResults && query === '' && (
             <li className={styles.emptyPicker}>No members to add</li>
           )}
-          {hasNoResults && query !== '' && !query && null}
 
           {attending.length > 0 && (
             <>
@@ -408,9 +523,15 @@ function TableCard({
   onDelete: (tableId: string) => void
 }) {
   const [modal, setModal] = useState<'edit' | 'addPlayer' | null>(null)
+  const [players, setPlayers] = useState<TablePlayerData[]>(table.players)
   const [scoreMap, setScoreMap] = useState<Record<string, string>>(() =>
     Object.fromEntries(table.players.map((p) => [p.id, p.score != null ? String(p.score) : '']))
   )
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  // Sync players when table prop changes (e.g. player added from modal)
+  const tableWithPlayers = { ...table, players }
 
   async function handleDeleteTable() {
     const res = await fetch(`/api/events/${eventId}/rounds/${roundId}/tables/${table.id}`, {
@@ -429,7 +550,9 @@ function TableCard({
       }
     )
     if (res.ok) {
-      onUpdate({ ...table, players: table.players.filter((p) => p.id !== playerId) })
+      const updated = players.filter((p) => p.id !== playerId)
+      setPlayers(updated)
+      onUpdate({ ...tableWithPlayers, players: updated })
     }
   }
 
@@ -443,32 +566,34 @@ function TableCard({
       }
     )
     if (res.ok) {
-      const updated: TablePlayerData = await res.json()
+      const updatedPlayer: TablePlayerData = await res.json()
       const newPlayers = !currentIsGM
-        ? table.players.map((p) => p.id === playerId ? updated : { ...p, isGM: false })
-        : table.players.map((p) => p.id === playerId ? updated : p)
-      onUpdate({ ...table, players: newPlayers })
+        ? players.map((p) => p.id === playerId ? updatedPlayer : { ...p, isGM: false })
+        : players.map((p) => p.id === playerId ? updatedPlayer : p)
+      setPlayers(newPlayers)
+      onUpdate({ ...tableWithPlayers, players: newPlayers })
     }
   }
 
-  async function handleToggleWinner(playerId: string, currentIsWinner: boolean) {
+  async function handleTogglePlacement(playerId: string, currentPlacement: number | null, medal: number) {
+    // Toggle: same medal clicked → clear; different → set
+    const newPlacement = currentPlacement === medal ? null : medal
     const res = await fetch(
       `/api/events/${eventId}/rounds/${roundId}/tables/${table.id}/players`,
       {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerId, isWinner: !currentIsWinner }),
+        body: JSON.stringify({ playerId, placement: newPlacement }),
       }
     )
     if (res.ok) {
-      const updated: TablePlayerData = await res.json()
-      const newPlayers = !currentIsWinner
-        ? table.players.map((p) => p.id === playerId ? updated : { ...p, isWinner: false })
-        : table.players.map((p) => p.id === playerId ? updated : p)
-      onUpdate({ ...table, players: newPlayers })
+      const updatedPlayer: TablePlayerData = await res.json()
+      const newPlayers = players.map((p) => p.id === playerId ? updatedPlayer : p)
+      setPlayers(newPlayers)
+      onUpdate({ ...tableWithPlayers, players: newPlayers })
     } else {
       const err = await res.json().catch(() => ({}))
-      console.error('Failed to toggle winner:', res.status, err)
+      console.error('Failed to toggle placement:', res.status, err)
     }
   }
 
@@ -486,9 +611,31 @@ function TableCard({
       }
     )
     if (res.ok) {
-      const updated: TablePlayerData = await res.json()
-      onUpdate({ ...table, players: table.players.map((p) => p.id === playerId ? updated : p) })
+      const updatedPlayer: TablePlayerData = await res.json()
+      const newPlayers = players.map((p) => p.id === playerId ? updatedPlayer : p)
+      setPlayers(newPlayers)
+      onUpdate({ ...tableWithPlayers, players: newPlayers })
     }
+  }
+
+  async function handlePlayerDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = players.findIndex((p) => p.id === active.id)
+    const newIndex = players.findIndex((p) => p.id === over.id)
+    const reordered = arrayMove(players, oldIndex, newIndex)
+    setPlayers(reordered)
+    onUpdate({ ...tableWithPlayers, players: reordered })
+
+    await fetch(
+      `/api/events/${eventId}/rounds/${roundId}/tables/${table.id}/players`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerIds: reordered.map((p) => p.id) }),
+      }
+    )
   }
 
   return (
@@ -524,60 +671,31 @@ function TableCard({
 
         {/* Players */}
         <div className={styles.playerSection}>
-          <p className={styles.playerCount}>Players {table.players.length}/{table.seats}</p>
-          {table.players.length > 0 && (
-            <ul className={styles.playerList}>
-              {table.players.map((p) => (
-                <li key={p.id} className={styles.playerItem}>
-                  <div className={styles.playerNameRow}>
-                    {canManage && (
-                      <button
-                        className={p.isGM ? styles.gmBtnActive : styles.gmBtn}
-                        onClick={() => handleToggleGM(p.id, p.isGM)}
-                        title={p.isGM ? 'Unset GM' : 'Set as GM'}
-                      >
-                        {p.isGM ? '★' : '☆'}
-                      </button>
-                    )}
-                    {!canManage && p.isGM && <span className={styles.gmStarReadonly}>★</span>}
-                    <span className={styles.playerName}>
-                      {p.user ? displayName(p.user) : p.playerName}
-                      {p.isGM && <span className={styles.gmBadge}> GM</span>}
-                      {!p.userId && <span className={styles.guestBadge}> (guest)</span>}
-                    </span>
-                  </div>
-                  <div className={styles.playerControls}>
-                    {canManage ? (
-                      <input
-                        type="number"
-                        className={styles.scoreInput}
-                        value={scoreMap[p.id] ?? ''}
-                        onChange={(e) => setScoreMap((prev) => ({ ...prev, [p.id]: e.target.value }))}
-                        onBlur={() => handleScoreBlur(p.id, p.score)}
-                        placeholder="–"
-                        min={0}
-                      />
-                    ) : (
-                      p.score != null && <span className={styles.scoreDisplay}>{p.score}</span>
-                    )}
-                    {canManage ? (
-                      <button
-                        className={p.isWinner ? styles.winnerBtnActive : styles.winnerBtn}
-                        onClick={() => handleToggleWinner(p.id, p.isWinner)}
-                        title={p.isWinner ? 'Unset winner' : 'Mark as winner'}
-                      >
-                        👑
-                      </button>
-                    ) : (
-                      p.isWinner && <span className={styles.winnerCrownReadonly}>👑</span>
-                    )}
-                  </div>
-                  {canManage && (
-                    <button className={styles.removeBtn} onClick={() => handleRemovePlayer(p.id)} title="Remove">✕</button>
-                  )}
-                </li>
-              ))}
-            </ul>
+          <p className={styles.playerCount}>Players {players.length}/{table.seats}</p>
+          {players.length > 0 && (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handlePlayerDragEnd}
+            >
+              <SortableContext items={players.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+                <ul className={styles.playerList}>
+                  {players.map((p) => (
+                    <SortablePlayerRow
+                      key={p.id}
+                      player={p}
+                      canManage={canManage}
+                      onToggleGM={() => handleToggleGM(p.id, p.isGM)}
+                      onTogglePlacement={(medal) => handleTogglePlacement(p.id, p.placement, medal)}
+                      onScoreChange={(val) => setScoreMap((prev) => ({ ...prev, [p.id]: val }))}
+                      onScoreBlur={() => handleScoreBlur(p.id, p.score)}
+                      scoreValue={scoreMap[p.id] ?? ''}
+                      onRemove={() => handleRemovePlayer(p.id)}
+                    />
+                  ))}
+                </ul>
+              </SortableContext>
+            </DndContext>
           )}
           {canManage && (
             <button className={styles.addPlayerBtn} onClick={() => setModal('addPlayer')}>
@@ -603,17 +721,127 @@ function TableCard({
         <AddPlayerModal
           eventId={eventId}
           roundId={roundId}
-          table={table}
+          table={tableWithPlayers}
           attendees={attendees}
           allMembers={allMembers}
           onClose={() => setModal(null)}
           onAdd={(player, updatedTable) => {
+            const newPlayers = updatedTable.players
+            setPlayers(newPlayers)
             setScoreMap((prev) => ({ ...prev, [player.id]: '' }))
             onUpdate(updatedTable)
           }}
         />
       )}
     </>
+  )
+}
+
+// ─── Sortable Round Section ───────────────────────────────────────────────────
+
+function SortableRoundSection({
+  round,
+  roundIndex,
+  eventId,
+  canManage,
+  attendees,
+  allMembers,
+  games,
+  savedLabels,
+  onEdit,
+  onDelete,
+  updateTable,
+  addTable,
+  deleteTable,
+}: {
+  round: RoundData
+  roundIndex: number
+  eventId: string
+  canManage: boolean
+  attendees: AttendeeUser[]
+  allMembers: AttendeeUser[]
+  games: GameOption[]
+  savedLabels: string[]
+  onEdit: () => void
+  onDelete: () => void
+  updateTable: (t: TableData) => void
+  addTable: (t: TableData) => void
+  deleteTable: (id: string) => void
+}) {
+  const [showTableModal, setShowTableModal] = useState(false)
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: round.id,
+  })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  const roundLabel = round.label || `Round ${roundIndex + 1}`
+
+  return (
+    <div ref={setNodeRef} style={style} className={styles.roundSection}>
+      <div className={styles.roundHeader}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {canManage && (
+            <span className={styles.dragHandle} {...attributes} {...listeners} title="Drag to reorder round">
+              ⠿
+            </span>
+          )}
+          <span className={styles.roundTitle}>{roundLabel}</span>
+        </div>
+        {canManage && (
+          <div className={styles.headerActions}>
+            <button className={styles.iconBtn} onClick={onEdit}>Edit</button>
+            <button className={styles.iconBtnDanger} onClick={onDelete}>Delete</button>
+          </div>
+        )}
+      </div>
+
+      {canManage && (
+        <button className={styles.addTableBtn} onClick={() => setShowTableModal(true)}>
+          + Add Table
+        </button>
+      )}
+
+      {round.tables.length === 0 && (
+        <p style={{ color: 'rgba(232,212,184,0.4)', fontStyle: 'italic', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+          No tables in this round yet.
+        </p>
+      )}
+
+      <div className={styles.grid}>
+        {round.tables.map((table, idx) => (
+          <TableCard
+            key={table.id}
+            eventId={eventId}
+            roundId={round.id}
+            table={table}
+            tableIndex={idx}
+            canManage={canManage}
+            attendees={attendees}
+            allMembers={allMembers}
+            games={games}
+            savedLabels={savedLabels}
+            onUpdate={updateTable}
+            onDelete={deleteTable}
+          />
+        ))}
+      </div>
+
+      {showTableModal && (
+        <TableFormModal
+          eventId={eventId}
+          roundId={round.id}
+          games={games}
+          savedLabels={savedLabels}
+          onClose={() => setShowTableModal(false)}
+          onSave={(table) => { addTable(table); setShowTableModal(false) }}
+        />
+      )}
+    </div>
   )
 }
 
@@ -630,6 +858,8 @@ export default function TablePlanner({
 }: TablePlannerProps) {
   const [rounds, setRounds] = useState<RoundData[]>(initialRounds)
   const [modal, setModal] = useState<ModalState>(null)
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   // ── Round helpers ──
   function handleRoundSaved(updated: RoundData) {
@@ -648,6 +878,22 @@ export default function TablePlanner({
   async function handleDeleteRound(roundId: string) {
     const res = await fetch(`/api/events/${eventId}/rounds/${roundId}`, { method: 'DELETE' })
     if (res.ok) setRounds((prev) => prev.filter((r) => r.id !== roundId))
+  }
+
+  async function handleRoundDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = rounds.findIndex((r) => r.id === active.id)
+    const newIndex = rounds.findIndex((r) => r.id === over.id)
+    const reordered = arrayMove(rounds, oldIndex, newIndex)
+    setRounds(reordered)
+
+    await fetch(`/api/events/${eventId}/rounds`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roundIds: reordered.map((r) => r.id) }),
+    })
   }
 
   // ── Table helpers ──
@@ -689,65 +935,32 @@ export default function TablePlanner({
         </p>
       )}
 
-      {rounds.map((round) => (
-        <div key={round.id} className={styles.roundSection}>
-          {/* Round header */}
-          <div className={styles.roundHeader}>
-            <span className={styles.roundTitle}>{roundTitle(round)}</span>
-            {canManage && (
-              <div className={styles.headerActions}>
-                <button
-                  className={styles.iconBtn}
-                  onClick={() => setModal({ type: 'editRound', round })}
-                >
-                  Edit
-                </button>
-                <button
-                  className={styles.iconBtnDanger}
-                  onClick={() => handleDeleteRound(round.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Tables */}
-          {canManage && (
-            <button
-              className={styles.addTableBtn}
-              onClick={() => setModal({ type: 'createTable', roundId: round.id })}
-            >
-              + Add Table
-            </button>
-          )}
-
-          {round.tables.length === 0 && (
-            <p style={{ color: 'rgba(232,212,184,0.4)', fontStyle: 'italic', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-              No tables in this round yet.
-            </p>
-          )}
-
-          <div className={styles.grid}>
-            {round.tables.map((table, idx) => (
-              <TableCard
-                key={table.id}
-                eventId={eventId}
-                roundId={round.id}
-                table={table}
-                tableIndex={idx}
-                canManage={canManage}
-                attendees={attendees}
-                allMembers={allMembers}
-                games={games}
-                savedLabels={savedLabels}
-                onUpdate={(updated) => updateTableInRound(round.id, updated)}
-                onDelete={(tableId) => deleteTableFromRound(round.id, tableId)}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleRoundDragEnd}
+      >
+        <SortableContext items={rounds.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+          {rounds.map((round, index) => (
+            <SortableRoundSection
+              key={round.id}
+              round={round}
+              roundIndex={index}
+              eventId={eventId}
+              canManage={canManage}
+              attendees={attendees}
+              allMembers={allMembers}
+              games={games}
+              savedLabels={savedLabels}
+              onEdit={() => setModal({ type: 'editRound', round })}
+              onDelete={() => handleDeleteRound(round.id)}
+              updateTable={(t) => updateTableInRound(round.id, t)}
+              addTable={(t) => addTableToRound(round.id, t)}
+              deleteTable={(id) => deleteTableFromRound(round.id, id)}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
 
       {/* Global modals */}
       {modal?.type === 'createRound' && (
@@ -764,17 +977,6 @@ export default function TablePlanner({
           initial={modal.round}
           onClose={() => setModal(null)}
           onSave={handleRoundSaved}
-        />
-      )}
-
-      {modal?.type === 'createTable' && (
-        <TableFormModal
-          eventId={eventId}
-          roundId={modal.roundId}
-          games={games}
-          savedLabels={savedLabels}
-          onClose={() => setModal(null)}
-          onSave={(table) => { addTableToRound(modal.roundId, table); setModal(null) }}
         />
       )}
     </div>

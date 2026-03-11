@@ -120,6 +120,7 @@ model EventRound {
   eventId   String
   number    Int
   label     String?
+  order     Int         @default(0)
   createdAt DateTime    @default(now())
 
   event  Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -147,8 +148,9 @@ model TablePlayer {
   userId     String?
   playerName String?
   isGM       Boolean    @default(false)
-  isWinner   Boolean    @default(false)
+  placement  Int?
   score      Int?
+  order      Int        @default(0)
 
   table EventTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
   user  User?      @relation(fields: [userId], references: [id], onDelete: SetNull)

@@ -58,12 +58,16 @@ export async function POST(
       }
     }
 
+    // Assign order = current player count so new player goes to end
+    const count = await prisma.tablePlayer.count({ where: { tableId } })
+
     const player = await prisma.tablePlayer.create({
       data: {
         tableId,
         userId: targetUserId || null,
         playerName: playerName || null,
         isGM: false,
+        order: count,
       },
       include: playerIncludes,
     })
@@ -126,13 +130,29 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { playerId, isGM, isWinner, score } = body
+
+    // ── Reorder operation ─────────────────────────────────────────────────────
+    if (Array.isArray(body.playerIds)) {
+      const { playerIds } = body as { playerIds: string[] }
+      await prisma.$transaction(
+        playerIds.map((id, i) =>
+          prisma.tablePlayer.update({ where: { id }, data: { order: i } })
+        )
+      )
+      return NextResponse.json({ ok: true })
+    }
+
+    // ── Single-player update ──────────────────────────────────────────────────
+    const { playerId, isGM, placement, score } = body
 
     if (!playerId) {
       return NextResponse.json({ error: 'playerId required' }, { status: 400 })
     }
-    if (typeof isGM !== 'boolean' && typeof isWinner !== 'boolean' && score === undefined) {
-      return NextResponse.json({ error: 'At least one of isGM, isWinner, or score is required' }, { status: 400 })
+    if (typeof isGM !== 'boolean' && placement === undefined && score === undefined) {
+      return NextResponse.json(
+        { error: 'At least one of isGM, placement, or score is required' },
+        { status: 400 }
+      )
     }
 
     const player = await prisma.tablePlayer.findUnique({ where: { id: playerId } })
@@ -148,17 +168,9 @@ export async function PATCH(
       })
     }
 
-    // Exclusive winner: clear all others first
-    if (typeof isWinner === 'boolean' && isWinner) {
-      await prisma.tablePlayer.updateMany({
-        where: { tableId, id: { not: playerId } },
-        data: { isWinner: false },
-      })
-    }
-
     const updateData: Record<string, unknown> = {}
     if (typeof isGM === 'boolean') updateData.isGM = isGM
-    if (typeof isWinner === 'boolean') updateData.isWinner = isWinner
+    if (placement !== undefined) updateData.placement = placement === null ? null : Number(placement)
     if (score !== undefined) updateData.score = score === null ? null : Number(score)
 
     const updated = await prisma.tablePlayer.update({

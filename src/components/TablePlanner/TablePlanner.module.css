@@ -515,23 +515,37 @@
   text-align: right;
 }
 
-.winnerBtn {
+.dragHandle {
+  color: rgba(201, 169, 97, 0.35);
+  cursor: grab;
+  font-size: 0.85rem;
+  padding: 0 0.3rem 0 0;
+  flex-shrink: 0;
+  line-height: 1;
+  user-select: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.medalBtn {
   background: none;
   border: none;
   font-size: 0.85rem;
   line-height: 1;
   padding: 0;
   cursor: pointer;
-  filter: grayscale(1) opacity(0.3);
+  filter: grayscale(1) opacity(0.25);
   transition: filter 0.15s;
   flex-shrink: 0;
 }
 
-.winnerBtn:hover {
+.medalBtn:hover {
   filter: grayscale(0.4) opacity(0.7);
 }
 
-.winnerBtnActive {
+.medalBtnActive {
   background: none;
   border: none;
   font-size: 0.85rem;
@@ -543,7 +557,7 @@
   flex-shrink: 0;
 }
 
-.winnerBtnActive:hover {
+.medalBtnActive:hover {
   filter: opacity(0.8);
 }
 

@@ -2,6 +2,15 @@ import Image from 'next/image'
 import Link from 'next/link'
 import styles from './MeepCard.module.css'
 
+interface PlayerStats {
+  played: number
+  gold: number
+  silver: number
+  bronze: number
+  teaches: number
+  mmr: number
+}
+
 interface MeepCardProps {
   user: {
     id: string
@@ -16,7 +25,7 @@ interface MeepCardProps {
       eventRsvps: number
     }
   }
-  wins?: number
+  playerStats?: PlayerStats
   canEdit?: boolean
 }
 
@@ -32,13 +41,15 @@ const roleColors: Record<string, string> = {
   GAME_MASTER: '#7a3b3b',
 }
 
-export default function MeepCard({ user, wins = 0, canEdit = false }: MeepCardProps) {
+export default function MeepCard({ user, playerStats, canEdit = false }: MeepCardProps) {
   const initials = user.name
     .split(' ')
     .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2)
+
+  const stats = playerStats ?? { played: 0, gold: 0, silver: 0, bronze: 0, teaches: 0, mmr: 0 }
 
   return (
     <div
@@ -93,34 +104,60 @@ export default function MeepCard({ user, wins = 0, canEdit = false }: MeepCardPr
           {roleLabel[user.role]}
         </span>
 
-        {/* Stats */}
+        {/* Stats — Row 1: library & event counts */}
         <div
-          className="w-full grid grid-cols-4 gap-2 mt-1 pt-3 text-sm"
+          className="w-full grid grid-cols-3 gap-2 mt-1 pt-3 text-sm"
           style={{ borderTop: '1px solid rgba(201,169,97,0.3)', color: '#E8D4B8' }}
         >
+          
           <div className="flex flex-col items-center">
             <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
-              {user._count.ownedGames}
+              {stats.gold}
             </span>
-            <span className="text-xs opacity-70">Games</span>
+            <span className="text-xs opacity-70">🥇 Wins</span>
           </div>
           <div className="flex flex-col items-center">
+            <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
+              {stats.teaches}
+            </span>
+            <span className="text-xs opacity-70">Teaches</span>
+          </div>
+          {/* <div className="flex flex-col items-center">
             <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
               {user._count.hostedEvents}
             </span>
             <span className="text-xs opacity-70">Hosted</span>
-          </div>
+          </div> */}
           <div className="flex flex-col items-center">
             <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
               {user._count.eventRsvps}
             </span>
             <span className="text-xs opacity-70">Events</span>
           </div>
+        </div>
+
+        {/* Stats — Row 2: performance */}
+        <div
+          className="w-full grid grid-cols-3 gap-2 pt-2 text-sm"
+          style={{ borderTop: '1px solid rgba(201,169,97,0.15)', color: '#E8D4B8' }}
+        >
+         <div className="flex flex-col items-center">
+            <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
+              {user._count.ownedGames}
+            </span>
+            <span className="text-xs opacity-70">Games</span>
+          </div> 
           <div className="flex flex-col items-center">
             <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
-              {wins}
+              {stats.played}
             </span>
-            <span className="text-xs opacity-70">Wins</span>
+            <span className="text-xs opacity-70">Played</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
+              {stats.mmr.toFixed(1)}
+            </span>
+            <span className="text-xs opacity-70">MMR</span>
           </div>
         </div>
 

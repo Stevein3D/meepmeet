@@ -11,6 +11,7 @@ const roundIncludes = {
         include: {
           user: { select: { id: true, name: true, alias: true, avatar: true } },
         },
+        orderBy: { order: 'asc' as const },
       },
     },
     orderBy: { createdAt: 'asc' as const },
@@ -27,7 +28,7 @@ export async function GET(
     const rounds = await prisma.eventRound.findMany({
       where: { eventId },
       include: roundIncludes,
-      orderBy: { number: 'asc' },
+      orderBy: { order: 'asc' },
     })
 
     return NextResponse.json(rounds)
@@ -63,18 +64,20 @@ export async function POST(
 
     const body = await request.json()
 
-    // Find the next round number
+    // Find the next round number and order
     const last = await prisma.eventRound.findFirst({
       where: { eventId },
       orderBy: { number: 'desc' },
-      select: { number: true },
+      select: { number: true, order: true },
     })
     const nextNumber = (last?.number ?? 0) + 1
+    const nextOrder = (last?.order ?? -1) + 1
 
     const round = await prisma.eventRound.create({
       data: {
         eventId,
         number: nextNumber,
+        order: nextOrder,
         label: body.label || null,
       },
       include: roundIncludes,
@@ -84,5 +87,50 @@ export async function POST(
   } catch (error) {
     console.error('Failed to create round:', error)
     return NextResponse.json({ error: 'Failed to create round' }, { status: 500 })
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId: clerkUserId } = await auth()
+    if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const userId = await getDatabaseUserId(clerkUserId)
+    if (!userId) return NextResponse.json({ error: 'Failed to resolve user' }, { status: 500 })
+
+    const { id: eventId } = await params
+
+    const [event, currentUser] = await Promise.all([
+      prisma.event.findUnique({ where: { id: eventId } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+    ])
+
+    if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+
+    const isHost = event.hostId === userId
+    const isGameMaster = currentUser?.role === 'GAME_MASTER'
+    if (!isHost && !isGameMaster) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    const body = await request.json()
+
+    if (!Array.isArray(body.roundIds)) {
+      return NextResponse.json({ error: 'roundIds array required' }, { status: 400 })
+    }
+
+    const { roundIds } = body as { roundIds: string[] }
+
+    await prisma.$transaction(
+      roundIds.map((id, i) =>
+        prisma.eventRound.update({ where: { id }, data: { order: i } })
+      )
+    )
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error('Failed to reorder rounds:', error)
+    return NextResponse.json({ error: 'Failed to reorder rounds' }, { status: 500 })
   }
 }

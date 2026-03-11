@@ -17,7 +17,7 @@ export default async function MeepsPage() {
     })
   }
 
-  const [users, currentUser, winRows] = await Promise.all([
+  const [users, currentUser, goldRows, silverRows, bronzeRows, teachRows, playedRows] = await Promise.all([
     prisma.user.findMany({
       orderBy: { alias: 'asc' },
       select: {
@@ -41,12 +41,39 @@ export default async function MeepsPage() {
       : null,
     prisma.tablePlayer.groupBy({
       by: ['userId'],
-      where: { isWinner: true, userId: { not: null } },
+      where: { placement: 1, userId: { not: null } },
+      _count: { _all: true },
+    }),
+    prisma.tablePlayer.groupBy({
+      by: ['userId'],
+      where: { placement: 2, userId: { not: null } },
+      _count: { _all: true },
+    }),
+    prisma.tablePlayer.groupBy({
+      by: ['userId'],
+      where: { placement: 3, userId: { not: null } },
+      _count: { _all: true },
+    }),
+    prisma.tablePlayer.groupBy({
+      by: ['userId'],
+      where: { isGM: true, userId: { not: null } },
+      _count: { _all: true },
+    }),
+    prisma.tablePlayer.groupBy({
+      by: ['userId'],
+      where: { userId: { not: null } },
       _count: { _all: true },
     }),
   ])
 
-  const winMap = new Map(winRows.map((r) => [r.userId!, r._count._all]))
+  type CountRow = { userId: string | null; _count: { _all: number } }
+  const toMap = (rows: CountRow[]) => new Map(rows.map((r) => [r.userId!, r._count._all]))
+
+  const goldMap   = toMap(goldRows   as CountRow[])
+  const silverMap = toMap(silverRows as CountRow[])
+  const bronzeMap = toMap(bronzeRows as CountRow[])
+  const teachMap  = toMap(teachRows  as CountRow[])
+  const playedMap = toMap(playedRows as CountRow[])
 
   return (
     <>
@@ -62,9 +89,23 @@ export default async function MeepsPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {users.map((user) => {
-              const canEdit =
-                userId === user.id || currentUser?.role === 'GAME_MASTER'
-              return <MeepCard key={user.id} user={user} wins={winMap.get(user.id) ?? 0} canEdit={canEdit} />
+              const canEdit = userId === user.id || currentUser?.role === 'GAME_MASTER'
+              const played  = playedMap.get(user.id) ?? 0
+              const gold    = goldMap.get(user.id)   ?? 0
+              const silver  = silverMap.get(user.id) ?? 0
+              const bronze  = bronzeMap.get(user.id) ?? 0
+              const teaches = teachMap.get(user.id)  ?? 0
+              const mmr     = played > 0
+                ? (gold * 10 + silver * 5 + bronze * 1.5) / played
+                : 0
+              return (
+                <MeepCard
+                  key={user.id}
+                  user={user}
+                  playerStats={{ played, gold, silver, bronze, teaches, mmr }}
+                  canEdit={canEdit}
+                />
+              )
             })}
           </div>
         )}
