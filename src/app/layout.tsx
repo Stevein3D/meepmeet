@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Cinzel, Caudex, Alegreya } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
+import Footer from '@/components/Footer'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} ${caudex.variable} ${alegreya.variable} antialiased`}
         >
           {children}
+          <Footer />
         </body>
       </html>
     </ClerkProvider>

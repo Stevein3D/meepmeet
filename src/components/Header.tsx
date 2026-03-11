@@ -19,14 +19,14 @@ export default function Header() {
         </Link>
         
         <nav className="flex items-center gap-4 sm:gap-6">
-          <Link href="/games" className="main-nav-link text-sm sm:text-lg">
-            Games
+          <Link href="/events" className="main-nav-link text-sm sm:text-lg">
+            Events
           </Link>
           <Link href="/meeps" className="main-nav-link text-sm sm:text-lg">
             Meeps
           </Link>
-          <Link href="/events" className="main-nav-link text-sm sm:text-lg">
-            Events
+          <Link href="/games" className="main-nav-link text-sm sm:text-lg">
+            Games
           </Link>
           {/* <HeaderAuth /> */}
           <SignedIn>
