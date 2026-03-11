@@ -44,7 +44,7 @@ export default function Home() {
       <main className="p-8 flex-1">
         <p className="mt-4 text-white-600 text-center">Meet the Meeps for some tailored fun at our next Board Game Meepup!</p>
         
-        <nav className="mt-2 space-x-0 sm:space-x-4 text-center">
+        <nav className="mt-2 space-x-0 flex flex-wrap flex-col sm:flex-row justify-center sm:space-x-4 text-center">
           <Link href="/games" className="inline-block mt-4 btn btn-md btn-primary">
             View Games
           </Link>
