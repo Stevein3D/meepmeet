@@ -47,7 +47,7 @@ export default function OwnershipButton({ gameId, initialOwned }: OwnershipButto
         color: owned ? '#8FBC8F' : '#C9A961',
       }}
     >
-      {loading ? '...' : owned ? '✓ I own this' : '+ I own this'}
+      {loading ? '...' : owned ? '✓ Owned' : '+ Own'}
     </button>
   )
 }

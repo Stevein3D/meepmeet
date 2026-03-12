@@ -92,10 +92,10 @@ export default async function EventDetailPage({
   return (
     <>
       <Header />
-      <main className="min-h-screen p-8" style={{ color: '#F5E6D3' }}>
+      <main className="flex-1 p-8" style={{ color: '#F5E6D3' }}>
         {/* Event header */}
         <div className="mb-8">
-          <div className="flex items-start justify-between gap-4 mb-2">
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
             <h1 className="text-4xl font-bold" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.6)' }}>
               {event.title}
             </h1>

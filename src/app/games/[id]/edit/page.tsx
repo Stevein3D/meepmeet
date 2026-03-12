@@ -149,13 +149,13 @@ export default function EditGamePage() {
     }
   }
 
-  if (loading) return <main className="min-h-screen p-8"><p>Loading...</p></main>
-  if (!game) return <main className="min-h-screen p-8"><p className="text-red-600">Game not found</p></main>
+  if (loading) return <main className="flex-1 p-8"><p>Loading...</p></main>
+  if (!game) return <main className="flex-1 p-8"><p className="text-red-600">Game not found</p></main>
 
   return (
     <>
       <Header />
-      <main className="min-h-screen p-8">
+      <main className="flex-1 p-8">
         <div className="flex items-center justify-between mb-8 max-w-2xl">
           <h1 className="text-4xl font-bold">Edit Game</h1>
           {game.bggId && (

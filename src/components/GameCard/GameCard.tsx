@@ -54,33 +54,16 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
 
   return (
     <>
-      <div className="relative flex flex-col overflow-hidden shadow-xl" style={{
-        border: '4px solid #8B6F47',
-        borderRadius: '8px',
-        backgroundImage: 'url(/wood-bg.jpg)',
-        backgroundSize: '100%',
-        backgroundRepeat: 'repeat-y',
-        backgroundPosition: 'center',
-        backgroundColor: 'rgba(28, 16, 8, 0.6)',
-        backgroundBlendMode: 'multiply',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,169,97,0.3)'
-      }}>
+      <div className={styles.card}>
         {/* Toggle button for Edit/Delete controls */}
         {userId && (
           <button
             onClick={handleToggle}
-            className="absolute right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center"
-            style={{
-              bottom: showControls ? 'calc(1.35rem + 64px)' : '1.35rem',
-              background: 'linear-gradient(135deg, #C9A961, #8B6F47)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-              color: '#1A0F08',
-              transition: 'bottom 0.3s ease-out'
-            }}
+            className={`${styles.toggleButton} ${showControls ? styles.expanded : styles.collapsed}`}
             aria-label="Toggle controls"
           >
             <svg
-              className={`w-4 h-4 transition-transform ${showControls ? '' : 'rotate-180'}`}
+              className={`${styles.toggleIcon} ${showControls ? '' : styles.rotated}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -90,9 +73,10 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
           </button>
         )}
 
-        <div className="p-4 flex flex-col h-full">
-          {game.image && (
-            <div className="relative w-full h-56 mb-4 rounded overflow-hidden">
+        <div className={styles.cardContent}>
+          {/* Image area — always reserves space */}
+          <div className={styles.imageContainer}>
+            {game.image ? (
               <Image
                 src={game.image}
                 alt={game.name}
@@ -100,22 +84,29 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
                 className="object-contain"
                 unoptimized
               />
-            </div>
+            ) : (
+              <span className={styles.imagePlaceholder}>♟</span>
+            )}
+          </div>
+
+          <h2 className={styles.title}>{game.name}</h2>
+
+          {/* Details button — sits under the title */}
+          {hasDetails && (
+            <button
+              onClick={() => setShowDetails(true)}
+              className={styles.detailsBtn}
+            >
+              View Details ↗
+            </button>
           )}
 
-          <h2 className="text-xl font-bold mb-3" style={{
-            color: '#F5E6D3',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-          }}>
-            {game.name}
-          </h2>
-
-          <div className="mt-2 text-sm space-y-1 flex-grow" style={{ color: '#E8D4B8' }}>
-            <p>{game.minPlayers}-{game.maxPlayers} players · {game.playtime} min</p>
+          <div className={styles.details}>
+            <p>{game.minPlayers}–{game.maxPlayers} players · {game.playtime} min</p>
             {game.yearPublished && <p>Published: {game.yearPublished}</p>}
             {game.complexity && <p>Complexity: {game.complexity.toFixed(1)}/5</p>}
             {game.owners.length > 0 && (
-              <p className="mt-1">
+              <p className={styles.owners}>
                 Owned by: {game.owners.map(o => o.user.name).join(', ')}
               </p>
             )}
@@ -123,7 +114,7 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
 
           {/* Action row: Want to Play + Ownership (logged-in only) */}
           {userId && (
-            <div className="mt-3 flex gap-2 flex-wrap">
+            <div className={styles.ownershipContainer}>
               <WantToPlayButton
                 gameId={game.id}
                 initialWanted={userWantsGame}
@@ -132,38 +123,12 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
               <OwnershipButton gameId={game.id} initialOwned={userOwnsGame} />
             </div>
           )}
-
-          {/* Details button — always visible when there's content */}
-          {hasDetails && (
-            <div className="mt-2 mb-1">
-              <button
-                onClick={() => setShowDetails(true)}
-                className={styles.detailsBtn}
-              >
-                View Details ↗
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Slide-up Edit/Delete controls */}
         {(showControls || isClosing) && userId && (
-          <div
-            className={`absolute bottom-0 left-0 right-0 flex gap-2 p-4 ${isClosing ? 'animate-slideDown' : 'animate-slideUp'}`}
-            style={{
-              background: 'rgba(20, 12, 6, 0.95)',
-              borderTop: '2px solid #8B6F47'
-            }}
-          >
-            <Link
-              href={`/games/${game.id}/edit`}
-              className="flex-1 px-3 py-2 text-center rounded font-medium transition-all"
-              style={{
-                border: '2px solid #C9A961',
-                color: '#C9A961',
-                background: 'rgba(201,169,97,0.1)'
-              }}
-            >
+          <div className={`${styles.controls} ${isClosing ? styles.slideDown : styles.slideUp}`}>
+            <Link href={`/games/${game.id}/edit`} className={styles.editLink}>
               Edit
             </Link>
             <DeleteGameButton gameId={game.id} gameName={game.name} />

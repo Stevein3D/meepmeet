@@ -393,7 +393,7 @@ function TableFormModal({
               checked={unranked}
               onChange={(e) => setUnranked(e.target.checked)}
             />
-            Unranked — plays count, placements don&apos;t affect MMR
+            Unranked
           </label>
           <label className={styles.checkboxLabel}>
             <input
@@ -402,7 +402,7 @@ function TableFormModal({
               checked={cooperative}
               onChange={(e) => setCooperative(e.target.checked)}
             />
-            Cooperative — all players work together
+            Cooperative
           </label>
           <div className={styles.field}>
             <label className={styles.label}>Teams <span style={{ textTransform: 'none', fontWeight: 400 }}>(0 = none)</span></label>

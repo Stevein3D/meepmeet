@@ -41,7 +41,7 @@ export default function WantToPlayButton({ gameId, initialWanted, wantCount }: W
         color: wanted ? '#C9A961' : 'rgba(201,169,97,0.6)',
       }}
     >
-      {loading ? '…' : wanted ? `♥ Want to Play${count > 1 ? ` (${count})` : ''}` : `♡ Want to Play${count > 0 ? ` (${count})` : ''}`}
+      {loading ? '…' : wanted ? `♥ Interested${count > 1 ? ` (${count})` : ''}` : `♡ Interested${count > 0 ? ` (${count})` : ''}`}
     </button>
   )
 }

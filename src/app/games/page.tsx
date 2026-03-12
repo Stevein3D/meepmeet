@@ -37,7 +37,7 @@ export default async function GamesPage() {
         {games.length === 0 ? (
           <p className="text-gray-600">No games in the collection yet.</p>
         ) : (
-          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(315px, 100%), 1fr))' }}>
             {games.map((game) => {
               const userOwnsGame = userId ? game.owners.some(o => o.userId === userId) : false
               const userWantsGame = userId ? game.wants.some(w => w.userId === userId) : false
