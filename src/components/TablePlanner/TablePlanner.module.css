@@ -1,7 +1,7 @@
 .grid {
   display: grid;
   gap: 1.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
 }
 
 .tableCard {
@@ -591,6 +591,30 @@
   letter-spacing: 0.05em;
   color: rgba(232, 212, 184, 0.55);
   border: 1px solid rgba(232, 212, 184, 0.25);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+  flex-shrink: 0;
+}
+
+.cooperativeBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(120, 200, 140, 0.75);
+  border: 1px solid rgba(120, 200, 140, 0.3);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+  flex-shrink: 0;
+}
+
+.teamsBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(120, 160, 220, 0.75);
+  border: 1px solid rgba(120, 160, 220, 0.3);
   border-radius: 3px;
   padding: 0.1rem 0.35rem;
   flex-shrink: 0;

@@ -73,7 +73,8 @@ export default async function EventDetailPage({
 
   const isHost = event.hostId === userId
   const isGameMaster = currentUser?.role === 'GAME_MASTER'
-  const canManage = isHost || isGameMaster
+  const canManage = isHost || isGameMaster   // Edit Event button
+  const canManageTables = isGameMaster       // Table planner controls
 
   const attendees = event.attendees.map((a) => a.user)
   const savedLabels = labelRows.map((r) => r.label as string)
@@ -165,7 +166,7 @@ export default async function EventDetailPage({
           <TablePlanner
             eventId={id}
             initialRounds={event.rounds}
-            canManage={canManage}
+            canManage={canManageTables}
             attendees={attendees}
             allMembers={memberRows}
             games={allGames}

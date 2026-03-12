@@ -53,6 +53,8 @@ interface TableData {
   label: string | null
   seats: number
   unranked: boolean
+  cooperative: boolean
+  teams: number | null
   game: GameOption | null
   players: TablePlayerData[]
 }
@@ -183,9 +185,12 @@ function SortablePlayerRow({
                 {emoji}
               </button>
             ))
-          : player.placement != null && (
-              <span className={styles.winnerCrownReadonly}>
-                {MEDALS.find((m) => m.value === player.placement)?.emoji}
+          : (
+              <span
+                className={styles.winnerCrownReadonly}
+                style={player.placement == null ? { visibility: 'hidden' } : undefined}
+              >
+                {MEDALS.find((m) => m.value === player.placement)?.emoji ?? '🥇'}
               </span>
             )}
       </div>
@@ -293,6 +298,8 @@ function TableFormModal({
   const [gameId, setGameId] = useState(initial?.game?.id ?? '')
   const [seats, setSeats] = useState(String(initial?.seats ?? 4))
   const [unranked, setUnranked] = useState(initial?.unranked ?? false)
+  const [cooperative, setCooperative] = useState(initial?.cooperative ?? false)
+  const [teams, setTeams] = useState(String(initial?.teams ?? 0))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const isEdit = !!initial
@@ -302,7 +309,14 @@ function TableFormModal({
     setSaving(true)
     setError(null)
 
-    const body = { label: label || null, gameId: gameId || null, seats: Number(seats), unranked }
+    const body = {
+      label: label || null,
+      gameId: gameId || null,
+      seats: Number(seats),
+      unranked,
+      cooperative,
+      teams: Number(teams) > 0 ? Number(teams) : null,
+    }
     const url = isEdit
       ? `/api/events/${eventId}/rounds/${roundId}/tables/${initial!.id}`
       : `/api/events/${eventId}/rounds/${roundId}/tables`
@@ -374,6 +388,26 @@ function TableFormModal({
             />
             Unranked — plays count, placements don&apos;t affect MMR
           </label>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              className={styles.checkbox}
+              checked={cooperative}
+              onChange={(e) => setCooperative(e.target.checked)}
+            />
+            Cooperative — all players work together
+          </label>
+          <div className={styles.field}>
+            <label className={styles.label}>Teams <span style={{ textTransform: 'none', fontWeight: 400 }}>(0 = none)</span></label>
+            <input
+              className={styles.input}
+              type="number"
+              min={0}
+              value={teams}
+              onChange={(e) => setTeams(e.target.value)}
+              placeholder="0"
+            />
+          </div>
           <div className={styles.modalActions}>
             <button type="submit" className={styles.btnPrimary} disabled={saving}>
               {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Table'}
@@ -668,6 +702,12 @@ function TableCard({
             </span>
             {table.unranked && (
               <span className={styles.unrankedBadge}>Unranked</span>
+            )}
+            {table.cooperative && (
+              <span className={styles.cooperativeBadge}>Co-op</span>
+            )}
+            {table.teams != null && table.teams > 0 && (
+              <span className={styles.teamsBadge}>{table.teams} Teams</span>
             )}
           </div>
           {canManage && (

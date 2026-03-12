@@ -1,0 +1,2 @@
+ALTER TABLE "EventTable" ADD COLUMN "cooperative" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "EventTable" ADD COLUMN "teams" INTEGER;

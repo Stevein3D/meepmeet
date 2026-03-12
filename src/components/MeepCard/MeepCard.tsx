@@ -9,6 +9,7 @@ interface PlayerStats {
   bronze: number
   teaches: number
   mmr: number
+  rankedPlayed: number
 }
 
 interface MeepCardProps {
@@ -49,7 +50,7 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
     .toUpperCase()
     .slice(0, 2)
 
-  const stats = playerStats ?? { played: 0, gold: 0, silver: 0, bronze: 0, teaches: 0, mmr: 0 }
+  const stats = playerStats ?? { played: 0, gold: 0, silver: 0, bronze: 0, teaches: 0, mmr: 0, rankedPlayed: 0 }
 
   return (
     <div
@@ -155,7 +156,7 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
           </div>
           <div className="flex flex-col items-center">
             <span className="font-bold text-lg" style={{ color: '#C9A961' }}>
-              {stats.mmr.toFixed(1)}
+              {stats.rankedPlayed < 4 ? '...' : stats.mmr.toFixed(1)}
             </span>
             <span className="text-xs opacity-70">MMR</span>
           </div>

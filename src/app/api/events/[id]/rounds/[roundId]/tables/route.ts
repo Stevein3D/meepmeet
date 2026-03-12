@@ -40,7 +40,7 @@ export async function POST(
     if (!isHost && !isGameMaster) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const body = await request.json()
-    const { label, gameId, seats, unranked } = body
+    const { label, gameId, seats, unranked, cooperative, teams } = body
 
     if (!seats || Number(seats) < 1) {
       return NextResponse.json({ error: 'seats must be at least 1' }, { status: 400 })
@@ -56,6 +56,8 @@ export async function POST(
         seats: Number(seats),
         order: tableCount,
         unranked: unranked === true,
+        cooperative: cooperative === true,
+        teams: teams != null && Number(teams) > 0 ? Number(teams) : null,
       },
       include: tableIncludes,
     })
