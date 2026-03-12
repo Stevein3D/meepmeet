@@ -82,7 +82,7 @@ export default function GameDetailsModal({ game, onClose }: GameDetailsModalProp
               rel="noopener noreferrer"
               className={styles.bggLink}
             >
-              View on BoardGameGeek ↗
+              View on BoardGameGeek ↗&#xFE0E;
             </a>
           )}
 
