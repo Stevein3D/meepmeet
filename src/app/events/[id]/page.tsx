@@ -25,7 +25,6 @@ export default async function EventDetailPage({
       include: {
         host: { select: { id: true, name: true, avatar: true } },
         attendees: {
-          where: { rsvpStatus: 'yes' },
           include: {
             user: { select: { id: true, name: true, alias: true, avatar: true } },
           },
@@ -76,7 +75,16 @@ export default async function EventDetailPage({
   const canManage = isHost || isGameMaster   // Edit Event button
   const canManageTables = isGameMaster       // Table planner controls
 
-  const attendees = event.attendees.map((a) => a.user)
+  type AttendeeUser = { id: string; name: string; alias: string | null; avatar: string | null }
+  const confirmed: AttendeeUser[] = []
+  const maybes: AttendeeUser[] = []
+  const declines: AttendeeUser[] = []
+  for (const a of event.attendees) {
+    if (a.rsvpStatus === 'yes') confirmed.push(a.user)
+    else if (a.rsvpStatus === 'maybe') maybes.push(a.user)
+    else if (a.rsvpStatus === 'no') declines.push(a.user)
+  }
+  const attendees = confirmed
   const savedLabels = labelRows.map((r) => r.label as string)
 
   const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
@@ -144,18 +152,32 @@ export default async function EventDetailPage({
             )}
           </div>
 
-          {attendees.length > 0 && (
-            <div style={{ color: 'rgba(232,212,184,0.7)', fontSize: '0.875rem' }}>
-              <p>{attendees.length} confirmed attendee{attendees.length !== 1 ? 's' : ''}</p>
-              <p style={{ marginTop: '0.25rem' }}>
+          <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            {attendees.length > 0 && (
+              <div style={{ color: 'rgba(232,212,184,0.7)' }}>
+                <span style={{ color: 'rgba(201,169,97,0.7)', fontWeight: 600 }}>Confirmed ({attendees.length}): </span>
                 {attendees.map((a, i) => (
-                  <span key={a.id}>
-                    {a.alias || a.name}{i < attendees.length - 1 ? ', ' : ''}
-                  </span>
+                  <span key={a.id}>{a.alias || a.name}{i < attendees.length - 1 ? ', ' : ''}</span>
                 ))}
-              </p>
-            </div>
-          )}
+              </div>
+            )}
+            {maybes.length > 0 && (
+              <div style={{ color: 'rgba(232,212,184,0.55)' }}>
+                <span style={{ color: 'rgba(201,169,97,0.5)', fontWeight: 600 }}>Maybe ({maybes.length}): </span>
+                {maybes.map((a, i) => (
+                  <span key={a.id}>{a.alias || a.name}{i < maybes.length - 1 ? ', ' : ''}</span>
+                ))}
+              </div>
+            )}
+            {declines.length > 0 && (
+              <div style={{ color: 'rgba(232,212,184,0.4)' }}>
+                <span style={{ color: 'rgba(201,169,97,0.4)', fontWeight: 600 }}>Declined ({declines.length}): </span>
+                {declines.map((a, i) => (
+                  <span key={a.id}>{a.alias || a.name}{i < declines.length - 1 ? ', ' : ''}</span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Table planner */}

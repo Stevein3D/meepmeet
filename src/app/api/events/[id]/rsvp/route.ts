@@ -28,33 +28,27 @@ export async function POST(
 
     const { id } = await params
     const body = await request.json()
-    const { rsvpStatus } = body
+    const { rsvpStatus, targetUserId } = body
+
+    // GMs can set attendance on behalf of another user
+    let effectiveUserId = userId
+    if (targetUserId && targetUserId !== userId) {
+      const caller = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+      if (caller?.role !== 'GAME_MASTER') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+      effectiveUserId = targetUserId
+    }
 
     if (rsvpStatus === null) {
-      // Remove RSVP
       await prisma.eventAttendee.deleteMany({
-        where: {
-          eventId: id,
-          userId: userId
-        }
+        where: { eventId: id, userId: effectiveUserId }
       })
     } else {
-      // Add or update RSVP
       await prisma.eventAttendee.upsert({
-        where: {
-          eventId_userId: {
-            eventId: id,
-            userId: userId
-          }
-        },
-        create: {
-          eventId: id,
-          userId: userId,
-          rsvpStatus: rsvpStatus
-        },
-        update: {
-          rsvpStatus: rsvpStatus
-        }
+        where: { eventId_userId: { eventId: id, userId: effectiveUserId } },
+        create: { eventId: id, userId: effectiveUserId, rsvpStatus },
+        update: { rsvpStatus }
       })
     }
 

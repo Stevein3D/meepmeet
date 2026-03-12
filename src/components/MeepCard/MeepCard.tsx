@@ -84,14 +84,16 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
           )}
         </div>
 
-        {/* Name */}
-        <h2
-          className="text-xl font-bold leading-tight relative"
-          style={{ color: '#F5E6D3', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
-        >
-          {user.alias ? <span className={styles.displayAlias}>{user.alias}</span> : <span>{user.name}</span>}
-          <span className={styles.displayName}>{user.name}</span>
-        </h2>
+        {/* Name — links to profile page */}
+        <Link href={`/meeps/${user.id}`} style={{ textDecoration: 'none' }}>
+          <h2
+            className="text-xl font-bold leading-tight relative hover:opacity-80 transition-opacity"
+            style={{ color: '#F5E6D3', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+          >
+            {user.alias ? <span className={styles.displayAlias}>{user.alias}</span> : <span>{user.name}</span>}
+            <span className={styles.displayName}>{user.name}</span>
+          </h2>
+        </Link>
 
         {/* Role badge */}
         <span
@@ -162,19 +164,32 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
           </div>
         </div>
 
-        {canEdit && (
+        <div className="mt-3 flex gap-2 w-full">
           <Link
-            href={`/meeps/${user.id}/edit`}
-            className="mt-3 w-full text-center py-2 rounded text-sm font-medium transition-all"
+            href={`/meeps/${user.id}`}
+            className="flex-1 text-center py-2 rounded text-sm font-medium transition-all"
             style={{
               border: '2px solid #C9A961',
               color: '#C9A961',
               background: 'rgba(201,169,97,0.1)',
             }}
           >
-            Edit
+            View
           </Link>
-        )}
+          {canEdit && (
+            <Link
+              href={`/meeps/${user.id}/edit`}
+              className="flex-1 text-center py-2 rounded text-sm font-medium transition-all"
+              style={{
+                border: '2px solid rgba(201,169,97,0.5)',
+                color: 'rgba(201,169,97,0.8)',
+                background: 'rgba(201,169,97,0.06)',
+              }}
+            >
+              Edit
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   )
