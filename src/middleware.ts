@@ -6,11 +6,14 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/events(.*)',
   '/games(.*)',
+  '/api/(.*)',   // API routes handle their own auth and return JSON errors
 ])
 
 export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
-    await auth.protect()
+    await auth.protect({
+      unauthenticatedUrl: new URL('/sign-in', request.url).toString(),
+    })
   }
 })
 

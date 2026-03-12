@@ -4,7 +4,7 @@ import { auth } from '@clerk/nextjs/server'
 import { getDatabaseUserId } from '@/lib/user-helper'
 
 const tableIncludes = {
-  game: { select: { id: true, name: true, image: true, minPlayers: true, maxPlayers: true } },
+  game: { select: { id: true, name: true, image: true, minPlayers: true, maxPlayers: true, bggId: true, description: true, mechanisms: true, playtime: true, complexity: true, yearPublished: true } },
   players: {
     include: {
       user: { select: { id: true, name: true, alias: true, avatar: true } },

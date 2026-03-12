@@ -22,17 +22,23 @@ export function useUserRole(): UseUserRoleReturn {
         
         // This assumes you have an API endpoint to get current user
         const response = await fetch('/api/user/profile');
-        
+
+        if (response.status === 401) {
+          // Not signed in — silently default to VISITOR
+          setUserRole('VISITOR');
+          return;
+        }
+
         if (!response.ok) {
           throw new Error('Failed to fetch user profile');
         }
-        
+
         const userData = await response.json();
         setUserRole(userData.role || 'VISITOR');
       } catch (err) {
         console.error('Error fetching user role:', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
-        setUserRole('VISITOR'); // Default to most restrictive role
+        setUserRole('VISITOR');
       } finally {
         setLoading(false);
       }

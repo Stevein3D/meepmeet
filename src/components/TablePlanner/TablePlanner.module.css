@@ -1,7 +1,7 @@
 .grid {
   display: grid;
   gap: 1.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr));
 }
 
 .tableCard {
@@ -68,6 +68,24 @@
   gap: 0.6rem;
   padding: 0.6rem 1rem;
   border-bottom: 1px solid rgba(201, 169, 97, 0.15);
+}
+
+.gameInfoBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.15);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.gameInfoBtn:hover {
+  background: rgba(201, 169, 97, 0.07);
 }
 
 .gameThumb {

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import styles from './TablePlanner.module.css'
+import GameDetailsModal from '@/components/GameDetailsModal'
 import {
   DndContext,
   closestCenter,
@@ -28,6 +29,12 @@ interface GameOption {
   image: string | null
   minPlayers: number
   maxPlayers: number
+  bggId: number | null
+  description: string | null
+  mechanisms: string[]
+  playtime: number
+  complexity: number | null
+  yearPublished: number | null
 }
 
 interface AttendeeUser {
@@ -571,6 +578,7 @@ function TableCard({
   dragHandleProps?: React.HTMLAttributes<Element>
 }) {
   const [modal, setModal] = useState<'edit' | 'addPlayer' | null>(null)
+  const [showGameDetails, setShowGameDetails] = useState(false)
   const [players, setPlayers] = useState<TablePlayerData[]>(table.players)
   const [scoreMap, setScoreMap] = useState<Record<string, string>>(() =>
     Object.fromEntries(table.players.map((p) => [p.id, p.score != null ? String(p.score) : '']))
@@ -720,7 +728,11 @@ function TableCard({
 
         {/* Game */}
         {table.game ? (
-          <div className={styles.gameInfo}>
+          <button
+            className={styles.gameInfoBtn}
+            onClick={() => setShowGameDetails(true)}
+            title="View game details"
+          >
             {table.game.image && (
               <Image src={table.game.image} alt={table.game.name} width={36} height={36} className={styles.gameThumb} unoptimized />
             )}
@@ -728,7 +740,7 @@ function TableCard({
               <p className={styles.gameName}>{table.game.name}</p>
               <p className={styles.gameMeta}>{table.game.minPlayers}–{table.game.maxPlayers} players</p>
             </div>
-          </div>
+          </button>
         ) : (
           <p className={styles.noGame}>No game selected</p>
         )}
@@ -768,6 +780,13 @@ function TableCard({
           )}
         </div>
       </div>
+
+      {showGameDetails && table.game && (
+        <GameDetailsModal
+          game={table.game}
+          onClose={() => setShowGameDetails(false)}
+        />
+      )}
 
       {modal === 'edit' && (
         <TableFormModal
