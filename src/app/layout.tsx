@@ -35,6 +35,11 @@ const alegreya = Alegreya({
 export const metadata: Metadata = {
   title: "MeepMeet",
   description: "Board game night planner",
+  formatDetection: {
+    telephone: false,
+    address: false,
+    email: false,
+  },
 };
 
 export default function RootLayout({

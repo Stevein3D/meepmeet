@@ -97,7 +97,7 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
               onClick={() => setShowDetails(true)}
               className={styles.detailsBtn}
             >
-              View Details ↗
+              View Details ↗&#xFE0E;
             </button>
           )}
 
