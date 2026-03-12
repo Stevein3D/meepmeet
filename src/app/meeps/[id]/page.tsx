@@ -339,11 +339,17 @@ export default async function MeepProfilePage({
                         {[...games.values()].map(game => (
                           <div key={game.id} className="flex items-center gap-3">
                             <GameInfoButton game={game} />
-                            {isOwner && (
+                            {isOwner ? (
                               <GameRatingInput
                                 gameId={game.id}
                                 initialRating={ratingMap.get(game.id) ?? null}
                               />
+                            ) : ratingMap.has(game.id) && (
+                              <div className="flex items-center gap-1 flex-shrink-0" style={{ fontSize: '0.8125rem', color: '#E8D4B8', opacity: 0.7 }}>
+                                <span>Rating</span>
+                                <span style={{ color: '#C9A961', fontWeight: 600 }}>{ratingMap.get(game.id)!.toFixed(1)}</span>
+                                <span style={{ opacity: 0.6 }}>/10</span>
+                              </div>
                             )}
                           </div>
                         ))}
