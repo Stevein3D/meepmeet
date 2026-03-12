@@ -11,11 +11,10 @@ export default async function GamesPage() {
     orderBy: { name: 'asc' },
     include: {
       owners: {
-        include: {
-          user: true
-        }
-      }
-    }
+        include: { user: true },
+      },
+      wants: true,
+    },
   })
 
   return (
@@ -38,6 +37,8 @@ export default async function GamesPage() {
           <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {games.map((game) => {
               const userOwnsGame = userId ? game.owners.some(o => o.userId === userId) : false
+              const userWantsGame = userId ? game.wants.some(w => w.userId === userId) : false
+              const wantCount = game.wants.length
 
               return (
                 <GameCard
@@ -45,6 +46,8 @@ export default async function GamesPage() {
                   game={game}
                   userId={userId}
                   userOwnsGame={userOwnsGame}
+                  userWantsGame={userWantsGame}
+                  wantCount={wantCount}
                 />
               )
             })}

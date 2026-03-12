@@ -92,6 +92,8 @@ export async function PUT(
         complexity: body.complexity,
         yearPublished: body.yearPublished,
         image: body.image,
+        description: body.description !== undefined ? body.description : undefined,
+        mechanisms: body.mechanisms !== undefined ? body.mechanisms : undefined,
       },
     })
 

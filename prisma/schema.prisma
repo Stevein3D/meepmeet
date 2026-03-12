@@ -32,6 +32,7 @@ model User {
   createdAt DateTime @default(now())
   
   ownedGames    UserGame[]
+  gameWants     UserGameWant[]
   hostedEvents  Event[]        @relation("EventHost")
   eventRsvps    EventAttendee[]
   playSessions  SessionPlayer[]
@@ -44,16 +45,28 @@ model Game {
   bggId         Int?     @unique
   name          String
   image         String?
+  description   String?
+  mechanisms    String[]
   minPlayers    Int
   maxPlayers    Int
   playtime      Int
   complexity    Float?
   yearPublished Int?
   createdAt     DateTime @default(now())
-  
+
   owners       UserGame[]
+  wants        UserGameWant[]
   playSessions PlaySession[]
   eventTables  EventTable[]
+}
+
+model UserGameWant {
+  userId String
+  gameId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([userId, gameId])
 }
 
 model UserGame {

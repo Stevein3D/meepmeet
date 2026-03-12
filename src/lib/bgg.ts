@@ -17,6 +17,15 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
 }
 
+// Strip HTML tags and normalize whitespace for plain-text display
+function stripHtml(str: string): string {
+  return decodeHtmlEntities(str)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 // BGG API helper with authentication
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -43,6 +52,7 @@ export interface BGGGame {
   yearPublished: number
   averageWeight: number
   description: string
+  mechanisms: string[]
 }
 
 export async function searchBGG(query: string): Promise<BGGSearchResult[]> {
@@ -147,6 +157,12 @@ export async function getBGGGame(id: number): Promise<BGGGame | null> {
     const names = Array.isArray(item.name) ? item.name : [item.name]
     const primaryName = names.find((n: any) => n['@_type'] === 'primary')
     
+    // Parse mechanisms from link elements
+    const links = Array.isArray(item.link) ? item.link : item.link ? [item.link] : []
+    const mechanisms: string[] = links
+      .filter((l: any) => l['@_type'] === 'boardgamemechanic')
+      .map((l: any) => decodeHtmlEntities(String(l['@_value'])))
+
     const game: BGGGame = {
       id,
       name: decodeHtmlEntities(primaryName['@_value']),
@@ -156,7 +172,8 @@ export async function getBGGGame(id: number): Promise<BGGGame | null> {
       playingTime: parseInt(item.playingtime['@_value']),
       yearPublished: parseInt(item.yearpublished['@_value']),
       averageWeight: parseFloat(item.statistics.ratings.averageweight['@_value']),
-      description: item.description || '',
+      description: item.description ? stripHtml(String(item.description)) : '',
+      mechanisms,
     }
 
     // Cache the game details

@@ -1,14 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
-import { 
-  MemberOnly, 
-  GameMasterOnly, 
-  CanAddGames, 
-  CanCreateEvents 
-} from '@/components/RoleGuard';
+import { MemberOnly } from '@/components/RoleGuard';
 
 interface BGGSearchResult {
   id: number
@@ -22,7 +17,16 @@ export default function AddGamePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [iOwn, setIOwn] = useState(true)
-  
+
+  // Track which BGG IDs already exist in the collection
+  const [existingBggIds, setExistingBggIds] = useState<Set<number>>(new Set())
+  useEffect(() => {
+    fetch('/api/games')
+      .then(r => r.json())
+      .then((ids: number[]) => setExistingBggIds(new Set(ids)))
+      .catch(() => {}) // non-critical
+  }, [])
+
   // BGG search state
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
@@ -108,6 +112,8 @@ export default function AddGamePage() {
           bggId: gameDetails.id,
           name: gameDetails.name,
           image: gameDetails.image,
+          description: gameDetails.description || null,
+          mechanisms: gameDetails.mechanisms || [],
           minPlayers: gameDetails.minPlayers,
           maxPlayers: gameDetails.maxPlayers,
           playtime: gameDetails.playingTime,
@@ -206,43 +212,60 @@ export default function AddGamePage() {
 
           {searchResults.length > 0 && (
             <div className="space-y-2">
-              {searchResults.map((game) => (
-                <div
-                  key={game.id}
-                  className="flex items-center justify-between border rounded-lg p-4"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{game.name}</h3>
-                    <p className="text-sm font-medium parchment-text">
-                      {game.yearPublished || 'Year unknown'}
-                    </p>
+              {searchResults.map((game) => {
+                const alreadyExists = existingBggIds.has(game.id)
+                const isAdding = addingGameId === game.id
+                return (
+                  <div
+                    key={game.id}
+                    className="flex items-center justify-between border rounded-lg p-4"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{game.name}</h3>
+                        {alreadyExists && (
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                            background: 'rgba(201,169,97,0.15)',
+                            border: '1px solid rgba(201,169,97,0.4)',
+                            color: '#C9A961',
+                          }}>
+                            In collection
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-medium parchment-text">
+                        {game.yearPublished || 'Year unknown'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={ownedGames[game.id] || false}
+                          onChange={() => toggleGameOwnership(game.id)}
+                          className="w-4 h-4 accent-[#C9A961]"
+                        />
+                        I own this
+                      </label>
+                      <button
+                        onClick={() => handleAddFromBGG(game.id, ownedGames[game.id] || false)}
+                        disabled={addingGameId !== null}
+                        className={`btn btn-sm ${
+                          isAdding
+                            ? 'btn-success cursor-wait'
+                            : addingGameId !== null
+                            ? 'btn-success opacity-50 cursor-not-allowed'
+                            : 'btn-success hover:bg-green-700'
+                        }`}
+                      >
+                        {isAdding
+                          ? (alreadyExists ? 'Updating...' : 'Adding...')
+                          : (alreadyExists ? 'Update' : 'Add')}
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={ownedGames[game.id] || false}
-                        onChange={() => toggleGameOwnership(game.id)}
-                        className="w-4 h-4 accent-[#C9A961]"
-                      />
-                      I own this
-                    </label>
-                    <button
-                      onClick={() => handleAddFromBGG(game.id, ownedGames[game.id] || false)}
-                      disabled={addingGameId !== null}
-                      className={`btn btn-sm ${
-                        addingGameId === game.id
-                          ? 'btn-success cursor-wait'
-                          : addingGameId !== null
-                          ? 'btn-success opacity-50 cursor-not-allowed'
-                          : 'btn-success hover:bg-green-700'
-                      }`}
-                    >
-                      {addingGameId === game.id ? 'Adding...' : 'Add'}
-                    </button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </>
