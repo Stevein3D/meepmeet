@@ -107,7 +107,14 @@ export default function MeepsGrid({ meeps, viewerUserId, viewerIsGM }: MeepsGrid
     if (sortBy === 'name') {
       out.sort((a, b) => (a.user.alias ?? a.user.name).localeCompare(b.user.alias ?? b.user.name))
     } else if (sortBy === 'mmr') {
-      out.sort((a, b) => b.playerStats.mmr - a.playerStats.mmr)
+      out.sort((a, b) => {
+        const aQ = a.playerStats.rankedPlayed >= 4
+        const bQ = b.playerStats.rankedPlayed >= 4
+        if (aQ && !bQ) return -1
+        if (!aQ && bQ) return 1
+        if (!aQ && !bQ) return 0
+        return b.playerStats.mmr - a.playerStats.mmr
+      })
     } else if (sortBy === 'gold') {
       out.sort((a, b) => b.playerStats.gold - a.playerStats.gold)
     } else if (sortBy === 'silver') {

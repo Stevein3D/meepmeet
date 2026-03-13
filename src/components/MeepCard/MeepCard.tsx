@@ -57,18 +57,19 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
     <div
       className="flex flex-col overflow-hidden shadow-xl"
       style={{
+        position: 'relative',
         border: '4px solid #8B6F47',
         borderRadius: '8px',
         backgroundImage: 'url(/wood-bg.jpg)',
         backgroundSize: '100%',
         backgroundRepeat: 'repeat-y',
         backgroundPosition: 'center',
-        backgroundColor: 'rgba(28, 16, 8, 0.6)',
-        backgroundBlendMode: 'multiply',
         boxShadow: '0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,169,97,0.3)',
       }}
     >
-      <div className="p-4 flex flex-col items-center text-center gap-3">
+      {/* Overlay — replaces backgroundBlendMode for consistent iOS rendering */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(28, 16, 8, 0.6)', pointerEvents: 'none', zIndex: 0 }} />
+      <div className="p-4 flex flex-col items-center text-center gap-3" style={{ position: 'relative', zIndex: 1 }}>
         {/* Avatar */}
         <div
           className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center text-2xl font-bold flex-shrink-0"
