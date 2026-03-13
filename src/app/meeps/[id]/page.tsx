@@ -9,6 +9,7 @@ import AttendedButton from '@/components/AttendedButton'
 import GameRatingInput from '@/components/GameRatingInput'
 import GameInfoButton from '@/components/GameInfoButton'
 import RatingInfoButton from '@/components/RatingInfoButton'
+import InterestedGamesSection from '@/components/InterestedGamesSection'
 
 // ── MMR helpers (same as meeps/page.tsx) ────────────────────────────────────
 
@@ -130,7 +131,7 @@ export default async function MeepProfilePage({
 
   // ── Events + games played + ratings ──────────────────────────────────────
 
-  const [allEvents, tablePlayers, ratings] = await Promise.all([
+  const [allEvents, tablePlayers, ratings, wantedGames] = await Promise.all([
     prisma.event.findMany({
       orderBy: { date: 'desc' },
       select: {
@@ -167,6 +168,19 @@ export default async function MeepProfilePage({
       where: { userId: profileId },
       select: { gameId: true, rating: true },
     }),
+    prisma.userGameWant.findMany({
+      where: { userId: profileId },
+      select: {
+        game: {
+          select: {
+            id: true, name: true, image: true,
+            bggId: true, description: true, categories: true, mechanisms: true,
+            minPlayers: true, maxPlayers: true, playtime: true,
+            complexity: true, yearPublished: true,
+          },
+        },
+      },
+    }),
   ])
 
   type GameInfo = {
@@ -193,6 +207,8 @@ export default async function MeepProfilePage({
 
   const attendedEvents = allEvents.filter(e => e.attendees[0]?.rsvpStatus === 'yes')
   const otherEvents = allEvents.filter(e => e.attendees[0]?.rsvpStatus !== 'yes')
+
+  const interestedGames = wantedGames.map(w => w.game).sort((a, b) => a.name.localeCompare(b.name))
 
   const initials = profileUser.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
@@ -298,6 +314,17 @@ export default async function MeepProfilePage({
             ))}
           </div>
         </div>
+
+        {/* ── Interested Games ─────────────────────────────────────────── */}
+        <section className="mb-8">
+          <h2 className="text-lg font-bold mb-3" style={{ color: '#C9A961' }}>
+            Interested In
+            <span className="ml-2 text-sm font-normal opacity-60" style={{ color: '#E8D4B8' }}>
+              ({interestedGames.length})
+            </span>
+          </h2>
+          <InterestedGamesSection games={interestedGames} isOwner={isOwner} />
+        </section>
 
         {/* ── Events Attended ──────────────────────────────────────────── */}
         <section className="mb-8">
