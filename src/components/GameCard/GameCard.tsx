@@ -14,6 +14,7 @@ interface GameCardProps {
     id: string
     bggId: number | null
     name: string
+    alias: string | null
     image: string | null
     description: string | null
     categories: string[]
@@ -26,7 +27,7 @@ interface GameCardProps {
     owners: Array<{
       userId: string
       user: {
-        name: string
+        alias: string
       }
     }>
   }
@@ -117,7 +118,7 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
             {game.complexity && <p>Complexity: {game.complexity.toFixed(1)}/5</p>}
             {game.owners.length > 0 && (
               <p className={styles.owners}>
-                Owned by: {game.owners.map(o => o.user.name).join(', ')}
+                Owned by: {game.owners.map(o => o.user.alias).join(', ')}
               </p>
             )}
           </div>

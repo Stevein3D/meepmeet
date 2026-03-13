@@ -16,7 +16,7 @@ type Game = {
   playtime: number
   complexity: number | null
   yearPublished: number | null
-  owners: { userId: string; user: { name: string } }[]
+  owners: { userId: string; user: { name: string; alias: string | null } }[]
   wants: { userId: string }[]
 }
 
@@ -62,18 +62,21 @@ const PAGE_SIZE = 25
 
 export default function GamesGrid({ games, userId, meepScores }: GamesGridProps) {
   const [search, setSearch] = useState('')
-  const [minPlayers, setMinPlayers] = useState<number | ''>('')
-  const [maxPlayers, setMaxPlayers] = useState<number | ''>('')
+  const [playerCount, setPlayerCount] = useState<number | ''>('')
   const [selectedMechanics, setSelectedMechanics] = useState<string[]>([])
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedOwners, setSelectedOwners] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<'name' | 'meepScore' | 'complexity' | 'playtime'>('name')
   const [mechanicsOpen, setMechanicsOpen] = useState(false)
   const [mechanicSearch, setMechanicSearch] = useState('')
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [categorySearch, setCategorySearch] = useState('')
+  const [ownersOpen, setOwnersOpen] = useState(false)
+  const [ownerSearch, setOwnerSearch] = useState('')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const mechanicsRef = useRef<HTMLDivElement>(null)
   const categoriesRef = useRef<HTMLDivElement>(null)
+  const ownersRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!mechanicsOpen) return
@@ -105,6 +108,21 @@ export default function GamesGrid({ games, userId, meepScores }: GamesGridProps)
     }
   }, [categoriesOpen])
 
+  useEffect(() => {
+    if (!ownersOpen) return
+    const close = (e: MouseEvent | TouchEvent) => {
+      if (ownersRef.current && !ownersRef.current.contains(e.target as Node)) {
+        setOwnersOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', close)
+    document.addEventListener('touchstart', close)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('touchstart', close)
+    }
+  }, [ownersOpen])
+
   const allMechanics = useMemo(() => {
     const set = new Set<string>()
     for (const g of games) for (const m of g.mechanisms) set.add(m)
@@ -117,6 +135,12 @@ export default function GamesGrid({ games, userId, meepScores }: GamesGridProps)
     return [...set].sort()
   }, [games])
 
+  const allOwners = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const g of games) for (const o of g.owners) map.set(o.userId, o.user.alias ?? o.user.name)
+    return [...map.entries()].map(([userId, name]) => ({ userId, name })).sort((a, b) => a.name.localeCompare(b.name))
+  }, [games])
+
   const shownMechanics = mechanicSearch
     ? allMechanics.filter(m => m.toLowerCase().includes(mechanicSearch.toLowerCase()))
     : allMechanics
@@ -125,19 +149,28 @@ export default function GamesGrid({ games, userId, meepScores }: GamesGridProps)
     ? allCategories.filter(c => c.toLowerCase().includes(categorySearch.toLowerCase()))
     : allCategories
 
+  const shownOwners = ownerSearch
+    ? allOwners.filter(o => o.name.toLowerCase().includes(ownerSearch.toLowerCase()))
+    : allOwners
+
   const filtered = useMemo(() => {
     let list = games
     if (search) {
       const q = search.toLowerCase()
       list = list.filter(g => g.name.toLowerCase().includes(q))
     }
-    if (minPlayers !== '') list = list.filter(g => g.maxPlayers >= (minPlayers as number))
-    if (maxPlayers !== '') list = list.filter(g => g.minPlayers <= (maxPlayers as number))
+    if (playerCount !== '') {
+      const n = playerCount as number
+      list = list.filter(g => g.minPlayers <= n && g.maxPlayers >= n)
+    }
     if (selectedCategories.length > 0) {
       list = list.filter(g => selectedCategories.every(c => g.categories.includes(c)))
     }
     if (selectedMechanics.length > 0) {
       list = list.filter(g => selectedMechanics.every(m => g.mechanisms.includes(m)))
+    }
+    if (selectedOwners.length > 0) {
+      list = list.filter(g => selectedOwners.some(uid => g.owners.some(o => o.userId === uid)))
     }
     const out = [...list]
     if (sortBy === 'meepScore') {
@@ -150,13 +183,13 @@ export default function GamesGrid({ games, userId, meepScores }: GamesGridProps)
       out.sort((a, b) => a.name.localeCompare(b.name))
     }
     return out
-  }, [games, search, minPlayers, maxPlayers, selectedCategories, selectedMechanics, sortBy, meepScores])
+  }, [games, search, playerCount, selectedCategories, selectedMechanics, selectedOwners, sortBy, meepScores])
 
-  const hasFilters = !!(search || minPlayers !== '' || maxPlayers !== '' || selectedCategories.length > 0 || selectedMechanics.length > 0 || sortBy !== 'name')
+  const hasFilters = !!(search || playerCount !== '' || selectedCategories.length > 0 || selectedMechanics.length > 0 || selectedOwners.length > 0 || sortBy !== 'name')
 
   const reset = () => {
-    setSearch(''); setMinPlayers(''); setMaxPlayers('')
-    setSelectedCategories([]); setSelectedMechanics([]); setSortBy('name'); setVisibleCount(PAGE_SIZE)
+    setSearch(''); setPlayerCount('')
+    setSelectedCategories([]); setSelectedMechanics([]); setSelectedOwners([]); setSortBy('name'); setVisibleCount(PAGE_SIZE)
   }
 
   const toggleMechanic = (m: string) => {
@@ -166,6 +199,11 @@ export default function GamesGrid({ games, userId, meepScores }: GamesGridProps)
 
   const toggleCategory = (c: string) => {
     setSelectedCategories(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
+    setVisibleCount(PAGE_SIZE)
+  }
+
+  const toggleOwner = (uid: string) => {
+    setSelectedOwners(prev => prev.includes(uid) ? prev.filter(x => x !== uid) : [...prev, uid])
     setVisibleCount(PAGE_SIZE)
   }
 
@@ -185,19 +223,11 @@ export default function GamesGrid({ games, userId, meepScores }: GamesGridProps)
         />
         <input
           type="number"
-          placeholder="Min players"
+          placeholder="Players"
           min={1} max={20}
-          value={minPlayers}
-          onChange={e => { setMinPlayers(e.target.value ? Number(e.target.value) : ''); setVisibleCount(PAGE_SIZE) }}
-          style={{ ...INPUT, width: '7.5rem' }}
-        />
-        <input
-          type="number"
-          placeholder="Max players"
-          min={1} max={20}
-          value={maxPlayers}
-          onChange={e => { setMaxPlayers(e.target.value ? Number(e.target.value) : ''); setVisibleCount(PAGE_SIZE) }}
-          style={{ ...INPUT, width: '7.5rem' }}
+          value={playerCount}
+          onChange={e => { setPlayerCount(e.target.value ? Number(e.target.value) : ''); setVisibleCount(PAGE_SIZE) }}
+          style={{ ...INPUT, width: '6rem' }}
         />
 
         {/* Mechanics dropdown */}
@@ -356,6 +386,84 @@ export default function GamesGrid({ games, userId, meepScores }: GamesGridProps)
           )}
         </div>
 
+        {/* Owners dropdown */}
+        <div ref={ownersRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setOwnersOpen(o => !o)}
+            style={{
+              ...INPUT,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              whiteSpace: 'nowrap',
+              borderColor: selectedOwners.length > 0 ? 'rgba(201,169,97,0.8)' : 'rgba(201,169,97,0.4)',
+              background: selectedOwners.length > 0 ? 'rgba(201,169,97,0.12)' : 'rgba(0,0,0,0.35)',
+            }}
+          >
+            Owners{selectedOwners.length > 0 ? ` (${selectedOwners.length})` : ' ▾'}
+          </button>
+
+          {ownersOpen && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 4px)',
+              left: 0,
+              zIndex: 200,
+              width: '220px',
+              maxHeight: '280px',
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'rgba(18,10,4,0.98)',
+              border: '1px solid rgba(201,169,97,0.4)',
+              borderRadius: '0.375rem',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+            }}>
+              <div style={{ padding: '0.5rem', borderBottom: '1px solid rgba(201,169,97,0.15)', flexShrink: 0 }}>
+                <input
+                  type="text"
+                  placeholder="Filter owners…"
+                  value={ownerSearch}
+                  onChange={e => setOwnerSearch(e.target.value)}
+                  style={{ ...INPUT, width: '100%', boxSizing: 'border-box' }}
+                  autoFocus
+                />
+              </div>
+              <div style={{ overflowY: 'auto', padding: '0.3rem 0.25rem' }}>
+                {shownOwners.map(o => (
+                  <label
+                    key={o.userId}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '0.25rem',
+                      cursor: 'pointer',
+                      color: selectedOwners.includes(o.userId) ? '#C9A961' : '#E8D4B8',
+                      fontSize: '0.8125rem',
+                      background: selectedOwners.includes(o.userId) ? 'rgba(201,169,97,0.08)' : 'transparent',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedOwners.includes(o.userId)}
+                      onChange={() => toggleOwner(o.userId)}
+                      style={{ accentColor: '#C9A961', flexShrink: 0 }}
+                    />
+                    {o.name}
+                  </label>
+                ))}
+                {shownOwners.length === 0 && (
+                  <p style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem', color: 'rgba(232,212,184,0.4)' }}>
+                    No owners found
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Sort */}
         <select
           value={sortBy}
@@ -378,43 +486,27 @@ export default function GamesGrid({ games, userId, meepScores }: GamesGridProps)
         )}
       </div>
 
-      {/* Selected category + mechanic chips */}
-      {(selectedCategories.length > 0 || selectedMechanics.length > 0) && (
+      {/* Selected filter chips */}
+      {(selectedCategories.length > 0 || selectedMechanics.length > 0 || selectedOwners.length > 0) && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.75rem' }}>
           {selectedCategories.map(c => (
-            <button
-              key={c}
-              onClick={() => toggleCategory(c)}
-              style={{
-                fontSize: '0.75rem',
-                padding: '0.2rem 0.55rem',
-                borderRadius: '999px',
-                border: '1px solid rgba(201,169,97,0.5)',
-                background: 'rgba(201,169,97,0.12)',
-                color: '#C9A961',
-                cursor: 'pointer',
-              }}
-            >
+            <button key={c} onClick={() => toggleCategory(c)} style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem', borderRadius: '999px', border: '1px solid rgba(201,169,97,0.5)', background: 'rgba(201,169,97,0.12)', color: '#C9A961', cursor: 'pointer' }}>
               {c} ✕
             </button>
           ))}
           {selectedMechanics.map(m => (
-            <button
-              key={m}
-              onClick={() => toggleMechanic(m)}
-              style={{
-                fontSize: '0.75rem',
-                padding: '0.2rem 0.55rem',
-                borderRadius: '999px',
-                border: '1px solid rgba(201,169,97,0.5)',
-                background: 'rgba(201,169,97,0.12)',
-                color: '#C9A961',
-                cursor: 'pointer',
-              }}
-            >
+            <button key={m} onClick={() => toggleMechanic(m)} style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem', borderRadius: '999px', border: '1px solid rgba(201,169,97,0.5)', background: 'rgba(201,169,97,0.12)', color: '#C9A961', cursor: 'pointer' }}>
               {m} ✕
             </button>
           ))}
+          {selectedOwners.map(uid => {
+            const owner = allOwners.find(o => o.userId === uid)
+            return (
+              <button key={uid} onClick={() => toggleOwner(uid)} style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem', borderRadius: '999px', border: '1px solid rgba(201,169,97,0.5)', background: 'rgba(201,169,97,0.12)', color: '#C9A961', cursor: 'pointer' }}>
+                {owner?.name ?? uid} ✕
+              </button>
+            )
+          })}
         </div>
       )}
 
