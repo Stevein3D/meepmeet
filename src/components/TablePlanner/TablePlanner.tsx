@@ -31,6 +31,7 @@ interface GameOption {
   maxPlayers: number
   bggId: number | null
   description: string | null
+  categories: string[]
   mechanisms: string[]
   playtime: number
   complexity: number | null

@@ -94,6 +94,7 @@ export async function PUT(
         image: body.image,
         description: body.description !== undefined ? body.description : undefined,
         mechanisms: body.mechanisms !== undefined ? body.mechanisms : undefined,
+        categories: body.categories !== undefined ? body.categories : undefined,
       },
     })
 

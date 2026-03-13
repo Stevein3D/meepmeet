@@ -17,6 +17,7 @@ interface MeepCardProps {
     id: string
     name: string
     alias: string | null
+    tagline: string | null
     avatar: string | null
     role: 'VISITOR' | 'MEMBER' | 'GAME_MASTER'
     createdAt: Date
@@ -106,6 +107,16 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
         >
           {roleLabel[user.role]}
         </span>
+
+        {/* Tagline */}
+        {user.tagline && (
+          <p
+            className="text-xs text-center leading-snug"
+            style={{ color: 'rgba(232,212,184,0.85)', fontStyle: 'italic' }}
+          >
+            {user.tagline}
+          </p>
+        )}
 
         {/* Stats — Row 1: library & event counts */}
         <div

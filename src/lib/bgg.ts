@@ -53,6 +53,7 @@ export interface BGGGame {
   averageWeight: number
   description: string
   mechanisms: string[]
+  categories: string[]
 }
 
 export async function searchBGG(query: string): Promise<BGGSearchResult[]> {
@@ -163,6 +164,10 @@ export async function getBGGGame(id: number): Promise<BGGGame | null> {
       .filter((l: any) => l['@_type'] === 'boardgamemechanic')
       .map((l: any) => decodeHtmlEntities(String(l['@_value'])))
 
+    const categories: string[] = links
+      .filter((l: any) => l['@_type'] === 'boardgamecategory')
+      .map((l: any) => decodeHtmlEntities(String(l['@_value'])))
+
     const game: BGGGame = {
       id,
       name: decodeHtmlEntities(primaryName['@_value']),
@@ -174,6 +179,7 @@ export async function getBGGGame(id: number): Promise<BGGGame | null> {
       averageWeight: parseFloat(item.statistics.ratings.averageweight['@_value']),
       description: item.description ? stripHtml(String(item.description)) : '',
       mechanisms,
+      categories,
     }
 
     // Cache the game details

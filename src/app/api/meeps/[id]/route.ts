@@ -15,6 +15,7 @@ export async function GET(
       id: true,
       name: true,
       alias: true,
+      tagline: true,
       email: true,
       avatar: true,
       bggId: true,
@@ -61,12 +62,13 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const { name, alias, bggId, role, avatar } = body
+  const { name, alias, tagline, bggId, role, avatar } = body
 
   // Only GAME_MASTERs can change another user's role
   const updateData: Record<string, string | null | undefined> = {
     name,
     alias: alias || null,
+    tagline: tagline || null,
     bggId: bggId || null,
   }
 

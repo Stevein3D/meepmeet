@@ -8,6 +8,7 @@ import { getDatabaseUserId } from '@/lib/user-helper'
 import AttendedButton from '@/components/AttendedButton'
 import GameRatingInput from '@/components/GameRatingInput'
 import GameInfoButton from '@/components/GameInfoButton'
+import RatingInfoButton from '@/components/RatingInfoButton'
 
 // ── MMR helpers (same as meeps/page.tsx) ────────────────────────────────────
 
@@ -145,13 +146,14 @@ export default async function MeepProfilePage({
     prisma.tablePlayer.findMany({
       where: { userId: profileId, table: { gameId: { not: null } } },
       select: {
+        placement: true,
         table: {
           select: {
             gameId: true,
             game: {
               select: {
                 id: true, name: true, image: true,
-                bggId: true, description: true, mechanisms: true,
+                bggId: true, description: true, categories: true, mechanisms: true,
                 minPlayers: true, maxPlayers: true, playtime: true,
                 complexity: true, yearPublished: true,
               },
@@ -169,19 +171,22 @@ export default async function MeepProfilePage({
 
   type GameInfo = {
     id: string; name: string; image: string | null
-    bggId: number | null; description: string | null; mechanisms: string[]
+    bggId: number | null; description: string | null; categories: string[]; mechanisms: string[]
     minPlayers: number; maxPlayers: number; playtime: number
     complexity: number | null; yearPublished: number | null
   }
 
-  // Build eventId → unique games map
-  const gamesByEvent = new Map<string, Map<string, GameInfo>>()
+  // Build eventId → unique games map (with placements collected per game)
+  const gamesByEvent = new Map<string, Map<string, { game: GameInfo; placements: number[] }>>()
   for (const tp of tablePlayers) {
     const eventId = tp.table.round.eventId
     const game = tp.table.game
     if (!game) continue
     if (!gamesByEvent.has(eventId)) gamesByEvent.set(eventId, new Map())
-    gamesByEvent.get(eventId)!.set(game.id, game)
+    const gameMap = gamesByEvent.get(eventId)!
+    if (!gameMap.has(game.id)) gameMap.set(game.id, { game, placements: [] })
+    const p = tp.placement
+    if (p != null && p >= 1 && p <= 3) gameMap.get(game.id)!.placements.push(p)
   }
 
   const ratingMap = new Map(ratings.map(r => [r.gameId, r.rating]))
@@ -250,6 +255,11 @@ export default async function MeepProfilePage({
               >
                 {roleLabel[profileUser.role]}
               </span>
+              {profileUser.tagline && (
+                <p className="mt-2 text-sm" style={{ color: 'rgba(232,212,184,0.65)', fontStyle: 'italic' }}>
+                  {profileUser.tagline}
+                </p>
+              )}
             </div>
 
             {/* Edit link */}
@@ -336,9 +346,17 @@ export default async function MeepProfilePage({
                         className="mt-3 pt-3 flex flex-col gap-2"
                         style={{ borderTop: '1px solid rgba(201,169,97,0.15)' }}
                       >
-                        {[...games.values()].map(game => (
+                        {[...games.values()].map(({ game, placements }) => (
                           <div key={game.id} className="flex items-center gap-3">
                             <GameInfoButton game={game} />
+                            {placements.length > 0 && (
+                              <span className="flex-shrink-0 text-base leading-none" style={{ letterSpacing: '-0.05em' }}>
+                                {placements.sort((a, b) => a - b).map((p, i) => (
+                                  <span key={i}>{p === 1 ? '🥇' : p === 2 ? '🥈' : '🥉'}</span>
+                                ))}
+                              </span>
+                            )}
+                            <RatingInfoButton />
                             {isOwner ? (
                               <GameRatingInput
                                 gameId={game.id}

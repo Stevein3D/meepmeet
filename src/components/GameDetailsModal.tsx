@@ -11,6 +11,7 @@ interface GameDetailsModalProps {
     bggId: number | null
     image: string | null
     description: string | null
+    categories?: string[]
     mechanisms: string[]
     minPlayers: number
     maxPlayers: number
@@ -84,6 +85,18 @@ export default function GameDetailsModal({ game, onClose }: GameDetailsModalProp
             >
               View on BoardGameGeek ↗&#xFE0E;
             </a>
+          )}
+
+          {/* Categories */}
+          {(game.categories ?? []).length > 0 && (
+            <div className={styles.modalSection}>
+              <h3 className={styles.modalSectionTitle}>Categories</h3>
+              <div className={styles.mechanismTags}>
+                {(game.categories ?? []).map(c => (
+                  <span key={c} className={styles.mechanismTag}>{c}</span>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Mechanisms */}

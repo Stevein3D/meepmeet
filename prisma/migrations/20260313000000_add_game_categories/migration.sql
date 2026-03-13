@@ -1,0 +1,1 @@
+ALTER TABLE "Game" ADD COLUMN "categories" TEXT[] NOT NULL DEFAULT '{}';

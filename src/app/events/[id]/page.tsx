@@ -34,7 +34,7 @@ export default async function EventDetailPage({
             tables: {
               include: {
                 game: {
-                  select: { id: true, name: true, image: true, minPlayers: true, maxPlayers: true, bggId: true, description: true, mechanisms: true, playtime: true, complexity: true, yearPublished: true },
+                  select: { id: true, name: true, image: true, minPlayers: true, maxPlayers: true, bggId: true, description: true, categories: true, mechanisms: true, playtime: true, complexity: true, yearPublished: true },
                 },
                 players: {
                   include: {
@@ -52,7 +52,7 @@ export default async function EventDetailPage({
     }),
     prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
     prisma.game.findMany({
-      select: { id: true, name: true, image: true, minPlayers: true, maxPlayers: true, bggId: true, description: true, mechanisms: true, playtime: true, complexity: true, yearPublished: true },
+      select: { id: true, name: true, image: true, minPlayers: true, maxPlayers: true, bggId: true, description: true, categories: true, mechanisms: true, playtime: true, complexity: true, yearPublished: true },
       orderBy: { name: 'asc' },
     }),
     prisma.eventTable.findMany({

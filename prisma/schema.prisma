@@ -25,6 +25,7 @@ model User {
   id        String   @id @default(cuid())
   name      String
   alias     String?
+  tagline   String?
   email     String   @unique
   avatar    String?
   bggId     String?
@@ -48,6 +49,7 @@ model Game {
   image         String?
   description   String?
   mechanisms    String[]
+  categories    String[]
   minPlayers    Int
   maxPlayers    Int
   playtime      Int

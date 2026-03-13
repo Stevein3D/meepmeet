@@ -10,6 +10,7 @@ interface GameInfoButtonProps {
     image: string | null
     bggId: number | null
     description: string | null
+    categories: string[]
     mechanisms: string[]
     minPlayers: number
     maxPlayers: number

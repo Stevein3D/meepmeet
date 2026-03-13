@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       image: body.image ?? null,
       description: body.description ?? null,
       mechanisms: body.mechanisms ?? [],
+      categories: body.categories ?? [],
       minPlayers: body.minPlayers,
       maxPlayers: body.maxPlayers,
       playtime: body.playtime,

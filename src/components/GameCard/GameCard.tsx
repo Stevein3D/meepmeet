@@ -16,6 +16,7 @@ interface GameCardProps {
     name: string
     image: string | null
     description: string | null
+    categories: string[]
     mechanisms: string[]
     minPlayers: number
     maxPlayers: number

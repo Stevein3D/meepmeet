@@ -9,6 +9,7 @@ interface UserProfile {
   id: string
   name: string
   alias: string | null
+  tagline: string | null
   email: string
   avatar: string | null
   bggId: string | null
@@ -99,6 +100,7 @@ export default function EditMeepPage() {
     const payload: Record<string, string | null> = {
       name: formData.get('name') as string,
       alias: formData.get('alias') as string,
+      tagline: formData.get('tagline') as string,
       bggId: formData.get('bggId') as string,
       avatar: avatarUrl,
     }
@@ -273,6 +275,19 @@ export default function EditMeepPage() {
                 name="alias"
                 defaultValue={profile.alias ?? ''}
                 placeholder="Nickname or handle"
+              />
+            </div>
+
+            {/* Tagline */}
+            <div className="field-group">
+              <label htmlFor="tagline">Tagline</label>
+              <input
+                type="text"
+                id="tagline"
+                name="tagline"
+                defaultValue={profile.tagline ?? ''}
+                placeholder="A short line about yourself"
+                maxLength={120}
               />
             </div>
 

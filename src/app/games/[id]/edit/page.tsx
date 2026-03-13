@@ -16,6 +16,7 @@ interface Game {
   image: string | null
   description: string | null
   mechanisms: string[]
+  categories: string[]
   owners: { userId: string }[]
 }
 
@@ -41,6 +42,7 @@ export default function EditGamePage() {
   const [image, setImage] = useState('')
   const [description, setDescription] = useState('')
   const [mechanisms, setMechanisms] = useState('') // comma-separated
+  const [categories, setCategories] = useState('') // comma-separated
   const [iOwn, setIOwn] = useState(false)
 
   useEffect(() => {
@@ -59,6 +61,7 @@ export default function EditGamePage() {
         setImage(gameData.image ?? '')
         setDescription(gameData.description ?? '')
         setMechanisms((gameData.mechanisms ?? []).join(', '))
+        setCategories((gameData.categories ?? []).join(', '))
         setIOwn(gameData.owners.some(o => o.userId === userData.userId))
         setLoading(false)
       })
@@ -73,6 +76,7 @@ export default function EditGamePage() {
     image: string
     description: string
     mechanisms: string[]
+    categories: string[]
     minPlayers: number
     maxPlayers: number
     playingTime: number
@@ -83,6 +87,7 @@ export default function EditGamePage() {
     setImage(bggData.image ?? '')
     setDescription(bggData.description ?? '')
     setMechanisms((bggData.mechanisms ?? []).join(', '))
+    setCategories((bggData.categories ?? []).join(', '))
     setMinPlayers(String(bggData.minPlayers))
     setMaxPlayers(String(bggData.maxPlayers))
     setPlaytime(String(bggData.playingTime))
@@ -125,6 +130,9 @@ export default function EditGamePage() {
       description: description || null,
       mechanisms: mechanisms
         ? mechanisms.split(',').map(m => m.trim()).filter(Boolean)
+        : [],
+      categories: categories
+        ? categories.split(',').map(c => c.trim()).filter(Boolean)
         : [],
       iOwn,
     }
@@ -237,6 +245,18 @@ export default function EditGamePage() {
               <input
                 type="url" id="image" placeholder="https://…"
                 value={image} onChange={e => setImage(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div className="field-group">
+              <label htmlFor="categories" className="block text-sm font-medium mb-1">
+                Categories <span className="font-normal opacity-60">(comma-separated)</span>
+              </label>
+              <input
+                type="text" id="categories"
+                placeholder="e.g. Fantasy, Card Game"
+                value={categories} onChange={e => setCategories(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg"
               />
             </div>
