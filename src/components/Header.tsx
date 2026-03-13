@@ -28,6 +28,9 @@ export default function Header() {
           <Link href="/games" className="main-nav-link text-sm sm:text-lg">
             Games
           </Link>
+          <Link href="/faq" className="main-nav-link text-sm sm:text-lg">
+            FAQ
+          </Link>
           {/* <HeaderAuth /> */}
           <SignedIn>
             <UserButton />
