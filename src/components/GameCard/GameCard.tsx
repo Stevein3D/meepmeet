@@ -33,9 +33,10 @@ interface GameCardProps {
   userOwnsGame: boolean
   userWantsGame: boolean
   wantCount: number
+  meepScore?: { avg: number; count: number }
 }
 
-export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wantCount }: GameCardProps) {
+export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wantCount, meepScore }: GameCardProps) {
   const [showControls, setShowControls] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
@@ -74,34 +75,42 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
         )}
 
         <div className={styles.cardContent}>
-          {/* Image area — always reserves space */}
-          <div className={styles.imageContainer}>
-            {game.image ? (
-              <Image
-                src={game.image}
-                alt={game.name}
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            ) : (
-              <span className={styles.imagePlaceholder}>♟</span>
-            )}
+          {/* Header row: image + title/details side-by-side on mobile */}
+          <div className={styles.headerRow}>
+            <div className={styles.imageContainer}>
+              {game.image ? (
+                <Image
+                  src={game.image}
+                  alt={game.name}
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              ) : (
+                <span className={styles.imagePlaceholder}>♟</span>
+              )}
+            </div>
+
+            <div className={styles.headerText}>
+              <h2 className={styles.title}>{game.name}</h2>
+              {hasDetails && (
+                <button
+                  onClick={() => setShowDetails(true)}
+                  className={styles.detailsBtn}
+                >
+                  View Details ↗&#xFE0E;
+                </button>
+              )}
+            </div>
           </div>
 
-          <h2 className={styles.title}>{game.name}</h2>
-
-          {/* Details button — sits under the title */}
-          {hasDetails && (
-            <button
-              onClick={() => setShowDetails(true)}
-              className={styles.detailsBtn}
-            >
-              View Details ↗&#xFE0E;
-            </button>
-          )}
-
           <div className={styles.details}>
+            {meepScore && (
+              <p className={styles.meepScore}>
+                ⭐ {meepScore.avg.toFixed(1)}/10
+                <span className={styles.meepScoreCount}> ({meepScore.count} rating{meepScore.count !== 1 ? 's' : ''})</span>
+              </p>
+            )}
             <p>{game.minPlayers}–{game.maxPlayers} players · {game.playtime} min</p>
             {game.yearPublished && <p>Published: {game.yearPublished}</p>}
             {game.complexity && <p>Complexity: {game.complexity.toFixed(1)}/5</p>}

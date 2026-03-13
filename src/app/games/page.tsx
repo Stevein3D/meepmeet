@@ -2,21 +2,35 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { auth } from '@clerk/nextjs/server'
-import GameCard from '@/components/GameCard'
+import GamesGrid from '@/components/GamesGrid'
 import { MemberOnly } from '@/components/RoleGuard';
 
 export default async function GamesPage() {
   const { userId } = await auth()
-  
-  const games = await prisma.game.findMany({
-    orderBy: { name: 'asc' },
-    include: {
-      owners: {
-        include: { user: true },
+
+  const [games, ratingAggs] = await Promise.all([
+    prisma.game.findMany({
+      orderBy: { name: 'asc' },
+      include: {
+        owners: {
+          include: { user: true },
+        },
+        wants: true,
       },
-      wants: true,
-    },
-  })
+    }),
+    prisma.gameRating.groupBy({
+      by: ['gameId'],
+      _avg: { rating: true },
+      _count: { rating: true },
+    }),
+  ])
+
+  const meepScores: Record<string, { avg: number; count: number }> = {}
+  for (const r of ratingAggs) {
+    if (r._avg.rating != null) {
+      meepScores[r.gameId] = { avg: r._avg.rating, count: r._count.rating }
+    }
+  }
 
   return (
     <>
@@ -25,36 +39,19 @@ export default async function GamesPage() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl sm:text-4xl font-bold">Game Collection</h1>
           <MemberOnly>
-          <Link
-            href="/games/add"
-            className="px-4 py-2 btn btn-md btn-primary min-w-fit"
-          >
-            Add Game
-          </Link>
+            <Link
+              href="/games/add"
+              className="px-4 py-2 btn btn-md btn-primary min-w-fit"
+            >
+              Add Game
+            </Link>
           </MemberOnly>
         </div>
-        
+
         {games.length === 0 ? (
           <p className="text-gray-600">No games in the collection yet.</p>
         ) : (
-          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(315px, 100%), 1fr))' }}>
-            {games.map((game) => {
-              const userOwnsGame = userId ? game.owners.some(o => o.userId === userId) : false
-              const userWantsGame = userId ? game.wants.some(w => w.userId === userId) : false
-              const wantCount = game.wants.length
-
-              return (
-                <GameCard
-                  key={game.id}
-                  game={game}
-                  userId={userId}
-                  userOwnsGame={userOwnsGame}
-                  userWantsGame={userWantsGame}
-                  wantCount={wantCount}
-                />
-              )
-            })}
-          </div>
+          <GamesGrid games={games} userId={userId} meepScores={meepScores} />
         )}
       </main>
     </>
