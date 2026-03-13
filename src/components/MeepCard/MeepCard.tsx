@@ -71,6 +71,7 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(28, 16, 8, 0.6)', pointerEvents: 'none', zIndex: 0 }} />
       <div className="p-4 flex flex-col items-center text-center gap-3" style={{ position: 'relative', zIndex: 1 }}>
         {/* Avatar */}
+        <Link href={`/meeps/${user.id}`} style={{ textDecoration: 'none' }}>
         <div
           className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center text-2xl font-bold flex-shrink-0"
           style={{
@@ -85,17 +86,17 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
             <span>{initials}</span>
           )}
         </div>
+        </Link>
 
         {/* Name — links to profile page */}
-        <Link href={`/meeps/${user.id}`} style={{ textDecoration: 'none' }}>
-          <h2
-            className="text-xl font-bold leading-tight relative hover:opacity-80 transition-opacity"
-            style={{ color: '#F5E6D3', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
-          >
-            {user.alias ? <span className={styles.displayAlias}>{user.alias}</span> : <span>{user.name}</span>}
-            <span className={styles.displayName}>{user.name}</span>
-          </h2>
-        </Link>
+        
+        <h2
+          className="text-xl font-bold leading-tight relative hover:opacity-80 transition-opacity"
+          style={{ color: '#F5E6D3', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+        >
+          {user.alias ? <span className={styles.displayAlias}>{user.alias}</span> : <span>{user.name}</span>}
+          <span className={styles.displayName}>{user.name}</span>
+        </h2>
 
         {/* Role badge */}
         <span
