@@ -2,15 +2,23 @@ import Header from '@/components/Header'
 import Image from 'next/image'
 
 const PANEL: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
   border: '3px solid #8B6F47',
   borderRadius: '8px',
   backgroundImage: 'url(/wood-bg.jpg)',
   backgroundSize: '100%',
   backgroundRepeat: 'repeat-y',
   backgroundPosition: 'center',
-  backgroundColor: 'rgba(28, 16, 8, 0.6)',
-  backgroundBlendMode: 'multiply',
   boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+}
+
+const OVERLAY: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  background: 'rgba(28, 16, 8, 0.6)',
+  pointerEvents: 'none',
+  zIndex: 0,
 }
 
 const RATING_SCALE = [
@@ -43,15 +51,18 @@ interface FAQItemProps {
 function FAQItem({ question, children, image }: FAQItemProps) {
   return (
     <div style={{ ...PANEL, padding: '1.5rem 1.75rem' }}>
-      <h2
-        className="text-lg font-bold mb-3"
-        style={{ color: '#C9A961', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}
-      >
-        {question}
-      </h2>
-      {image && <div className="mb-4">{image}</div>}
-      <div style={{ color: '#E8D4B8', fontSize: '0.9375rem', lineHeight: 1.7 }}>
-        {children}
+      <div style={OVERLAY} />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <h2
+          className="text-lg font-bold mb-3"
+          style={{ color: '#C9A961', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}
+        >
+          {question}
+        </h2>
+        {image && <div className="mb-4">{image}</div>}
+        <div style={{ color: '#E8D4B8', fontSize: '0.9375rem', lineHeight: 1.7 }}>
+          {children}
+        </div>
       </div>
     </div>
   )
