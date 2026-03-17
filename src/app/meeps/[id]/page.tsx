@@ -117,7 +117,7 @@ export default async function MeepProfilePage({
     if (record.placement == null) continue
     const { cooperative, teams } = record.table
     if (cooperative) {
-      if (record.placement === 1) mmrPoints += BASE_POINTS[1] * 0.55
+      if (record.placement === 1) mmrPoints += BASE_POINTS[1] * 0.7
     } else {
       const count = teams ?? record.table._count.players
       const modifier = getModifier(count)

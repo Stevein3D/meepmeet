@@ -110,7 +110,7 @@ export default async function MeepsPage() {
     else if (record.placement === 3) s.bronze++
     const { cooperative, teams } = record.table
     if (cooperative) {
-      if (record.placement === 1) s.mmrPoints += BASE_POINTS[1] * 0.55
+      if (record.placement === 1) s.mmrPoints += BASE_POINTS[1] * 0.7
     } else {
       const count = teams ?? record.table._count.players
       const modifier        = getModifier(count)
