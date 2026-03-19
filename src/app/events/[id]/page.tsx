@@ -72,6 +72,7 @@ export default async function EventDetailPage({
 
   const isHost = event.hostId === userId
   const isGameMaster = currentUser?.role === 'GAME_MASTER'
+  const isVisitor = currentUser?.role === 'VISITOR'
   const canManage = isHost || isGameMaster   // Edit Event button
   const canManageTables = isGameMaster       // Table planner controls
 
@@ -139,7 +140,10 @@ export default async function EventDetailPage({
             </p>
             {event.location && (
               <p style={{ color: '#E8D4B8' }}>
-                <span style={{ color: '#C9A961', fontWeight: 600 }}>Where:</span> {event.location}
+                <span style={{ color: '#C9A961', fontWeight: 600 }}>Where:</span>{' '}
+                {isVisitor
+                  ? <span style={{ color: 'rgba(232,212,184,0.4)', fontStyle: 'italic' }}>Members only</span>
+                  : event.location}
               </p>
             )}
             <p style={{ color: '#E8D4B8' }}>

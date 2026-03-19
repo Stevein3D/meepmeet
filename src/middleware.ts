@@ -6,6 +6,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/events(.*)',
   '/games(.*)',
+  '/faq(.*)',
   '/api/(.*)',   // API routes handle their own auth and return JSON errors
 ])
 

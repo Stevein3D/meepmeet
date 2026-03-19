@@ -11,7 +11,8 @@ export default async function EventsPage() {
   const currentUser = userId
     ? await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
     : null
-  const isGameMaster = currentUser?.role === 'GAME_MASTER'
+  const isVisitor = currentUser?.role === 'VISITOR'
+  const hideLocation = isVisitor || !userId
 
   const events = await prisma.event.findMany({
     orderBy: { date: 'asc' },
@@ -63,15 +64,12 @@ export default async function EventsPage() {
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {upcoming.map((event) => {
                     const userRsvp = userId ? event.attendees.find(a => a.userId === userId) || null : null
-                    const isHost = userId === event.hostId
-
                     return (
                       <EventCard
                         key={event.id}
-                        event={event}
+                        event={{ ...event, location: hideLocation ? null : event.location }}
                         userId={userId}
-                        isHost={isHost}
-                        canManage={isHost || isGameMaster}
+                        locationHidden={hideLocation && !!event.location}
                         userRsvp={userRsvp}
                       />
                     )
@@ -87,15 +85,12 @@ export default async function EventsPage() {
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 opacity-75">
                   {past.map((event) => {
                     const userRsvp = userId ? event.attendees.find(a => a.userId === userId) || null : null
-                    const isHost = userId === event.hostId
-
                     return (
                       <EventCard
                         key={event.id}
-                        event={event}
+                        event={{ ...event, location: hideLocation ? null : event.location }}
                         userId={userId}
-                        isHost={isHost}
-                        canManage={isHost || isGameMaster}
+                        locationHidden={hideLocation && !!event.location}
                         userRsvp={userRsvp}
                       />
                     )

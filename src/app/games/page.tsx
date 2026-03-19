@@ -8,7 +8,7 @@ import { MemberOnly } from '@/components/RoleGuard';
 export default async function GamesPage() {
   const { userId } = await auth()
 
-  const [games, ratingAggs] = await Promise.all([
+  const [games, ratingAggs, currentUser] = await Promise.all([
     prisma.game.findMany({
       orderBy: { name: 'asc' },
       include: {
@@ -23,7 +23,12 @@ export default async function GamesPage() {
       _avg: { rating: true },
       _count: { rating: true },
     }),
+    userId
+      ? prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+      : null,
   ])
+
+  const isGameMaster = currentUser?.role === 'GAME_MASTER'
 
   const meepScores: Record<string, { avg: number; count: number }> = {}
   for (const r of ratingAggs) {
@@ -51,7 +56,7 @@ export default async function GamesPage() {
         {games.length === 0 ? (
           <p className="text-gray-600">No games in the collection yet.</p>
         ) : (
-          <GamesGrid games={games} userId={userId} meepScores={meepScores} />
+          <GamesGrid games={games} userId={userId} isGameMaster={isGameMaster} meepScores={meepScores} />
         )}
       </main>
     </>

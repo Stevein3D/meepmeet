@@ -25,6 +25,7 @@ type MeepScore = { avg: number; count: number }
 interface GamesGridProps {
   games: Game[]
   userId: string | null
+  isGameMaster?: boolean
   meepScores: Record<string, MeepScore>
 }
 
@@ -60,7 +61,7 @@ const SELECT: CSSProperties = {
 
 const PAGE_SIZE = 25
 
-export default function GamesGrid({ games, userId, meepScores }: GamesGridProps) {
+export default function GamesGrid({ games, userId, isGameMaster = false, meepScores }: GamesGridProps) {
   const [search, setSearch] = useState('')
   const [playerCount, setPlayerCount] = useState<number | ''>('')
   const [selectedMechanics, setSelectedMechanics] = useState<string[]>([])
@@ -526,6 +527,7 @@ export default function GamesGrid({ games, userId, meepScores }: GamesGridProps)
               key={game.id}
               game={game}
               userId={userId}
+              isGameMaster={isGameMaster}
               userOwnsGame={userId ? game.owners.some(o => o.userId === userId) : false}
               userWantsGame={userId ? game.wants.some(w => w.userId === userId) : false}
               wantCount={game.wants.length}

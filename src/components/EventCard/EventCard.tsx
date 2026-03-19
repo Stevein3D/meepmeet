@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import RsvpButton from '../RsvpButton'
 import DeleteEventButton from '../DeleteEventButton'
+import { GameMasterOnly } from '../RoleGuard'
 
 interface EventCardProps {
   event: {
@@ -29,12 +30,11 @@ interface EventCardProps {
     }>
   }
   userId: string | null
-  isHost: boolean
-  canManage?: boolean
+  locationHidden?: boolean
   userRsvp: { rsvpStatus: string } | null
 }
 
-export default function EventCard({ event, userId, isHost, canManage = isHost, userRsvp }: EventCardProps) {
+export default function EventCard({ event, userId, locationHidden = false, userRsvp }: EventCardProps) {
   const [showControls, setShowControls] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
 
@@ -42,9 +42,7 @@ export default function EventCard({ event, userId, isHost, canManage = isHost, u
     if (showControls) {
       setShowControls(false)
       setIsClosing(true)
-      setTimeout(() => {
-        setIsClosing(false)
-      }, 300) // Match animation duration
+      setTimeout(() => setIsClosing(false), 300)
     } else {
       setShowControls(true)
     }
@@ -81,8 +79,8 @@ export default function EventCard({ event, userId, isHost, canManage = isHost, u
       backgroundBlendMode: 'multiply',
       boxShadow: '0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,169,97,0.3)'
     }}>
-      {/* Toggle button aligned with RSVP buttons */}
-      {userId && canManage && (
+      {/* Toggle button — Game Masters only */}
+      <GameMasterOnly>
         <button
           onClick={handleToggle}
           className="absolute right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center"
@@ -104,18 +102,17 @@ export default function EventCard({ event, userId, isHost, canManage = isHost, u
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-      )}
+      </GameMasterOnly>
 
       <div className="p-4 flex flex-col h-full">
         <div className="flex justify-between mb-2">
           <h3 className="text-xl font-bold mb-3" style={{
-          color: '#F5E6D3',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-        }}>
-          {event.title}
-        </h3>
+            color: '#F5E6D3',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+          }}>
+            {event.title}
+          </h3>
           <div className="min-w-fit">
-            {/* Details link */}
             <Link
               href={`/events/${event.id}`}
               className="block text-center py-2 px-4 rounded text-sm font-medium transition-all"
@@ -132,9 +129,12 @@ export default function EventCard({ event, userId, isHost, canManage = isHost, u
 
         <div className="text-sm space-y-1 flex-grow" style={{ color: '#E8D4B8' }}>
           <p className="font-medium" style={{ color: '#C9A961' }}>{formatDate(event.date)}</p>
-          {event.location && (
+          {(event.location || locationHidden) && (
             <p className="flex items-center gap-1">
-              <span>📍</span> {event.location}
+              <span>📍</span>
+              {locationHidden
+                ? <span style={{ color: 'rgba(232,212,184,0.4)', fontStyle: 'italic' }}>Members only</span>
+                : event.location}
             </p>
           )}
           <p>Host: {event.host.name}</p>
@@ -159,29 +159,31 @@ export default function EventCard({ event, userId, isHost, canManage = isHost, u
           </div>
         )}
 
-        {/* Action Buttons - overlay from bottom */}
-        {(showControls || isClosing) && userId && canManage && (
-          <div
-            className={`absolute bottom-0 left-0 right-0 flex gap-2 p-4 ${isClosing ? 'animate-slideDown' : 'animate-slideUp'}`}
-            style={{
-              background: 'rgba(20, 12, 6, 0.95)',
-              borderTop: '2px solid #8B6F47'
-            }}
-          >
-            <Link
-              href={`/events/${event.id}/edit`}
-              className="flex-1 px-3 py-2 text-center rounded font-medium transition-all"
+        {/* Action Buttons — Game Masters only */}
+        <GameMasterOnly>
+          {(showControls || isClosing) && (
+            <div
+              className={`absolute bottom-0 left-0 right-0 flex gap-2 p-4 ${isClosing ? 'animate-slideDown' : 'animate-slideUp'}`}
               style={{
-                border: '2px solid #C9A961',
-                color: '#C9A961',
-                background: 'rgba(201,169,97,0.1)'
+                background: 'rgba(20, 12, 6, 0.95)',
+                borderTop: '2px solid #8B6F47'
               }}
             >
-              Edit
-            </Link>
-            <DeleteEventButton eventId={event.id} eventTitle={event.title} />
-          </div>
-        )}
+              <Link
+                href={`/events/${event.id}/edit`}
+                className="flex-1 px-3 py-2 text-center rounded font-medium transition-all"
+                style={{
+                  border: '2px solid #C9A961',
+                  color: '#C9A961',
+                  background: 'rgba(201,169,97,0.1)'
+                }}
+              >
+                Edit
+              </Link>
+              <DeleteEventButton eventId={event.id} eventTitle={event.title} />
+            </div>
+          )}
+        </GameMasterOnly>
       </div>
     </div>
   )

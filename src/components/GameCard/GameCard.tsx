@@ -32,13 +32,14 @@ interface GameCardProps {
     }>
   }
   userId: string | null
+  isGameMaster?: boolean
   userOwnsGame: boolean
   userWantsGame: boolean
   wantCount: number
   meepScore?: { avg: number; count: number }
 }
 
-export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wantCount, meepScore }: GameCardProps) {
+export default function GameCard({ game, userId, isGameMaster = false, userOwnsGame, userWantsGame, wantCount, meepScore }: GameCardProps) {
   const [showControls, setShowControls] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
@@ -59,7 +60,7 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
     <>
       <div className={styles.card}>
         {/* Toggle button for Edit/Delete controls */}
-        {userId && (
+        {isGameMaster && (
           <button
             onClick={handleToggle}
             className={`${styles.toggleButton} ${showControls ? styles.expanded : styles.collapsed}`}
@@ -137,7 +138,7 @@ export default function GameCard({ game, userId, userOwnsGame, userWantsGame, wa
         </div>
 
         {/* Slide-up Edit/Delete controls */}
-        {(showControls || isClosing) && userId && (
+        {(showControls || isClosing) && isGameMaster && (
           <div className={`${styles.controls} ${isClosing ? styles.slideDown : styles.slideUp}`}>
             <Link href={`/games/${game.id}/edit`} className={styles.editLink}>
               Edit
