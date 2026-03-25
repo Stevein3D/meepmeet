@@ -17,7 +17,7 @@ type Game = {
   complexity: number | null
   yearPublished: number | null
   owners: { userId: string; user: { name: string; alias: string | null } }[]
-  wants: { userId: string }[]
+  wants: { userId: string; user: { name: string; alias: string | null } }[]
 }
 
 type MeepScore = { avg: number; count: number }
@@ -67,7 +67,7 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
   const [selectedMechanics, setSelectedMechanics] = useState<string[]>([])
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedOwners, setSelectedOwners] = useState<string[]>([])
-  const [sortBy, setSortBy] = useState<'name' | 'meepScore' | 'complexity' | 'playtime'>('name')
+  const [sortBy, setSortBy] = useState<'name' | 'meepScore' | 'complexity' | 'playtime' | 'interest'>('name')
   const [mechanicsOpen, setMechanicsOpen] = useState(false)
   const [mechanicSearch, setMechanicSearch] = useState('')
   const [categoriesOpen, setCategoriesOpen] = useState(false)
@@ -180,6 +180,8 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
       out.sort((a, b) => (b.complexity ?? 0) - (a.complexity ?? 0))
     } else if (sortBy === 'playtime') {
       out.sort((a, b) => a.playtime - b.playtime)
+    } else if (sortBy === 'interest') {
+      out.sort((a, b) => b.wants.length - a.wants.length)
     } else {
       out.sort((a, b) => a.name.localeCompare(b.name))
     }
@@ -475,6 +477,7 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
           <option value="meepScore">Sort: Meep Score</option>
           <option value="complexity">Sort: Complexity</option>
           <option value="playtime">Sort: Playtime</option>
+          <option value="interest">Sort: Interest</option>
         </select>
 
         {hasFilters && (

@@ -15,7 +15,7 @@ export default async function GamesPage() {
         owners: {
           include: { user: true },
         },
-        wants: true,
+        wants: { include: { user: { select: { name: true, alias: true } } } },
       },
     }),
     prisma.gameRating.groupBy({
