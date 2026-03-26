@@ -59,7 +59,7 @@ const SELECT: CSSProperties = {
   cursor: 'pointer',
 }
 
-const PAGE_SIZE = 25
+const PAGE_SIZE = 50
 
 export default function GamesGrid({ games, userId, isGameMaster = false, meepScores }: GamesGridProps) {
   const [search, setSearch] = useState('')
