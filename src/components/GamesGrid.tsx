@@ -27,6 +27,7 @@ interface GamesGridProps {
   userId: string | null
   isGameMaster?: boolean
   meepScores: Record<string, MeepScore>
+  sidebar?: React.ReactNode
 }
 
 const ARROW_SVG = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0.5l5 5 5-5' stroke='%23C9A961' stroke-opacity='0.65' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C%2Fsvg%3E\")"
@@ -61,7 +62,8 @@ const SELECT: CSSProperties = {
 
 const PAGE_SIZE = 50
 
-export default function GamesGrid({ games, userId, isGameMaster = false, meepScores }: GamesGridProps) {
+export default function GamesGrid({ games, userId, isGameMaster = false, meepScores, sidebar }: GamesGridProps) {
+  const [showMobileStats, setShowMobileStats] = useState(false)
   const [search, setSearch] = useState('')
   const [playerCount, setPlayerCount] = useState<number | ''>('')
   const [selectedMechanics, setSelectedMechanics] = useState<string[]>([])
@@ -514,43 +516,115 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
         </div>
       )}
 
-      {/* Result count */}
-      <p style={{ fontSize: '0.8125rem', color: 'rgba(232,212,184,0.55)', marginBottom: '1.25rem' }}>
-        {filtered.length} game{filtered.length !== 1 ? 's' : ''}
-        {hasFilters && ` of ${games.length} total`}
-      </p>
-
-      {/* Grid */}
-      {filtered.length === 0 ? (
-        <p style={{ color: 'rgba(232,212,184,0.5)' }}>No games match your filters.</p>
-      ) : (
-        <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(315px, 100%), 1fr))' }}>
-          {visible.map(game => (
-            <GameCard
-              key={game.id}
-              game={game}
-              userId={userId}
-              isGameMaster={isGameMaster}
-              userOwnsGame={userId ? game.owners.some(o => o.userId === userId) : false}
-              userWantsGame={userId ? game.wants.some(w => w.userId === userId) : false}
-              wantCount={game.wants.length}
-              meepScore={meepScores[game.id]}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Load more */}
-      {remaining > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+      {/* Result count + mobile Top Charts button */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'rgba(232,212,184,0.55)' }}>
+          {filtered.length} game{filtered.length !== 1 ? 's' : ''}
+          {hasFilters && ` of ${games.length} total`}
+        </p>
+        {sidebar && (
           <button
-            onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
-            style={{ ...INPUT, cursor: 'pointer', padding: '0.6rem 2rem', borderColor: 'rgba(201,169,97,0.5)', fontSize: '0.9375rem' }}
+            className="lg:hidden"
+            onClick={() => setShowMobileStats(true)}
+            style={{ ...INPUT, cursor: 'pointer', fontSize: '0.8125rem', padding: '0.3rem 0.75rem' }}
           >
-            Load More ({remaining} more)
+            Top Charts ↗
           </button>
+        )}
+      </div>
+
+      {/* Cards + sidebar row */}
+      <div className="flex flex-row gap-6 items-start">
+
+        {/* Game cards column */}
+        <div className="flex-1 min-w-0">
+          {filtered.length === 0 ? (
+            <p style={{ color: 'rgba(232,212,184,0.5)' }}>No games match your filters.</p>
+          ) : (
+            <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(315px, 100%), 1fr))' }}>
+              {visible.map(game => (
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  userId={userId}
+                  isGameMaster={isGameMaster}
+                  userOwnsGame={userId ? game.owners.some(o => o.userId === userId) : false}
+                  userWantsGame={userId ? game.wants.some(w => w.userId === userId) : false}
+                  wantCount={game.wants.length}
+                  meepScore={meepScores[game.id]}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Load more */}
+          {remaining > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+              <button
+                onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
+                style={{ ...INPUT, cursor: 'pointer', padding: '0.6rem 2rem', borderColor: 'rgba(201,169,97,0.5)', fontSize: '0.9375rem' }}
+              >
+                Load More ({remaining} more)
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop sidebar — hidden on mobile */}
+        {sidebar && (
+          <div
+            className="hidden lg:block"
+            style={{ width: 260, flexShrink: 0, position: 'sticky', top: '1.5rem', alignSelf: 'flex-start' }}
+          >
+            {sidebar}
+          </div>
+        )}
+
+      </div>
+
+      {/* Mobile Top Charts overlay */}
+      {showMobileStats && sidebar && (
+        <div
+          className="lg:hidden"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 500,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+          }}
+          onClick={() => setShowMobileStats(false)}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              padding: '1.25rem 1rem 1.5rem',
+              background: '#1a0e06',
+              border: '2px solid #8B6F47',
+              borderRadius: '10px',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <span style={{ color: '#C9A961', fontWeight: 700, fontSize: '1rem' }}>Top Charts</span>
+              <button
+                onClick={() => setShowMobileStats(false)}
+                style={{ background: 'none', border: 'none', color: 'rgba(232,212,184,0.6)', fontSize: '1.25rem', cursor: 'pointer', padding: '0.25rem' }}
+              >
+                ✕
+              </button>
+            </div>
+            {sidebar}
+          </div>
         </div>
       )}
+
     </div>
   )
 }

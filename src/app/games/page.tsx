@@ -3,7 +3,9 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import { auth } from '@clerk/nextjs/server'
 import GamesGrid from '@/components/GamesGrid'
-import { MemberOnly } from '@/components/RoleGuard';
+import { MemberOnly } from '@/components/RoleGuard'
+import GamesSidebar from '@/components/GamesSidebar'
+import BackToTopButton from '@/components/BackToTopButton'
 
 export default async function GamesPage() {
   const { userId } = await auth()
@@ -37,6 +39,44 @@ export default async function GamesPage() {
     }
   }
 
+  // ── Sidebar data ────────────────────────────────────────────────────────────
+
+  const sidebarFields = (g: (typeof games)[number]) => ({
+    id: g.id,
+    name: g.name,
+    image: g.image,
+    bggId: g.bggId,
+    description: g.description,
+    categories: g.categories,
+    mechanisms: g.mechanisms,
+    minPlayers: g.minPlayers,
+    maxPlayers: g.maxPlayers,
+    playtime: g.playtime,
+    complexity: g.complexity,
+    yearPublished: g.yearPublished,
+  })
+
+  const recentlyAdded = [...games]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3)
+    .map(sidebarFields)
+
+  const topRated = games
+    .filter(g => meepScores[g.id])
+    .sort((a, b) => (meepScores[b.id]?.avg ?? 0) - (meepScores[a.id]?.avg ?? 0))
+    .slice(0, 3)
+    .map(g => ({ game: sidebarFields(g), avg: meepScores[g.id].avg }))
+
+  const topInterest = games
+    .filter(g => g.wants.length > 0)
+    .sort((a, b) => b.wants.length - a.wants.length)
+    .slice(0, 3)
+    .map(g => ({
+      game: sidebarFields(g),
+      count: g.wants.length,
+      users: g.wants.map(w => w.user.alias ?? w.user.name),
+    }))
+
   return (
     <>
       <Header />
@@ -56,9 +96,22 @@ export default async function GamesPage() {
         {games.length === 0 ? (
           <p className="text-gray-600">No games in the collection yet.</p>
         ) : (
-          <GamesGrid games={games} userId={userId} isGameMaster={isGameMaster} meepScores={meepScores} />
+          <GamesGrid
+            games={games}
+            userId={userId}
+            isGameMaster={isGameMaster}
+            meepScores={meepScores}
+            sidebar={
+              <GamesSidebar
+                recentlyAdded={recentlyAdded}
+                topRated={topRated}
+                topInterest={topInterest}
+              />
+            }
+          />
         )}
       </main>
+      <BackToTopButton />
     </>
   )
 }
