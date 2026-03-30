@@ -534,7 +534,7 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
             onClick={() => setShowMobileStats(true)}
             style={{ ...INPUT, cursor: 'pointer', fontSize: '0.8125rem', padding: '0.3rem 0.75rem' }}
           >
-            {'Top Charts \u2197\uFE0E'}
+            {'Top Charts'}
           </button>
         )}
       </div>
