@@ -63,7 +63,13 @@ export default async function GamesPage() {
 
   const topRated = games
     .filter(g => meepScores[g.id])
-    .sort((a, b) => (meepScores[b.id]?.avg ?? 0) - (meepScores[a.id]?.avg ?? 0))
+    .sort((a, b) => {
+      const aQ = (meepScores[a.id]?.count ?? 0) >= 2
+      const bQ = (meepScores[b.id]?.count ?? 0) >= 2
+      if (aQ && !bQ) return -1
+      if (!aQ && bQ) return 1
+      return (meepScores[b.id]?.avg ?? 0) - (meepScores[a.id]?.avg ?? 0)
+    })
     .slice(0, 3)
     .map(g => ({ game: sidebarFields(g), avg: meepScores[g.id].avg }))
 

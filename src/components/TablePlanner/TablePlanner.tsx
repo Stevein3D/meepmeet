@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import styles from './TablePlanner.module.css'
 import GameDetailsModal from '@/components/GameDetailsModal'
 import {
@@ -159,7 +160,11 @@ function SortablePlayerRow({
         )}
         {!canManage && player.isGM && <span className={styles.gmStarReadonly}>★</span>}
         <span className={styles.playerName}>
-          {player.user ? displayName(player.user) : player.playerName}
+          {player.user ? (
+            <Link href={`/meeps/${player.userId}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+              {displayName(player.user)}
+            </Link>
+          ) : player.playerName}
           {player.isGM && <span className={styles.gmBadge}> GM</span>}
           {!player.userId && <span className={styles.guestBadge}> (guest)</span>}
         </span>

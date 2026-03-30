@@ -177,7 +177,13 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
     }
     const out = [...list]
     if (sortBy === 'meepScore') {
-      out.sort((a, b) => (meepScores[b.id]?.avg ?? -1) - (meepScores[a.id]?.avg ?? -1))
+      out.sort((a, b) => {
+        const aQ = (meepScores[a.id]?.count ?? 0) >= 2
+        const bQ = (meepScores[b.id]?.count ?? 0) >= 2
+        if (aQ && !bQ) return -1
+        if (!aQ && bQ) return 1
+        return (meepScores[b.id]?.avg ?? -1) - (meepScores[a.id]?.avg ?? -1)
+      })
     } else if (sortBy === 'complexity') {
       out.sort((a, b) => (b.complexity ?? 0) - (a.complexity ?? 0))
     } else if (sortBy === 'playtime') {
@@ -528,7 +534,7 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
             onClick={() => setShowMobileStats(true)}
             style={{ ...INPUT, cursor: 'pointer', fontSize: '0.8125rem', padding: '0.3rem 0.75rem' }}
           >
-            Top Charts ↗
+            {'Top Charts \u2197\uFE0E'}
           </button>
         )}
       </div>

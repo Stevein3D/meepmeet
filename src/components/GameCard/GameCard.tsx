@@ -126,12 +126,18 @@ export default function GameCard({ game, userId, isGameMaster = false, userOwnsG
             {game.complexity && <p>Complexity: {game.complexity.toFixed(1)}/5</p>}
             {game.owners.length > 0 && (
               <p className={styles.owners} style={{ fontSize: '0.8rem' }}>
-                Owned by: {game.owners.map(o => o.user.alias ?? o.user.name).join(', ')}
+                Owned by:{' '}
+                {game.owners.map((o, i) => (
+                  <span key={o.userId}>{i > 0 && ', '}<Link href={`/meeps/${o.userId}`} style={{ color: 'inherit', textDecoration: 'none' }}>{o.user.alias ?? o.user.name}</Link></span>
+                ))}
               </p>
             )}
             {game.wants.length > 0 && (
               <p className={styles.owners} style={{ fontSize: '0.8rem' }}>
-                Interest: {game.wants.map(w => w.user.alias ?? w.user.name).join(', ')}
+                Interest:{' '}
+                {game.wants.map((w, i) => (
+                  <span key={w.userId}>{i > 0 && ', '}<Link href={`/meeps/${w.userId}`} style={{ color: 'inherit', textDecoration: 'none' }}>{w.user.alias ?? w.user.name}</Link></span>
+                ))}
               </p>
             )}
           </div>
