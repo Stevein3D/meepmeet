@@ -10,7 +10,7 @@ import BackToTopButton from '@/components/BackToTopButton'
 export default async function GamesPage() {
   const { userId } = await auth()
 
-  const [games, ratingAggs, currentUser] = await Promise.all([
+  const [games, ratingAggs, currentUser, userRatingRows] = await Promise.all([
     prisma.game.findMany({
       orderBy: { name: 'asc' },
       include: {
@@ -28,9 +28,15 @@ export default async function GamesPage() {
     userId
       ? prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
       : null,
+    userId
+      ? prisma.gameRating.findMany({ where: { userId }, select: { gameId: true, rating: true } })
+      : [],
   ])
 
   const isGameMaster = currentUser?.role === 'GAME_MASTER'
+
+  const userRatings: Record<string, number> = {}
+  for (const r of userRatingRows) userRatings[r.gameId] = r.rating
 
   const meepScores: Record<string, { avg: number; count: number }> = {}
   for (const r of ratingAggs) {
@@ -107,6 +113,7 @@ export default async function GamesPage() {
             userId={userId}
             isGameMaster={isGameMaster}
             meepScores={meepScores}
+            userRatings={userRatings}
             sidebar={
               <GamesSidebar
                 recentlyAdded={recentlyAdded}

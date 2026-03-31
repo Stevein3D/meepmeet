@@ -27,6 +27,7 @@ interface GamesGridProps {
   userId: string | null
   isGameMaster?: boolean
   meepScores: Record<string, MeepScore>
+  userRatings?: Record<string, number>
   sidebar?: React.ReactNode
 }
 
@@ -62,7 +63,7 @@ const SELECT: CSSProperties = {
 
 const PAGE_SIZE = 50
 
-export default function GamesGrid({ games, userId, isGameMaster = false, meepScores, sidebar }: GamesGridProps) {
+export default function GamesGrid({ games, userId, isGameMaster = false, meepScores, userRatings = {}, sidebar }: GamesGridProps) {
   const [showMobileStats, setShowMobileStats] = useState(false)
   const [search, setSearch] = useState('')
   const [playerCount, setPlayerCount] = useState<number | ''>('')
@@ -558,6 +559,7 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
                   userWantsGame={userId ? game.wants.some(w => w.userId === userId) : false}
                   wantCount={game.wants.length}
                   meepScore={meepScores[game.id]}
+                  userRating={userRatings[game.id] ?? null}
                 />
               ))}
             </div>

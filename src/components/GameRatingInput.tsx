@@ -5,9 +5,10 @@ import { useState } from 'react'
 interface GameRatingInputProps {
   gameId: string
   initialRating: number | null
+  light?: boolean
 }
 
-export default function GameRatingInput({ gameId, initialRating }: GameRatingInputProps) {
+export default function GameRatingInput({ gameId, initialRating, light = false }: GameRatingInputProps) {
   const [value, setValue] = useState(initialRating !== null ? String(initialRating) : '')
   const [saved, setSaved] = useState(initialRating !== null)
   const [saving, setSaving] = useState(false)
@@ -39,9 +40,11 @@ export default function GameRatingInput({ gameId, initialRating }: GameRatingInp
     }
   }
 
+  const textColor = light ? '#ffffff' : '#E8D4B8'
+
   return (
     <div className="flex items-center gap-1.5 flex-shrink-0">
-      <span className="text-xs opacity-60" style={{ color: '#E8D4B8' }}>Rating</span>
+      <span className="text-xs" style={{ color: textColor, opacity: light ? 0.8 : 0.6 }}>Rating</span>
       <input
         type="number"
         min={1}
@@ -62,12 +65,14 @@ export default function GameRatingInput({ gameId, initialRating }: GameRatingInp
             ? '1px solid rgba(220,100,100,0.7)'
             : saved
             ? '1px solid rgba(143,188,143,0.6)'
+            : light
+            ? '1px solid rgba(255,255,255,0.5)'
             : '1px solid rgba(201,169,97,0.4)',
           color: '#F5E6D3',
           outline: 'none',
         }}
       />
-      <span className="text-xs opacity-40" style={{ color: '#E8D4B8' }}>/10</span>
+      <span className="text-xs" style={{ color: textColor, opacity: light ? 0.7 : 0.4 }}>/10</span>
     </div>
   )
 }

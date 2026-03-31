@@ -113,6 +113,7 @@ export default function AddGamePage() {
           name: gameDetails.name,
           image: gameDetails.image,
           description: gameDetails.description || null,
+          categories: gameDetails.categories || [],
           mechanisms: gameDetails.mechanisms || [],
           minPlayers: gameDetails.minPlayers,
           maxPlayers: gameDetails.maxPlayers,

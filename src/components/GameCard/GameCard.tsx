@@ -7,6 +7,8 @@ import DeleteGameButton from '../DeleteGameButton'
 import OwnershipButton from '../OwnershipButton'
 import WantToPlayButton from '../WantToPlayButton'
 import GameDetailsModal from '../GameDetailsModal'
+import GameRatingInput from '../GameRatingInput'
+import RatingInfoButton from '../RatingInfoButton'
 import styles from './GameCard.module.css'
 
 interface GameCardProps {
@@ -44,9 +46,10 @@ interface GameCardProps {
   userWantsGame: boolean
   wantCount: number
   meepScore?: { avg: number; count: number }
+  userRating?: number | null
 }
 
-export default function GameCard({ game, userId, isGameMaster = false, userOwnsGame, userWantsGame, wantCount, meepScore }: GameCardProps) {
+export default function GameCard({ game, userId, isGameMaster = false, userOwnsGame, userWantsGame, wantCount, meepScore, userRating = null }: GameCardProps) {
   const [showControls, setShowControls] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
@@ -103,14 +106,22 @@ export default function GameCard({ game, userId, isGameMaster = false, userOwnsG
 
             <div className={styles.headerText}>
               <h2 className={styles.title}>{game.name}</h2>
-              {hasDetails && (
-                <button
-                  onClick={() => setShowDetails(true)}
-                  className={styles.detailsBtn}
-                >
-                  View Details ↗&#xFE0E;
-                </button>
-              )}
+              <div className={styles.detailsRow}>
+                {hasDetails && (
+                  <button
+                    onClick={() => setShowDetails(true)}
+                    className={styles.detailsBtn}
+                  >
+                    View Details ↗&#xFE0E;
+                  </button>
+                )}
+                {userId && (
+                  <div className={styles.ratingRow}>
+                    <RatingInfoButton />
+                    <GameRatingInput gameId={game.id} initialRating={userRating} light />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
