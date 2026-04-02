@@ -17,29 +17,6 @@ export default function Home() {
           </div>
         </div>
       </header>
-      {/* <header className="border-b">
-        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-          <div className="relative w-12 h-12">
-              <Image 
-              src="/mm-logo-sm.png" 
-              alt="Meep Meet" 
-              fill
-              className="object-contain"
-              />
-          </div>
-          <h1 className="text-2xl font-bold">Meep Meet</h1>
-          <div className="flex items-center gap-4">
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-            <SignedOut>
-              <Link href="/sign-in" className="text-blue-600 hover:underline">
-                Sign In
-              </Link>
-            </SignedOut>
-          </div>
-        </div>
-      </header> */}
       <main className="p-8 flex-1">
         <nav className="mt-2 space-x-0 flex flex-wrap flex-col sm:flex-row justify-center sm:space-x-4 text-center">
           <Link href="/events" className="inline-block mt-4 btn btn-md btn-primary">

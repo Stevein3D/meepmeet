@@ -10,36 +10,10 @@ import GameDetailsModal from '../GameDetailsModal'
 import GameRatingInput from '../GameRatingInput'
 import RatingInfoButton from '../RatingInfoButton'
 import styles from './GameCard.module.css'
+import type { Game } from '@/lib/types'
 
 interface GameCardProps {
-  game: {
-    id: string
-    bggId: number | null
-    name: string
-    image: string | null
-    description: string | null
-    categories: string[]
-    mechanisms: string[]
-    minPlayers: number
-    maxPlayers: number
-    playtime: number
-    complexity: number | null
-    yearPublished: number | null
-    owners: Array<{
-      userId: string
-      user: {
-        name: string
-        alias: string | null
-      }
-    }>
-    wants: Array<{
-      userId: string
-      user: {
-        name: string
-        alias: string | null
-      }
-    }>
-  }
+  game: Game
   userId: string | null
   isGameMaster?: boolean
   userOwnsGame: boolean

@@ -22,6 +22,7 @@ export async function POST(
 
   const existing = await prisma.userGameWant.findUnique({
     where: { userId_gameId: { userId, gameId } },
+    select: { userId: true },
   })
 
   if (existing) {

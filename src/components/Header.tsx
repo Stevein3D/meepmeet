@@ -2,7 +2,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { SignedIn, SignedOut } from '@clerk/nextjs'
 import UserButtonWithProfile from './UserButtonWithProfile'
-// import HeaderAuth from './HeaderAuth'
 
 export default function Header() {
   return (
@@ -32,7 +31,6 @@ export default function Header() {
           <Link href="/faq" className="main-nav-link text-sm sm:text-lg">
             FAQ
           </Link>
-          {/* <HeaderAuth /> */}
           <SignedIn>
             <UserButtonWithProfile />
           </SignedIn>

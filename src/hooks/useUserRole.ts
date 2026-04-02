@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { UserRole } from '@prisma/client';
 
 interface UseUserRoleReturn {
@@ -10,24 +11,26 @@ interface UseUserRoleReturn {
 }
 
 export function useUserRole(): UseUserRoleReturn {
+  const { isLoaded, isSignedIn } = useUser();
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!isSignedIn) {
+      setUserRole('VISITOR');
+      setLoading(false);
+      return;
+    }
+
     const fetchUserRole = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // This assumes you have an API endpoint to get current user
-        const response = await fetch('/api/user/profile');
 
-        if (response.status === 401) {
-          // Not signed in — silently default to VISITOR
-          setUserRole('VISITOR');
-          return;
-        }
+        const response = await fetch('/api/user/profile');
 
         if (!response.ok) {
           throw new Error('Failed to fetch user profile');
@@ -45,7 +48,7 @@ export function useUserRole(): UseUserRoleReturn {
     };
 
     fetchUserRole();
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
   return { userRole, loading, error };
 }

@@ -223,6 +223,11 @@
   }
 }
 
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0 }
+  to   { transform: translateY(0);    opacity: 1 }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
@@ -680,6 +685,36 @@
     );
     animation: hearth-pulse 3.5s ease-in-out infinite;
     pointer-events: none;
+  }
+
+  /* ─────────────────────────────────────────────
+     Grid filter inputs and selects
+     ───────────────────────────────────────────── */
+  .filter-input {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(201,169,97,0.4);
+    border-radius: 0.375rem;
+    color: var(--wood-text-light);
+    padding: 0.45rem 0.65rem;
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  .filter-select {
+    background-color: rgba(0,0,0,0.35);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0.5l5 5 5-5' stroke='%23C9A961' stroke-opacity='0.65' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.65rem center;
+    background-size: 10px 6px;
+    border: 1px solid rgba(201,169,97,0.4);
+    border-radius: 0.375rem;
+    color: var(--wood-text-light);
+    padding: 0.45rem 0.65rem;
+    padding-right: 2rem;
+    font-size: 0.875rem;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
   }
 
 } /* end @layer components */

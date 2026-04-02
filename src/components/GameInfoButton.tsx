@@ -3,21 +3,10 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import GameDetailsModal from './GameDetailsModal'
+import type { BaseGame } from '@/lib/types'
 
 interface GameInfoButtonProps {
-  game: {
-    name: string
-    image: string | null
-    bggId: number | null
-    description: string | null
-    categories: string[]
-    mechanisms: string[]
-    minPlayers: number
-    maxPlayers: number
-    playtime: number
-    complexity: number | null
-    yearPublished: number | null
-  }
+  game: BaseGame
 }
 
 export default function GameInfoButton({ game }: GameInfoButtonProps) {

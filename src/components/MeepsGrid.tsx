@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, CSSProperties } from 'react'
+import { useState, useMemo } from 'react'
 import MeepCard from './MeepCard'
 
 type MeepEntry = {
@@ -53,34 +53,6 @@ const ROLE_LABELS: { value: RoleFilter; label: string }[] = [
   { value: 'VISITOR',     label: 'Visitor' },
 ]
 
-const INPUT: CSSProperties = {
-  background: 'rgba(0,0,0,0.35)',
-  border: '1px solid rgba(201,169,97,0.4)',
-  borderRadius: '0.375rem',
-  color: '#F5E6D3',
-  padding: '0.45rem 0.65rem',
-  fontSize: '0.875rem',
-  outline: 'none',
-}
-
-const ARROW_SVG = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0.5l5 5 5-5' stroke='%23C9A961' stroke-opacity='0.65' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C%2Fsvg%3E\")"
-
-const SELECT: CSSProperties = {
-  backgroundColor: 'rgba(0,0,0,0.35)',
-  backgroundImage: ARROW_SVG,
-  backgroundRepeat: 'no-repeat',
-  backgroundPosition: 'right 0.65rem center',
-  backgroundSize: '10px 6px',
-  border: '1px solid rgba(201,169,97,0.4)',
-  borderRadius: '0.375rem',
-  color: '#F5E6D3',
-  padding: '0.45rem 0.65rem',
-  paddingRight: '2rem',
-  fontSize: '0.875rem',
-  outline: 'none',
-  appearance: 'none' as const,
-  cursor: 'pointer',
-}
 
 export default function MeepsGrid({ meeps, viewerUserId, viewerIsGM }: MeepsGridProps) {
   const [search, setSearch]         = useState('')
@@ -151,7 +123,8 @@ export default function MeepsGrid({ meeps, viewerUserId, viewerIsGM }: MeepsGrid
           placeholder="Search meeps…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ ...INPUT, width: '100%', maxWidth: '502px' }}
+          className="filter-input"
+          style={{ width: '100%', maxWidth: '502px' }}
         />
 
         {/* ── chips + sort + clear ── */}
@@ -182,7 +155,7 @@ export default function MeepsGrid({ meeps, viewerUserId, viewerIsGM }: MeepsGrid
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value as SortKey)}
-          style={SELECT}
+          className="filter-select"
         >
           {SORT_OPTIONS.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -192,7 +165,8 @@ export default function MeepsGrid({ meeps, viewerUserId, viewerIsGM }: MeepsGrid
         {hasFilters && (
           <button
             onClick={reset}
-            style={{ ...INPUT, cursor: 'pointer', color: 'rgba(232,212,184,0.65)', borderColor: 'rgba(232,212,184,0.2)' }}
+            className="filter-input"
+            style={{ cursor: 'pointer', color: 'rgba(232,212,184,0.65)', borderColor: 'rgba(232,212,184,0.2)' }}
           >
             Clear ✕
           </button>

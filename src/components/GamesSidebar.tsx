@@ -3,26 +3,12 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import GameDetailsModal from './GameDetailsModal'
-
-type SidebarGame = {
-  id: string
-  name: string
-  image: string | null
-  bggId: number | null
-  description: string | null
-  categories: string[]
-  mechanisms: string[]
-  minPlayers: number
-  maxPlayers: number
-  playtime: number
-  complexity: number | null
-  yearPublished: number | null
-}
+import type { BaseGame } from '@/lib/types'
 
 interface GamesSidebarProps {
-  recentlyAdded: SidebarGame[]
-  topRated: { game: SidebarGame; avg: number }[]
-  topInterest: { game: SidebarGame; count: number; users: string[] }[]
+  recentlyAdded: BaseGame[]
+  topRated: { game: BaseGame; avg: number }[]
+  topInterest: { game: BaseGame; count: number; users: string[] }[]
 }
 
 const PANEL: React.CSSProperties = {
@@ -41,7 +27,7 @@ function GameRow({
   game,
   meta,
 }: {
-  game: SidebarGame
+  game: BaseGame
   meta?: React.ReactNode
 }) {
   const [showModal, setShowModal] = useState(false)
