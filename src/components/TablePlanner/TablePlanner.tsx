@@ -76,12 +76,19 @@ interface RoundData {
   tables: TableData[]
 }
 
+interface EventGuest {
+  id: string
+  name: string
+  bringerId: string
+}
+
 interface TablePlannerProps {
   eventId: string
   initialRounds: RoundData[]
   canManage: boolean
   attendees: AttendeeUser[]
   allMembers: AttendeeUser[]
+  guests: EventGuest[]
   games: GameOption[]
   savedLabels: string[]
 }
@@ -443,6 +450,7 @@ function AddPlayerModal({
   table,
   attendees,
   allMembers,
+  guests,
   onClose,
   onAdd,
 }: {
@@ -451,6 +459,7 @@ function AddPlayerModal({
   table: TableData
   attendees: AttendeeUser[]
   allMembers: AttendeeUser[]
+  guests: EventGuest[]
   onClose: () => void
   onAdd: (player: TablePlayerData, updatedTable: TableData) => void
 }) {
@@ -458,6 +467,9 @@ function AddPlayerModal({
   const [saving, setSaving] = useState(false)
 
   const alreadyIds = new Set(table.players.map((p) => p.userId).filter(Boolean))
+  const alreadyGuestNames = new Set(
+    table.players.filter((p) => !p.userId).map((p) => p.playerName?.toLowerCase())
+  )
   const attendingIds = new Set(attendees.map((a) => a.id))
 
   function matchesQuery(a: AttendeeUser) {
@@ -468,6 +480,14 @@ function AddPlayerModal({
 
   const attending = allMembers.filter((a) => attendingIds.has(a.id) && matchesQuery(a))
   const others = allMembers.filter((a) => !attendingIds.has(a.id) && matchesQuery(a))
+
+  // Guests from attending members, not already at this table
+  const attendingGuests = guests.filter((g) => {
+    if (alreadyGuestNames.has(g.name.toLowerCase())) return false
+    if (!attendingIds.has(g.bringerId)) return false
+    const q = query.toLowerCase()
+    return q === '' || g.name.toLowerCase().includes(q)
+  })
 
   async function addPlayer(body: { userId?: string; playerName?: string }) {
     setSaving(true)
@@ -530,6 +550,22 @@ function AddPlayerModal({
             </>
           )}
 
+          {attendingGuests.length > 0 && (
+            <>
+              <li className={styles.pickerGroupHeader}>Guests</li>
+              {attendingGuests.map((g) => (
+                <li
+                  key={g.id}
+                  className={styles.pickerItem}
+                  onClick={() => !saving && addPlayer({ playerName: g.name })}
+                >
+                  <span className={styles.initials}>+1</span>
+                  {g.name}
+                </li>
+              ))}
+            </>
+          )}
+
           {others.length > 0 && (
             <>
               <li className={styles.pickerGroupHeader}>Other Members</li>
@@ -564,6 +600,7 @@ function TableCard({
   canManage,
   attendees,
   allMembers,
+  guests,
   games,
   savedLabels,
   onUpdate,
@@ -577,6 +614,7 @@ function TableCard({
   canManage: boolean
   attendees: AttendeeUser[]
   allMembers: AttendeeUser[]
+  guests: EventGuest[]
   games: GameOption[]
   savedLabels: string[]
   onUpdate: (updated: TableData) => void
@@ -813,6 +851,7 @@ function TableCard({
           table={tableWithPlayers}
           attendees={attendees}
           allMembers={allMembers}
+          guests={guests}
           onClose={() => setModal(null)}
           onAdd={(player, updatedTable) => {
             const newPlayers = updatedTable.players
@@ -836,6 +875,7 @@ function SortableTableCard(props: {
   canManage: boolean
   attendees: AttendeeUser[]
   allMembers: AttendeeUser[]
+  guests: EventGuest[]
   games: GameOption[]
   savedLabels: string[]
   onUpdate: (updated: TableData) => void
@@ -870,6 +910,7 @@ function SortableRoundSection({
   canManage,
   attendees,
   allMembers,
+  guests,
   games,
   savedLabels,
   onEdit,
@@ -885,6 +926,7 @@ function SortableRoundSection({
   canManage: boolean
   attendees: AttendeeUser[]
   allMembers: AttendeeUser[]
+  guests: EventGuest[]
   games: GameOption[]
   savedLabels: string[]
   onEdit: () => void
@@ -972,6 +1014,7 @@ function SortableRoundSection({
                 canManage={canManage}
                 attendees={attendees}
                 allMembers={allMembers}
+                guests={guests}
                 games={games}
                 savedLabels={savedLabels}
                 onUpdate={updateTable}
@@ -1004,6 +1047,7 @@ export default function TablePlanner({
   canManage,
   attendees,
   allMembers,
+  guests,
   games,
   savedLabels,
 }: TablePlannerProps) {
@@ -1107,6 +1151,7 @@ export default function TablePlanner({
               canManage={canManage}
               attendees={attendees}
               allMembers={allMembers}
+              guests={guests}
               games={games}
               savedLabels={savedLabels}
               onEdit={() => setModal({ type: 'editRound', round })}

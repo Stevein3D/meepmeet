@@ -59,8 +59,8 @@ export default function AddEventPage() {
       })
 
       if (response.ok) {
-        router.push('/events')
-        router.refresh()
+        const created = await response.json()
+        router.push(`/events/${created.id}/edit`)
       } else {
         setError('Failed to create event')
       }

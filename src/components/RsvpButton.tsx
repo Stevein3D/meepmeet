@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation'
 interface RsvpButtonProps {
   eventId: string
   initialStatus: 'yes' | 'no' | 'maybe' | null
+  hideMaybe?: boolean
 }
 
-export default function RsvpButton({ eventId, initialStatus }: RsvpButtonProps) {
+export default function RsvpButton({ eventId, initialStatus, hideMaybe = false }: RsvpButtonProps) {
   const router = useRouter()
   const [status, setStatus] = useState<'yes' | 'no' | 'maybe' | null>(initialStatus)
   const [loading, setLoading] = useState(false)
@@ -53,18 +54,20 @@ export default function RsvpButton({ eventId, initialStatus }: RsvpButtonProps) 
       >
         {loading && status === 'yes' ? '...' : 'Yes'}
       </button>
-      <button
-        onClick={() => handleRsvp('maybe')}
-        disabled={loading}
-        className="flex-1 px-3 py-2 text-sm rounded font-medium transition-all disabled:opacity-50"
-        style={{
-          border: status === 'maybe' ? '2px solid #DAA520' : '2px solid rgba(201,169,97,0.5)',
-          background: status === 'maybe' ? 'rgba(218,165,32,0.3)' : 'rgba(201,169,97,0.1)',
-          color: status === 'maybe' ? '#DAA520' : '#C9A961',
-        }}
-      >
-        {loading && status === 'maybe' ? '...' : 'Maybe'}
-      </button>
+      {!hideMaybe && (
+        <button
+          onClick={() => handleRsvp('maybe')}
+          disabled={loading}
+          className="flex-1 px-3 py-2 text-sm rounded font-medium transition-all disabled:opacity-50"
+          style={{
+            border: status === 'maybe' ? '2px solid #DAA520' : '2px solid rgba(201,169,97,0.5)',
+            background: status === 'maybe' ? 'rgba(218,165,32,0.3)' : 'rgba(201,169,97,0.1)',
+            color: status === 'maybe' ? '#DAA520' : '#C9A961',
+          }}
+        >
+          {loading && status === 'maybe' ? '...' : 'Maybe'}
+        </button>
+      )}
       <button
         onClick={() => handleRsvp('no')}
         disabled={loading}

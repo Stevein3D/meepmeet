@@ -28,7 +28,7 @@ export default async function EventsPage() {
         }
       },
       _count: {
-        select: { attendees: true }
+        select: { attendees: true, guests: true }
       }
     }
   })
@@ -71,6 +71,9 @@ export default async function EventsPage() {
                         userId={userId}
                         locationHidden={hideLocation && !!event.location}
                         userRsvp={userRsvp}
+                        dateConfirmed={event.dateConfirmed}
+                        guestCount={event._count.guests}
+                        isPast={false}
                       />
                     )
                   })}
@@ -92,6 +95,9 @@ export default async function EventsPage() {
                         userId={userId}
                         locationHidden={hideLocation && !!event.location}
                         userRsvp={userRsvp}
+                        dateConfirmed={event.dateConfirmed}
+                        guestCount={event._count.guests}
+                        isPast={true}
                       />
                     )
                   })}

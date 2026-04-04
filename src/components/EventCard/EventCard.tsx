@@ -32,9 +32,12 @@ interface EventCardProps {
   userId: string | null
   locationHidden?: boolean
   userRsvp: { rsvpStatus: string } | null
+  dateConfirmed: boolean
+  guestCount: number
+  isPast: boolean
 }
 
-export default function EventCard({ event, userId, locationHidden = false, userRsvp }: EventCardProps) {
+export default function EventCard({ event, userId, locationHidden = false, userRsvp, dateConfirmed, guestCount, isPast }: EventCardProps) {
   const [showControls, setShowControls] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
 
@@ -144,17 +147,21 @@ export default function EventCard({ event, userId, locationHidden = false, userR
 
           <div className="mt-2 pt-2" style={{ borderTop: '1px solid rgba(201,169,97,0.3)' }}>
             <p className="text-xs opacity-75">
-              {yesCount} Yes • {maybeCount} Maybe • {noCount} No
+              {yesCount} Yes{!isPast && ` • ${maybeCount} Maybe`} • {noCount} No{guestCount > 0 ? ` • ${guestCount} Guest${guestCount !== 1 ? 's' : ''}` : ''}
             </p>
           </div>
         </div>
 
         {/* RSVP Buttons */}
-        {userId && (
+        {userId && (dateConfirmed || isPast) && (
           <div className="mt-2" style={{ paddingRight: '34px' }}>
+            {isPast && (
+              <p className="text-xs mb-2" style={{ color: 'rgba(201,169,97,1)', fontWeight: 600 }}>Attended?</p>
+            )}
             <RsvpButton
               eventId={event.id}
               initialStatus={(userRsvp?.rsvpStatus as 'yes' | 'no' | 'maybe') || null}
+              hideMaybe={isPast}
             />
           </div>
         )}

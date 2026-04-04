@@ -40,6 +40,8 @@ model User {
   playSessions  SessionPlayer[]
   sessionWins   PlaySession[]  @relation("SessionWinner")
   tablePlayers  TablePlayer[]
+  dateVotes     EventDateVote[]
+  eventGuests   EventGuest[]   @relation("GuestBringer")
 }
 
 model Game {
@@ -83,18 +85,21 @@ model UserGame {
 }
 
 model Event {
-  id        String   @id @default(cuid())
-  title     String
-  date      DateTime
-  location  String?
-  notes     String?
-  hostId    String
-  host      User     @relation("EventHost", fields: [hostId], references: [id])
-  createdAt DateTime @default(now())
-  
+  id            String   @id @default(cuid())
+  title         String
+  date          DateTime
+  location      String?
+  notes         String?
+  hostId        String
+  dateConfirmed Boolean  @default(false)
+  host          User     @relation("EventHost", fields: [hostId], references: [id])
+  createdAt     DateTime @default(now())
+
   attendees    EventAttendee[]
   playSessions PlaySession[]
   rounds       EventRound[]
+  datePolls    EventDatePoll[]
+  guests       EventGuest[]
 }
 
 model EventAttendee {
@@ -187,4 +192,36 @@ model GameRating {
   game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   @@id([userId, gameId])
+}
+
+model EventDatePoll {
+  id          String    @id @default(cuid())
+  eventId     String
+  date        DateTime
+  confirmedAt DateTime?
+
+  event Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  votes EventDateVote[]
+
+  @@unique([eventId, date])
+}
+
+model EventDateVote {
+  optionId String
+  userId   String
+
+  option EventDatePoll @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([optionId, userId])
+}
+
+model EventGuest {
+  id        String @id @default(cuid())
+  eventId   String
+  bringerId String
+  name      String
+
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  bringer User  @relation("GuestBringer", fields: [bringerId], references: [id], onDelete: Cascade)
 }
