@@ -31,7 +31,7 @@ function baseLayout(content: string): string {
       ${content}
     </div>
     <div style="padding:14px 28px;border-top:1px solid #3d5432;text-align:center;">
-      <p style="margin:0;font-size:0.85rem;color:#d4c9a8;">You're receiving this because you're a MeepMeet member.</p>
+      <p style="margin:0;font-size:0.85rem;color:#d4c9a8;">You're receiving this because you're a Meep Meet member.</p>
     </div>
   </div>
 </body>
@@ -101,7 +101,7 @@ export async function sendPollOpenEmail({
     <p style="margin:0;color:#d4c9a8;font-size:1.1rem;line-height:1.3">1. A date poll to pick all dates that you can attend (that's this one)</p>
     <p style="margin:0;color:#d4c9a8;font-size:1.1rem;line-height:1.3">2. A confirmation with the finalized date and an RSVP request</p>
     <p style="margin:0 0 12px;color:#d4c9a8;font-size:1.1rem;line-height:1.3">3. A reminder the week of the event</p>
-    <p style="margin:0 0 12px;color:#d4c9a8;font-size:1.1rem;line-height:1.3">To kick things off, we're asking you to select all the dates you'd be available for our next Meep Meet - <span style="font-weight:600;color:#e8d5b0;">${eventTitle}</span>. Click the button below to cast your vote!</p>
+    <p style="margin:0 0 12px;color:#d4c9a8;font-size:1.1rem;line-height:1.3">To kick things off, we're asking you to select all the dates you'd be available for the next Meep Meet - <span style="font-weight:600;color:#e8d5b0;">${eventTitle}</span>. Click the button below to cast your vote!</p>
     <div style="margin-top:20px;">
       <a href="${eventUrl}" style="display:inline-block;padding:10px 22px;background:#5a7a4a;color:#e8d5b0;text-decoration:none;border-radius:6px;font-weight:700;font-size:1.3rem;border:1px solid #6d9458;">Vote Now</a>
     </div>

@@ -14,13 +14,13 @@ export default async function EventDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const { id } = await params
+
   const { userId: clerkUserId } = await auth()
-  if (!clerkUserId) redirect('/sign-in')
+  if (!clerkUserId) redirect(`/sign-in?redirect_url=/events/${id}`)
 
   const userId = await getDatabaseUserId(clerkUserId)
-  if (!userId) redirect('/sign-in')
-
-  const { id } = await params
+  if (!userId) redirect(`/sign-in?redirect_url=/events/${id}`)
 
   const [event, currentUser, allGames, labelRows, memberRows] = await Promise.all([
     prisma.event.findUnique({
