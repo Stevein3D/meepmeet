@@ -154,7 +154,7 @@ export default async function EventDetailPage({
           >
             <p style={{ color: '#E8D4B8' }}>
               <span style={{ color: '#C9A961', fontWeight: 600 }}>When:</span>{' '}
-              {event.dateConfirmed
+              {(event.dateConfirmed || isPast)
                 ? formattedDate
                 : <span style={{ color: 'rgba(201,169,97,0.6)', fontStyle: 'italic' }}>TBD — Vote below!</span>
               }
