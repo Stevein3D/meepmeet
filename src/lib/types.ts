@@ -26,6 +26,7 @@ export type GameWant = {
 }
 
 export type Game = BaseGame & {
+  createdAt: Date | string
   owners: GameOwner[]
   wants: GameWant[]
 }

@@ -3,11 +3,16 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+interface PollVote {
+  userId: string
+  userAlias: string
+}
+
 interface PollOption {
   id: string
   date: string
   confirmedAt: string | null
-  votes: { userId: string }[]
+  votes: PollVote[]
 }
 
 interface EventDatePollProps {
@@ -52,7 +57,16 @@ export default function EventDatePoll({
     })
     if (res.ok) {
       const { option } = await res.json()
-      setOptions(prev => prev.map(o => (o.id === optionId ? { ...o, votes: option.votes } : o)))
+      // API returns votes with only userId — merge in existing userAlias data
+      setOptions(prev => prev.map(o => {
+        if (o.id !== optionId) return o
+        const aliasMap = new Map(o.votes.map(v => [v.userId, v.userAlias]))
+        const merged: PollVote[] = (option.votes as { userId: string }[]).map(v => ({
+          userId: v.userId,
+          userAlias: aliasMap.get(v.userId) ?? v.userId,
+        }))
+        return { ...o, votes: merged }
+      }))
     }
     setBusy(null)
   }
@@ -91,76 +105,95 @@ export default function EventDatePoll({
           const voted = opt.votes.some(v => v.userId === currentUserId)
           const count = opt.votes.length
           return (
-            <div
-              key={opt.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.375rem',
-                background: voted ? 'rgba(143,188,143,0.12)' : 'rgba(201,169,97,0.06)',
-                border: voted ? '1px solid rgba(143,188,143,0.4)' : '1px solid rgba(201,169,97,0.2)',
-              }}
-            >
-              <button
-                onClick={() => handleVote(opt.id)}
-                disabled={!!busy}
+            <div key={opt.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <div
                 style={{
-                  flexShrink: 0,
-                  width: '1.25rem',
-                  height: '1.25rem',
-                  borderRadius: '50%',
-                  border: voted ? '2px solid #8FBC8F' : '2px solid rgba(201,169,97,0.5)',
-                  background: voted ? '#8FBC8F' : 'transparent',
-                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                aria-label={voted ? 'Remove vote' : 'Vote for this date'}
-              >
-                {voted && (
-                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                    <path d="M1 4l2 2 4-4" stroke="#1A0F08" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </button>
-
-              <span style={{ flex: 1, fontSize: '0.875rem', color: '#E8D4B8' }}>
-                {formatPollDate(opt.date)}
-              </span>
-
-              <span
-                style={{
-                  fontSize: '0.75rem',
-                  color: count > 0 ? '#C9A961' : 'rgba(201,169,97,0.4)',
-                  flexShrink: 0,
-                  minWidth: '2.5rem',
-                  textAlign: 'right',
+                  gap: '0.75rem',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: count > 0 ? '0.375rem 0.375rem 0 0' : '0.375rem',
+                  background: voted ? 'rgba(143,188,143,0.12)' : 'rgba(201,169,97,0.06)',
+                  border: voted ? '1px solid rgba(143,188,143,0.4)' : '1px solid rgba(201,169,97,0.2)',
+                  borderBottom: count > 0 ? 'none' : undefined,
                 }}
               >
-                {count} {count === 1 ? 'vote' : 'votes'}
-              </span>
-
-              {isGameMaster && (
                 <button
-                  onClick={() => handleConfirm(opt.id)}
-                  disabled={!!confirming}
+                  onClick={() => handleVote(opt.id)}
+                  disabled={!!busy}
                   style={{
                     flexShrink: 0,
-                    padding: '0.2rem 0.6rem',
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    borderRadius: '0.25rem',
-                    border: '1px solid rgba(201,169,97,0.6)',
-                    background: 'rgba(201,169,97,0.12)',
-                    color: '#C9A961',
+                    width: '1.25rem',
+                    height: '1.25rem',
+                    borderRadius: '50%',
+                    border: voted ? '2px solid #8FBC8F' : '2px solid rgba(201,169,97,0.5)',
+                    background: voted ? '#8FBC8F' : 'transparent',
                     cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  aria-label={voted ? 'Remove vote' : 'Vote for this date'}
+                >
+                  {voted && (
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                      <path d="M1 4l2 2 4-4" stroke="#1A0F08" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+
+                <span style={{ flex: 1, fontSize: '0.875rem', color: '#E8D4B8' }}>
+                  {formatPollDate(opt.date)}
+                </span>
+
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    color: count > 0 ? '#C9A961' : 'rgba(201,169,97,0.4)',
+                    flexShrink: 0,
+                    minWidth: '2.5rem',
+                    textAlign: 'right',
                   }}
                 >
-                  {confirming === opt.id ? '...' : 'Confirm'}
-                </button>
+                  {count} {count === 1 ? 'vote' : 'votes'}
+                </span>
+
+                {isGameMaster && (
+                  <button
+                    onClick={() => handleConfirm(opt.id)}
+                    disabled={!!confirming}
+                    style={{
+                      flexShrink: 0,
+                      padding: '0.2rem 0.6rem',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      borderRadius: '0.25rem',
+                      border: '1px solid rgba(201,169,97,0.6)',
+                      background: 'rgba(201,169,97,0.12)',
+                      color: '#C9A961',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {confirming === opt.id ? '...' : 'Confirm'}
+                  </button>
+                )}
+              </div>
+
+              {count > 0 && (
+                <div
+                  style={{
+                    padding: '0.3rem 0.75rem 0.4rem calc(0.75rem + 1.25rem + 0.75rem)',
+                    borderRadius: '0 0 0.375rem 0.375rem',
+                    background: voted ? 'rgba(143,188,143,0.06)' : 'rgba(201,169,97,0.03)',
+                    border: voted ? '1px solid rgba(143,188,143,0.4)' : '1px solid rgba(201,169,97,0.2)',
+                    borderTop: 'none',
+                    fontSize: '0.7rem',
+                    color: 'rgba(232,212,184,0.5)',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {opt.votes.map(v => v.userAlias).join(', ')}
+                </div>
               )}
             </div>
           )

@@ -52,7 +52,7 @@ export default async function EventDetailPage({
           orderBy: { order: 'asc' },
         },
         datePolls: {
-          include: { votes: { select: { userId: true } } },
+          include: { votes: { include: { user: { select: { alias: true, name: true } } } } },
           orderBy: { date: 'asc' },
         },
         guests: {
@@ -182,9 +182,13 @@ export default async function EventDetailPage({
             <EventDatePoll
               eventId={id}
               options={event.datePolls.map(o => ({
-                ...o,
+                id: o.id,
                 date: o.date.toISOString(),
                 confirmedAt: o.confirmedAt?.toISOString() ?? null,
+                votes: o.votes.map(v => ({
+                  userId: v.userId,
+                  userAlias: v.user.alias ?? v.user.name,
+                })),
               }))}
               currentUserId={userId}
               isGameMaster={!!isGameMaster}

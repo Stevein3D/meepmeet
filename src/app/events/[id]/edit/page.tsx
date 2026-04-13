@@ -56,6 +56,8 @@ export default function EditEventPage() {
   const [pollBusy, setPollBusy] = useState(false)
   const [notifying, setNotifying] = useState(false)
   const [notified, setNotified] = useState(false)
+  const [testNotifying, setTestNotifying] = useState(false)
+  const [testNotified, setTestNotified] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -156,6 +158,18 @@ export default function EditEventPage() {
     })
     setNotifying(false)
     setNotified(true)
+  }
+
+  const handleTestNotify = async () => {
+    setTestNotifying(true)
+    await fetch(`/api/events/${eventId}/poll`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'test-notify' }),
+    })
+    setTestNotifying(false)
+    setTestNotified(true)
+    setTimeout(() => setTestNotified(false), 4000)
   }
 
   const handleDeletePollOption = async (optionId: string) => {
@@ -329,22 +343,40 @@ export default function EditEventPage() {
               </h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 {!event.dateConfirmed && pollOptions.length > 0 && (
-                  <button
-                    onClick={handleNotifyMembers}
-                    disabled={notifying || notified}
-                    style={{
-                      padding: '0.25rem 0.7rem',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      borderRadius: '0.25rem',
-                      border: '1px solid rgba(201,169,97,0.5)',
-                      background: notified ? 'rgba(143,188,143,0.15)' : 'rgba(201,169,97,0.1)',
-                      color: notified ? '#8FBC8F' : '#C9A961',
-                      cursor: notified ? 'default' : 'pointer',
-                    }}
-                  >
-                    {notifying ? 'Sending...' : notified ? '✓ Members notified' : 'Notify Members'}
-                  </button>
+                  <>
+                    <button
+                      onClick={handleTestNotify}
+                      disabled={testNotifying}
+                      style={{
+                        padding: '0.25rem 0.7rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        borderRadius: '0.25rem',
+                        border: '1px solid rgba(201,169,97,0.25)',
+                        background: testNotified ? 'rgba(143,188,143,0.1)' : 'rgba(0,0,0,0.2)',
+                        color: testNotified ? '#8FBC8F' : 'rgba(201,169,97,0.5)',
+                        cursor: testNotifying ? 'default' : 'pointer',
+                      }}
+                    >
+                      {testNotifying ? 'Sending...' : testNotified ? '✓ Test sent' : 'Test Email'}
+                    </button>
+                    <button
+                      onClick={handleNotifyMembers}
+                      disabled={notifying || notified}
+                      style={{
+                        padding: '0.25rem 0.7rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        borderRadius: '0.25rem',
+                        border: '1px solid rgba(201,169,97,0.5)',
+                        background: notified ? 'rgba(143,188,143,0.15)' : 'rgba(201,169,97,0.1)',
+                        color: notified ? '#8FBC8F' : '#C9A961',
+                        cursor: notified ? 'default' : 'pointer',
+                      }}
+                    >
+                      {notifying ? 'Sending...' : notified ? '✓ Members notified' : 'Notify Members'}
+                    </button>
+                  </>
                 )}
                 {event.dateConfirmed && (
                   <span style={{ fontSize: '0.75rem', color: '#8FBC8F', fontWeight: 600 }}>✓ Date confirmed</span>

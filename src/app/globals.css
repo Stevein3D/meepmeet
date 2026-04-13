@@ -184,11 +184,10 @@
   body {
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* Use 100dvh for modern viewports with fallback to 100vh */
-    margin: 0; /* Optional: Resets default browser margin */
+    min-height: 100vh;
+    margin: 0;
     background: linear-gradient(to bottom, #1a2e1a 0%, #2d4a2d 50%, #1f3d1f 100%);
     background-attachment: fixed;
-    min-height: 100vh;
     color: var(--foreground);
     font-family: var(--font-cinzel);
   }

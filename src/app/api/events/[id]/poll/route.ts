@@ -4,6 +4,11 @@ import { auth } from '@clerk/nextjs/server'
 import { getDatabaseUserId } from '@/lib/user-helper'
 import { sendPollOpenEmail } from '@/lib/email'
 
+const TEST_RECIPIENTS = [
+  { email: 'stevein3d@gmail.com', name: 'Lemon' },
+  { email: 'Drakon70@gmail.com', name: 'Drake' },
+]
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -46,6 +51,15 @@ export async function POST(
     ])
     if (event) {
       sendPollOpenEmail({ eventTitle: event.title, eventId: id, recipients: members }).catch(console.error)
+    }
+    return NextResponse.json({ ok: true })
+  }
+
+  // action: 'test-notify' — send poll-open email to test recipients only
+  if (body.action === 'test-notify') {
+    const event = await prisma.event.findUnique({ where: { id }, select: { title: true } })
+    if (event) {
+      sendPollOpenEmail({ eventTitle: event.title, eventId: id, recipients: TEST_RECIPIENTS }).catch(console.error)
     }
     return NextResponse.json({ ok: true })
   }

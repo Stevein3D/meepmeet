@@ -96,7 +96,7 @@ export async function sendPollOpenEmail({
 
   const html = baseLayout(`
     <h2 style="margin:0 0 16px;font-size:1.5rem;color:#c9a84c;letter-spacing:0.02em;">The Polls are Open</h2>
-    <p style="margin:0 0 12px;color:#d4c9a8;font-size:1.1rem;line-height:1.3">Hello Meeps, and welcome to the very first MeepMail — we're so excited you're here!</p>
+    <p style="margin:0 0 12px;color:#d4c9a8;font-size:1.1rem;line-height:1.3">Hello Meeps, and welcome to the very first MeepMail - we're very excited you're here!</p>
     <p style="margin:0 0 12px;color:#d4c9a8;font-size:1.1rem;line-height:1.3">MeepMail is your go-to source for all the important details on upcoming Meep Meets. For each event, you can expect three emails:</p>
     <p style="margin:0;color:#d4c9a8;font-size:1.1rem;line-height:1.3">1. A date poll to pick all dates that you can attend (that's this one)</p>
     <p style="margin:0;color:#d4c9a8;font-size:1.1rem;line-height:1.3">2. A confirmation with the finalized date and an RSVP request</p>

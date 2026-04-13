@@ -4,9 +4,12 @@ import Header from '@/components/Header'
 import { auth } from '@clerk/nextjs/server'
 import EventCard from '@/components/EventCard/EventCard'
 import { GameMasterOnly } from '@/components/RoleGuard';
+import { getDatabaseUserId } from '@/lib/user-helper'
 
 export default async function EventsPage() {
   const { userId } = await auth()
+
+  const dbUserId = userId ? await getDatabaseUserId(userId) : null
 
   const currentUser = userId
     ? await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
@@ -26,6 +29,10 @@ export default async function EventsPage() {
             select: { id: true, name: true, avatar: true }
           }
         }
+      },
+      datePolls: {
+        include: { votes: { select: { userId: true } } },
+        orderBy: { date: 'asc' },
       },
       _count: {
         select: { attendees: true, guests: true }
@@ -69,11 +76,17 @@ export default async function EventsPage() {
                         key={event.id}
                         event={{ ...event, location: hideLocation ? null : event.location }}
                         userId={userId}
+                        dbUserId={dbUserId}
                         locationHidden={hideLocation && !!event.location}
                         userRsvp={userRsvp}
                         dateConfirmed={event.dateConfirmed}
                         guestCount={event._count.guests}
                         isPast={false}
+                        datePolls={!isVisitor ? event.datePolls.map(o => ({
+                          id: o.id,
+                          date: o.date.toISOString(),
+                          votes: o.votes,
+                        })) : []}
                       />
                     )
                   })}
@@ -93,6 +106,7 @@ export default async function EventsPage() {
                         key={event.id}
                         event={{ ...event, location: hideLocation ? null : event.location }}
                         userId={userId}
+                        dbUserId={dbUserId}
                         locationHidden={hideLocation && !!event.location}
                         userRsvp={userRsvp}
                         dateConfirmed={event.dateConfirmed}

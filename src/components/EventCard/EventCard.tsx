@@ -6,6 +6,12 @@ import RsvpButton from '../RsvpButton'
 import DeleteEventButton from '../DeleteEventButton'
 import { GameMasterOnly } from '../RoleGuard'
 
+interface PollOption {
+  id: string
+  date: string
+  votes: { userId: string }[]
+}
+
 interface EventCardProps {
   event: {
     id: string
@@ -30,16 +36,38 @@ interface EventCardProps {
     }>
   }
   userId: string | null
+  dbUserId: string | null
   locationHidden?: boolean
   userRsvp: { rsvpStatus: string } | null
   dateConfirmed: boolean
   guestCount: number
   isPast: boolean
+  datePolls?: PollOption[]
 }
 
-export default function EventCard({ event, userId, locationHidden = false, userRsvp, dateConfirmed, guestCount, isPast }: EventCardProps) {
+export default function EventCard({ event, userId, dbUserId: currentUserId, locationHidden = false, userRsvp, dateConfirmed, guestCount, isPast, datePolls = [] }: EventCardProps) {
   const [showControls, setShowControls] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+  const [polls, setPolls] = useState<PollOption[]>(datePolls)
+  const [pollVoting, setPollVoting] = useState(false)
+
+  const handlePollVote = async (optionId: string) => {
+    if (!userId || pollVoting) return
+    setPollVoting(true)
+    try {
+      const res = await fetch(`/api/events/${event.id}/poll/${optionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'vote' }),
+      })
+      if (res.ok) {
+        const { option } = await res.json()
+        setPolls(prev => prev.map(p => p.id === optionId ? { ...p, votes: option.votes } : p))
+      }
+    } finally {
+      setPollVoting(false)
+    }
+  }
 
   const handleToggle = () => {
     if (showControls) {
@@ -131,7 +159,10 @@ export default function EventCard({ event, userId, locationHidden = false, userR
         </div>
 
         <div className="text-sm space-y-1 flex-grow" style={{ color: '#E8D4B8' }}>
-          <p className="font-medium" style={{ color: '#C9A961' }}>{formatDate(event.date)}</p>
+          {dateConfirmed || isPast
+            ? <p className="font-medium" style={{ color: '#C9A961' }}>{formatDate(event.date)}</p>
+            : <p className="font-medium" style={{ color: 'rgba(201,169,97,0.55)', fontStyle: 'italic' }}>TBD — Vote below!</p>
+          }
           {(event.location || locationHidden) && (
             <p className="flex items-center gap-1">
               <span>📍</span>
@@ -151,6 +182,44 @@ export default function EventCard({ event, userId, locationHidden = false, userR
             </p>
           </div>
         </div>
+
+        {/* Date poll voting — upcoming unconfirmed events with polls */}
+        {!isPast && !dateConfirmed && polls.length > 0 && userId && (
+          <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(201,169,97,0.2)' }}>
+            <p className="text-xs mb-2" style={{ color: 'rgba(201,169,97,0.7)', fontWeight: 700 }}>Vote for a date:</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              {polls.map(opt => {
+                const hasVoted = opt.votes.some(v => v.userId === currentUserId)
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => handlePollVote(opt.id)}
+                    disabled={pollVoting}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0.3rem 0.6rem',
+                      borderRadius: '0.25rem',
+                      border: hasVoted ? '1px solid rgba(143,188,143,0.6)' : '1px solid rgba(201,169,97,0.25)',
+                      background: hasVoted ? 'rgba(143,188,143,0.12)' : 'rgba(201,169,97,0.05)',
+                      color: hasVoted ? '#8FBC8F' : 'rgba(232,212,184,0.75)',
+                      cursor: pollVoting ? 'default' : 'pointer',
+                      fontSize: '0.75rem',
+                      textAlign: 'left',
+                      width: '100%',
+                    }}
+                  >
+                    <span>{new Date(opt.date).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+                    <span style={{ flexShrink: 0, marginLeft: '0.5rem', color: opt.votes.length > 0 ? (hasVoted ? '#8FBC8F' : 'rgba(201,169,97,0.6)') : 'rgba(201,169,97,0.3)' }}>
+                      {opt.votes.length} ✓
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* RSVP Buttons */}
         {userId && (dateConfirmed || isPast) && (
