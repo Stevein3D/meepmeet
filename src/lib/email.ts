@@ -38,6 +38,23 @@ function baseLayout(content: string): string {
 </html>`
 }
 
+async function batchSend(
+  recipients: { email: string; name: string }[],
+  subject: string,
+  html: string,
+) {
+  const messages = recipients.map(r => ({
+    from: FROM,
+    to: r.email,
+    subject,
+    html,
+  }))
+  // Resend batch limit is 100 per call
+  for (let i = 0; i < messages.length; i += 100) {
+    await resend.batch.send(messages.slice(i, i + 100))
+  }
+}
+
 export async function sendDateConfirmedEmail({
   eventTitle,
   date,
@@ -66,19 +83,7 @@ export async function sendDateConfirmedEmail({
     </div>
   `)
 
-  const chunks: typeof recipients[] = []
-  for (let i = 0; i < recipients.length; i += 50) {
-    chunks.push(recipients.slice(i, i + 50))
-  }
-
-  for (const chunk of chunks) {
-    await resend.emails.send({
-      from: FROM,
-      to: chunk.map(r => r.email),
-      subject: `Date confirmed: ${eventTitle}`,
-      html,
-    })
-  }
+  await batchSend(recipients, `Date confirmed: ${eventTitle}`, html)
 }
 
 export async function sendPollOpenEmail({
@@ -107,17 +112,5 @@ export async function sendPollOpenEmail({
     </div>
   `)
 
-  const chunks: typeof recipients[] = []
-  for (let i = 0; i < recipients.length; i += 50) {
-    chunks.push(recipients.slice(i, i + 50))
-  }
-
-  for (const chunk of chunks) {
-    await resend.emails.send({
-      from: FROM,
-      to: chunk.map(r => r.email),
-      subject: `Welcome to MeepMail! 🎲`,
-      html,
-    })
-  }
+  await batchSend(recipients, `Welcome to MeepMail! 🎲`, html)
 }
