@@ -61,7 +61,7 @@ export default async function EventDetailPage({
         },
       },
     }),
-    prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { role: true, alias: true, name: true } }),
     prisma.game.findMany({
       select: { id: true, name: true, image: true, minPlayers: true, maxPlayers: true, bggId: true, description: true, categories: true, mechanisms: true, playtime: true, complexity: true, yearPublished: true },
       orderBy: { name: 'asc' },
@@ -191,6 +191,7 @@ export default async function EventDetailPage({
                 })),
               }))}
               currentUserId={userId}
+              currentUserAlias={currentUser?.alias ?? currentUser?.name ?? ''}
               isGameMaster={!!isGameMaster}
               dateConfirmed={event.dateConfirmed}
             />

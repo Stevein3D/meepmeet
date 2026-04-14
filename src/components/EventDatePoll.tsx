@@ -19,6 +19,7 @@ interface EventDatePollProps {
   eventId: string
   options: PollOption[]
   currentUserId: string
+  currentUserAlias: string
   isGameMaster: boolean
   dateConfirmed: boolean
 }
@@ -38,6 +39,7 @@ export default function EventDatePoll({
   eventId,
   options: initial,
   currentUserId,
+  currentUserAlias,
   isGameMaster,
   dateConfirmed,
 }: EventDatePollProps) {
@@ -61,6 +63,7 @@ export default function EventDatePoll({
       setOptions(prev => prev.map(o => {
         if (o.id !== optionId) return o
         const aliasMap = new Map(o.votes.map(v => [v.userId, v.userAlias]))
+        aliasMap.set(currentUserId, currentUserAlias)
         const merged: PollVote[] = (option.votes as { userId: string }[]).map(v => ({
           userId: v.userId,
           userAlias: aliasMap.get(v.userId) ?? v.userId,
