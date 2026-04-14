@@ -174,10 +174,10 @@ export default function FAQPage() {
               If we get enough interest, we can place another order for custom shirts! If you&apos;d like one,
               please let us know by emailing{' '}
               <a
-                href="mailto:meepmeetclub@gmail.com"
+                href="mailto:meepmail@meepmeet.club"
                 style={{ color: '#C9A961', textDecoration: 'underline', textUnderlineOffset: '2px' }}
               >
-                meepmeetclub@gmail.com
+                meepmail@meepmeet.club
               </a>{' '}
               so we can add you to the list.
             </p>

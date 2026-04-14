@@ -187,7 +187,7 @@ export default function EventCard({ event, userId, dbUserId: currentUserId, loca
         {!isPast && !dateConfirmed && polls.length > 0 && userId && (
           <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(201,169,97,0.2)' }}>
             <p className="text-xs mb-2" style={{ color: 'rgba(201,169,97,0.7)', fontWeight: 700 }}>Vote for a date:</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', width: '240px' }}>
               {polls.map(opt => {
                 const hasVoted = opt.votes.some(v => v.userId === currentUserId)
                 return (
