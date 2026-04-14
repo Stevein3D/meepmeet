@@ -62,19 +62,18 @@ export async function PATCH(
       }),
     ])
 
-    // Send confirmation email to all non-visitor members (fire-and-forget)
-    prisma.user.findMany({
+    // Send confirmation email to all non-visitor members
+    const members = await prisma.user.findMany({
       where: { role: { not: 'VISITOR' } },
       select: { email: true, name: true },
-    }).then(members =>
-      sendDateConfirmedEmail({
-        eventTitle: event.title,
-        date: event.date,
-        location: event.location,
-        eventId,
-        recipients: members,
-      })
-    ).catch(console.error)
+    })
+    await sendDateConfirmedEmail({
+      eventTitle: event.title,
+      date: event.date,
+      location: event.location,
+      eventId,
+      recipients: members,
+    })
 
     return NextResponse.json({ confirmed: true, date: option.date })
   }

@@ -50,7 +50,7 @@ export async function POST(
       }),
     ])
     if (event) {
-      sendPollOpenEmail({ eventTitle: event.title, eventId: id, recipients: members }).catch(console.error)
+      await sendPollOpenEmail({ eventTitle: event.title, eventId: id, recipients: members })
     }
     return NextResponse.json({ ok: true })
   }
@@ -59,7 +59,7 @@ export async function POST(
   if (body.action === 'test-notify') {
     const event = await prisma.event.findUnique({ where: { id }, select: { title: true } })
     if (event) {
-      sendPollOpenEmail({ eventTitle: event.title, eventId: id, recipients: TEST_RECIPIENTS }).catch(console.error)
+      await sendPollOpenEmail({ eventTitle: event.title, eventId: id, recipients: TEST_RECIPIENTS })
     }
     return NextResponse.json({ ok: true })
   }
