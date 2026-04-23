@@ -1,16 +1,9 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
-  const { userId: clerkUserId } = await auth();
-
-  if (!clerkUserId) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const { message, conversationHistory = [] } = await req.json();
 
   const games = await prisma.game.findMany({
