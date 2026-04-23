@@ -78,7 +78,7 @@ export default function EventGuestSection({
   if (totalGuests === 0 && !canAddGuest) return null
 
   return (
-    <div style={{ marginTop: '0.75rem' }}>
+    <div className="mt-3">
       {/* Summary line — shown when there are guests */}
       {totalGuests > 0 && (
         <div style={{ fontSize: '0.8rem', color: 'rgba(232,212,184,0.6)', marginBottom: '0.4rem' }}>
@@ -99,20 +99,12 @@ export default function EventGuestSection({
           {myGuests.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.4rem' }}>
               {myGuests.map(g => (
-                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div key={g.id} className="flex items-center gap-2">
                   <span style={{ fontSize: '0.8rem', color: '#E8D4B8' }}>+1 {g.name}</span>
                   <button
                     onClick={() => handleRemove(g.id)}
                     disabled={busy}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'rgba(201,169,97,0.5)',
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      padding: '0',
-                      lineHeight: 1,
-                    }}
+                    className="btn-icon-ghost text-xs"
                     aria-label="Remove guest"
                   >
                     ✕
@@ -129,44 +121,19 @@ export default function EventGuestSection({
                 onChange={e => setName(e.target.value)}
                 placeholder="Guest name"
                 autoFocus
-                style={{
-                  flex: 1,
-                  padding: '0.25rem 0.5rem',
-                  fontSize: '0.8rem',
-                  background: 'rgba(0,0,0,0.3)',
-                  border: '1px solid rgba(201,169,97,0.4)',
-                  borderRadius: '0.25rem',
-                  color: '#E8D4B8',
-                  outline: 'none',
-                }}
+                className="guest-inline-input"
               />
               <button
                 type="submit"
                 disabled={busy || !name.trim()}
-                style={{
-                  padding: '0.25rem 0.6rem',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  borderRadius: '0.25rem',
-                  border: '1px solid rgba(201,169,97,0.6)',
-                  background: 'rgba(201,169,97,0.15)',
-                  color: '#C9A961',
-                  cursor: 'pointer',
-                }}
+                className="guest-inline-submit"
               >
                 Add
               </button>
               <button
                 type="button"
                 onClick={() => { setAdding(false); setName('') }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'rgba(201,169,97,0.5)',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  padding: '0',
-                }}
+                className="btn-icon-ghost text-sm"
               >
                 ✕
               </button>
@@ -174,16 +141,7 @@ export default function EventGuestSection({
           ) : (
             <button
               onClick={() => setAdding(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'rgba(201,169,97,1)',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                padding: '0',
-                textDecoration: 'underline',
-                textDecorationColor: 'rgba(201,169,97,0.3)',
-              }}
+              className="guest-add-link"
             >
               + Bring a guest
             </button>

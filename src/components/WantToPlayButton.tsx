@@ -34,12 +34,7 @@ export default function WantToPlayButton({ gameId, initialWanted, wantCount }: W
     <button
       onClick={toggle}
       disabled={loading}
-      className="px-3 py-2 text-sm rounded font-medium transition-all disabled:opacity-50"
-      style={{
-        border: wanted ? '2px solid #C9A961' : '2px solid rgba(201,169,97,0.4)',
-        background: wanted ? 'rgba(201,169,97,0.15)' : 'transparent',
-        color: wanted ? '#C9A961' : 'rgba(201,169,97,0.6)',
-      }}
+      className={`px-3 py-2 text-sm rounded font-medium transition-all disabled:opacity-50 toggle-btn${wanted ? ' toggle-btn--gold' : ''}`}
     >
       {loading ? '…' : wanted ? `♥ Interested${count > 1 ? ` (${count})` : ''}` : `♡ Interested${count > 0 ? ` (${count})` : ''}`}
     </button>

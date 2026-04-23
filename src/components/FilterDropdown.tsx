@@ -34,7 +34,7 @@ export default function FilterDropdown({
     : options
 
   return (
-    <div ref={ref} style={{ position: 'relative' }}>
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
         className="filter-input"
@@ -52,46 +52,23 @@ export default function FilterDropdown({
       </button>
 
       {open && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 4px)',
-          left: 0,
-          zIndex: 200,
-          width,
-          maxHeight: '280px',
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'rgba(18,10,4,0.98)',
-          border: '1px solid rgba(201,169,97,0.4)',
-          borderRadius: '0.375rem',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-        }}>
-          <div style={{ padding: '0.5rem', borderBottom: '1px solid rgba(201,169,97,0.15)', flexShrink: 0 }}>
+        <div className="dropdown-panel" style={{ width }}>
+          <div className="dropdown-search-row">
             <input
               type="text"
               placeholder={searchPlaceholder}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="filter-input"
-              style={{ width: '100%', boxSizing: 'border-box' }}
+              style={{ width: '100%' }}
               autoFocus
             />
           </div>
-          <div style={{ overflowY: 'auto', padding: '0.3rem 0.25rem' }}>
+          <div className="dropdown-option-list">
             {shown.map(o => (
               <label
                 key={o.key}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.25rem 0.5rem',
-                  borderRadius: '0.25rem',
-                  cursor: 'pointer',
-                  color: selected.includes(o.key) ? '#C9A961' : '#E8D4B8',
-                  fontSize: '0.8125rem',
-                  background: selected.includes(o.key) ? 'rgba(201,169,97,0.08)' : 'transparent',
-                }}
+                className={`dropdown-option${selected.includes(o.key) ? ' dropdown-option--selected' : ''}`}
               >
                 <input
                   type="checkbox"
@@ -103,9 +80,7 @@ export default function FilterDropdown({
               </label>
             ))}
             {shown.length === 0 && (
-              <p style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem', color: 'rgba(232,212,184,0.4)' }}>
-                {emptyMessage}
-              </p>
+              <p className="dropdown-empty">{emptyMessage}</p>
             )}
           </div>
         </div>

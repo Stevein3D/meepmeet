@@ -89,20 +89,8 @@ export default function EventDatePoll({
   }
 
   return (
-    <div
-      style={{
-        background: 'rgba(28,16,8,0.55)',
-        border: '1px solid rgba(139,111,71,0.5)',
-        borderRadius: '0.5rem',
-        padding: '1.25rem',
-        marginBottom: '1.25rem',
-        width: '100%', 
-        maxWidth: '600px'
-      }}
-    >
-      <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: '#C9A961' }}>
-        Vote on a Date
-      </h3>
+    <div className="poll-container">
+      <h3 className="poll-title">Vote on a Date</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {options.map(opt => {
           const voted = opt.votes.some(v => v.userId === currentUserId)
@@ -165,17 +153,7 @@ export default function EventDatePoll({
                   <button
                     onClick={() => handleConfirm(opt.id)}
                     disabled={!!confirming}
-                    style={{
-                      flexShrink: 0,
-                      padding: '0.2rem 0.6rem',
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      borderRadius: '0.25rem',
-                      border: '1px solid rgba(201,169,97,0.6)',
-                      background: 'rgba(201,169,97,0.12)',
-                      color: '#C9A961',
-                      cursor: 'pointer',
-                    }}
+                    className="poll-confirm-btn"
                   >
                     {confirming === opt.id ? '...' : 'Confirm'}
                   </button>

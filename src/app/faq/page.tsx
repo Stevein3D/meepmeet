@@ -1,26 +1,6 @@
 import Header from '@/components/Header'
 import Image from 'next/image'
 
-const PANEL: React.CSSProperties = {
-  position: 'relative',
-  overflow: 'hidden',
-  border: '3px solid #8B6F47',
-  borderRadius: '8px',
-  backgroundImage: 'url(/wood-bg.jpg)',
-  backgroundSize: '100%',
-  backgroundRepeat: 'repeat-y',
-  backgroundPosition: 'center',
-  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-}
-
-const OVERLAY: React.CSSProperties = {
-  position: 'absolute',
-  inset: 0,
-  background: 'rgba(28, 16, 8, 0.6)',
-  pointerEvents: 'none',
-  zIndex: 0,
-}
-
 const RATING_SCALE = [
   { score: 10, text: 'Outstanding. Always want to play and expect this will never change.' },
   { score: 9,  text: "Excellent game. Always want to play it." },
@@ -50,9 +30,9 @@ interface FAQItemProps {
 
 function FAQItem({ question, children, image }: FAQItemProps) {
   return (
-    <div style={{ ...PANEL, padding: '1.5rem 1.75rem' }}>
-      <div style={OVERLAY} />
-      <div style={{ position: 'relative', zIndex: 1 }}>
+    <div className="sidebar-panel" style={{ padding: '1.5rem 1.75rem' }}>
+      <div className="sidebar-panel-tint" />
+      <div className="sidebar-panel-content">
         <h2
           className="text-lg font-bold mb-3"
           style={{ color: '#C9A961', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}

@@ -11,18 +11,6 @@ interface GamesSidebarProps {
   topInterest: { game: BaseGame; count: number; users: string[] }[]
 }
 
-const PANEL: React.CSSProperties = {
-  position: 'relative',
-  overflow: 'hidden',
-  border: '3px solid #8B6F47',
-  borderRadius: '8px',
-  backgroundImage: 'url(/wood-bg.jpg)',
-  backgroundSize: '100%',
-  backgroundRepeat: 'repeat-y',
-  backgroundPosition: 'center',
-  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-}
-
 function GameRow({
   game,
   meta,
@@ -107,12 +95,10 @@ function InterestBadge({ count, users }: { count: number; users: string[] }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ ...PANEL, padding: '1rem 1.1rem' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(28,16,8,0.62)', pointerEvents: 'none', zIndex: 0 }} />
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <h3 style={{ color: '#C9A961', fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          {title}
-        </h3>
+    <div className="sidebar-panel" style={{ padding: '1rem 1.1rem' }}>
+      <div className="sidebar-panel-tint" />
+      <div className="sidebar-panel-content">
+        <h3 className="sidebar-section-title">{title}</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           {children}
         </div>
@@ -123,7 +109,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function GamesSidebar({ recentlyAdded, topRated, topInterest }: GamesSidebarProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div className="flex flex-col gap-4">
 
       <Section title="Recently Added">
         {recentlyAdded.map(game => (

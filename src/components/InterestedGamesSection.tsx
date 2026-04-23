@@ -40,30 +40,14 @@ export default function InterestedGamesSection({ games: initialGames, isOwner }:
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
       {games.map(game => (
-        <div
-          key={game.id}
-          className="flex items-center gap-3 px-3 py-2"
-          style={{
-            background: 'rgba(0,0,0,0.2)',
-            border: '1px solid rgba(201,169,97,0.15)',
-            borderRadius: '6px',
-          }}
-        >
+        <div key={game.id} className="interested-game-item flex items-center gap-3 px-3 py-2">
           <GameInfoButton game={game} />
           {isOwner && (
             <button
               onClick={() => handleRemove(game.id)}
               aria-label={`Remove ${game.name} from interested`}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'rgba(232,212,184,0.35)',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                flexShrink: 0,
-                padding: '0.15rem 0.3rem',
-                lineHeight: 1,
-              }}
+              className="btn-icon-ghost flex-shrink-0"
+              style={{ fontSize: '0.875rem', padding: '0.15rem 0.3rem', color: 'rgba(232,212,184,0.35)' }}
             >
               ✕
             </button>

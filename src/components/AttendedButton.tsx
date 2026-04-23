@@ -41,12 +41,7 @@ export default function AttendedButton({ eventId, targetUserId, initialAttended,
     <button
       onClick={toggle}
       disabled={loading}
-      className="px-3 py-1 text-sm rounded font-medium transition-all disabled:opacity-50 flex-shrink-0"
-      style={{
-        border: attended ? '2px solid #8FBC8F' : '2px solid rgba(201,169,97,0.5)',
-        background: attended ? 'rgba(143,188,143,0.2)' : 'rgba(201,169,97,0.08)',
-        color: attended ? '#8FBC8F' : 'rgba(201,169,97,0.7)',
-      }}
+      className={`px-3 py-1 text-sm rounded font-medium transition-all disabled:opacity-50 flex-shrink-0 toggle-btn${attended ? ' toggle-btn--green' : ''}`}
     >
       {loading ? '…' : attended ? '✓ Attended' : 'Attended'}
     </button>

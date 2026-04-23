@@ -6,6 +6,7 @@ import GamesGrid from '@/components/GamesGrid'
 import { MemberOnly } from '@/components/RoleGuard'
 import GamesSidebar from '@/components/GamesSidebar'
 import BackToTopButton from '@/components/BackToTopButton'
+import GameAdvisor from '@/components/GameAdvisor'
 
 export default async function GamesPage() {
   const { userId } = await auth()
@@ -125,6 +126,7 @@ export default async function GamesPage() {
         )}
       </main>
       <BackToTopButton />
+      <GameAdvisor />
     </>
   )
 }

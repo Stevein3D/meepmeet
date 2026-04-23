@@ -116,7 +116,7 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
   return (
     <div>
       {/* ── Filter bar ── */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem', alignItems: 'center' }}>
+      <div className="flex flex-wrap gap-2 mb-3 items-center">
         <input
           type="text"
           placeholder="Search games…"
@@ -187,21 +187,17 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
 
       {/* ── Selected filter chips ── */}
       {(selectedCategories.length > 0 || selectedMechanics.length > 0 || selectedOwners.length > 0) && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.75rem' }}>
+        <div className="flex flex-wrap gap-[0.35rem] mb-3">
           {selectedCategories.map(c => (
-            <button key={c} onClick={() => toggleCategory(c)} style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem', borderRadius: '999px', border: '1px solid rgba(201,169,97,0.5)', background: 'rgba(201,169,97,0.12)', color: '#C9A961', cursor: 'pointer' }}>
-              {c} ✕
-            </button>
+            <button key={c} onClick={() => toggleCategory(c)} className="filter-chip">{c} ✕</button>
           ))}
           {selectedMechanics.map(m => (
-            <button key={m} onClick={() => toggleMechanic(m)} style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem', borderRadius: '999px', border: '1px solid rgba(201,169,97,0.5)', background: 'rgba(201,169,97,0.12)', color: '#C9A961', cursor: 'pointer' }}>
-              {m} ✕
-            </button>
+            <button key={m} onClick={() => toggleMechanic(m)} className="filter-chip">{m} ✕</button>
           ))}
           {selectedOwners.map(uid => {
             const owner = allOwners.find(o => o.key === uid)
             return (
-              <button key={uid} onClick={() => toggleOwner(uid)} style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem', borderRadius: '999px', border: '1px solid rgba(201,169,97,0.5)', background: 'rgba(201,169,97,0.12)', color: '#C9A961', cursor: 'pointer' }}>
+              <button key={uid} onClick={() => toggleOwner(uid)} className="filter-chip">
                 {owner?.label ?? uid} ✕
               </button>
             )
@@ -210,8 +206,8 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
       )}
 
       {/* ── Result count + mobile Top Charts button ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <p style={{ fontSize: '0.8125rem', color: 'rgba(232,212,184,0.55)' }}>
+      <div className="flex items-center justify-between mb-5">
+        <p className="filter-count">
           {filtered.length} game{filtered.length !== 1 ? 's' : ''}
           {hasFilters && ` of ${games.length} total`}
         </p>

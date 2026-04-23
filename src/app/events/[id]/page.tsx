@@ -8,6 +8,8 @@ import EventDatePoll from '@/components/EventDatePoll'
 import EventGuestSection from '@/components/EventGuestSection'
 import RsvpButton from '@/components/RsvpButton'
 import { getDatabaseUserId } from '@/lib/user-helper'
+import GameAdvisor from '@/components/GameAdvisor'
+import RequestedGames from '@/components/RequestedGames'
 
 export default async function EventDetailPage({
   params,
@@ -22,7 +24,7 @@ export default async function EventDetailPage({
   const userId = await getDatabaseUserId(clerkUserId)
   if (!userId) redirect(`/sign-in?redirect_url=/events/${id}`)
 
-  const [event, currentUser, allGames, labelRows, memberRows] = await Promise.all([
+  const [event, currentUser, allGames, labelRows, memberRows, gameRequests] = await Promise.all([
     prisma.event.findUnique({
       where: { id },
       include: {
@@ -76,6 +78,26 @@ export default async function EventDetailPage({
       where: { role: { not: 'VISITOR' } },
       select: { id: true, name: true, alias: true, avatar: true },
       orderBy: { name: 'asc' },
+    }),
+    prisma.gameRequest.findMany({
+      where: { eventId: id },
+      include: {
+        game: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            minPlayers: true,
+            maxPlayers: true,
+            playtime: true,
+            owners: {
+              include: { user: { select: { name: true } } }
+            }
+          }
+        },
+        user: { select: { name: true, avatar: true } }
+      },
+      orderBy: { createdAt: 'asc' }
     }),
   ])
 
@@ -276,6 +298,9 @@ export default async function EventDetailPage({
           })()}
         </div>
 
+        {/* Requested games */}
+        <RequestedGames requests={gameRequests} />
+
         {/* Table planner */}
         <section>
           <h2 className="text-2xl font-semibold mb-4" style={{ color: '#C9A961' }}>
@@ -292,6 +317,7 @@ export default async function EventDetailPage({
             savedLabels={savedLabels}
           />
         </section>
+        <GameAdvisor eventId={id} />
       </main>
     </>
   )

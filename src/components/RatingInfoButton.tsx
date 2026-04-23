@@ -32,63 +32,21 @@ export default function RatingInfoButton() {
       <button
         onClick={() => setOpen(true)}
         aria-label="Rating scale info"
-        style={{
-          width: '1.25rem',
-          height: '1.25rem',
-          borderRadius: '50%',
-          border: '1px solid rgba(201,169,97,0.5)',
-          background: 'rgba(201,169,97,0.1)',
-          color: 'var(--wood-accent)',
-          fontSize: '0.7rem',
-          fontWeight: 700,
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          lineHeight: 1,
-          verticalAlign: 'middle',
-        }}
+        className="btn-icon-circle"
       >
         ?
       </button>
 
       {open && (
         <WoodModal onClose={() => setOpen(false)} maxWidth={480} ariaLabel="Rating Scale">
-          {/* Header */}
-          <div style={{
-            position: 'relative', zIndex: 1,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '1rem 1.25rem 0.75rem',
-            borderBottom: '1px solid rgba(139,111,71,0.4)',
-            flexShrink: 0,
-          }}>
+          <div className="modal-header">
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--wood-text-light)', margin: 0 }}>
               Rating Scale
             </h3>
-            <button
-              onClick={() => setOpen(false)}
-              style={{
-                width: '2rem', height: '2rem', borderRadius: '50%',
-                border: '1px solid rgba(201,169,97,0.4)',
-                background: 'rgba(201,169,97,0.1)',
-                color: 'var(--wood-accent)', fontSize: '0.85rem',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              ✕
-            </button>
+            <button onClick={() => setOpen(false)} className="modal-close-btn">✕</button>
           </div>
 
-          {/* Body */}
-          <div style={{
-            position: 'relative', zIndex: 1,
-            overflowY: 'auto',
-            padding: '0.75rem 1.25rem 1.25rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-          }}>
+          <div className="modal-body">
             {SCALE.map(({ score, text }) => (
               <div key={score} style={{ display: 'flex', gap: '0.75rem', alignItems: 'baseline' }}>
                 <span style={{

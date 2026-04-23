@@ -117,7 +117,7 @@ export default function MeepsGrid({ meeps, viewerUserId, viewerIsGM }: MeepsGrid
   return (
     <div>
       {/* ── Filter rows (column, both same width) ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.75rem' }}>
+      <div className="flex flex-col gap-2 mb-3">
         <input
           type="text"
           placeholder="Search meeps…"
@@ -128,23 +128,14 @@ export default function MeepsGrid({ meeps, viewerUserId, viewerIsGM }: MeepsGrid
         />
 
         {/* ── chips + sort + clear ── */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+        <div className="flex flex-wrap gap-2 items-center">
         {/* Role filter chips */}
-        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+        <div className="flex gap-[0.35rem] flex-wrap">
           {ROLE_LABELS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => setRoleFilter(value)}
-              style={{
-                fontSize: '0.75rem',
-                padding: '0.3rem 0.65rem',
-                borderRadius: '999px',
-                border: `1px solid ${roleFilter === value ? 'rgba(201,169,97,0.8)' : 'rgba(201,169,97,0.3)'}`,
-                background: roleFilter === value ? 'rgba(201,169,97,0.15)' : 'rgba(0,0,0,0.2)',
-                color: roleFilter === value ? '#C9A961' : 'rgba(232,212,184,0.65)',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap' as const,
-              }}
+              className={`filter-chip-toggle ${roleFilter === value ? 'filter-chip-toggle--active' : 'filter-chip-toggle--inactive'}`}
             >
               {label}
             </button>
@@ -175,7 +166,7 @@ export default function MeepsGrid({ meeps, viewerUserId, viewerIsGM }: MeepsGrid
       </div>
 
       {/* Result count */}
-      <p style={{ fontSize: '0.8125rem', color: 'rgba(232,212,184,0.55)', marginBottom: '1.25rem' }}>
+      <p className="filter-count" style={{ marginBottom: '1.25rem' }}>
         {filtered.length} member{filtered.length !== 1 ? 's' : ''}
         {hasFilters && ` of ${meeps.length} total`}
       </p>
