@@ -2,6 +2,7 @@ import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { sendNewUserNotificationEmail } from '@/lib/email'
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
@@ -71,6 +72,14 @@ export async function POST(req: Request) {
     })
 
     console.log('User created or updated in database:', id)
+
+    // Send email notification
+    try {
+      await sendNewUserNotificationEmail({ name: name!, email: email!, clerkId: id })
+      console.log('Email notification sent')
+    } catch (emailError) {
+      console.error('Error sending email notification:', emailError)
+    }
 
     // Send Discord notification
     try {

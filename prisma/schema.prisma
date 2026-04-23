@@ -32,17 +32,18 @@ model User {
   role      UserRole @default(VISITOR)  // Add this if not already there
   createdAt DateTime @default(now())
   
-  ownedGames    UserGame[]
-  gameWants     UserGameWant[]
-  gameRatings   GameRating[]
-  hostedEvents  Event[]        @relation("EventHost")
-  eventRsvps    EventAttendee[]
-  playSessions  SessionPlayer[]
-  sessionWins   PlaySession[]  @relation("SessionWinner")
-  tablePlayers  TablePlayer[]
-  dateVotes     EventDateVote[]
-  eventGuests   EventGuest[]   @relation("GuestBringer")
-  gameRequests  GameRequest[]
+  ownedGames       UserGame[]
+  gameWants        UserGameWant[]
+  gameRatings      GameRating[]
+  hostedEvents     Event[]           @relation("EventHost")
+  eventRsvps       EventAttendee[]
+  playSessions     SessionPlayer[]
+  sessionWins      PlaySession[]     @relation("SessionWinner")
+  tablePlayers     TablePlayer[]
+  dateVotes        EventDateVote[]
+  eventGuests      EventGuest[]      @relation("GuestBringer")
+  gameRequests     GameRequest[]
+  recommendations  UserRecommendation[]
 }
 
 model Game {
@@ -60,12 +61,13 @@ model Game {
   yearPublished Int?
   createdAt     DateTime @default(now())
 
-  owners       UserGame[]
-  wants        UserGameWant[]
-  ratings      GameRating[]
-  playSessions PlaySession[]
-  eventTables  EventTable[]
-  gameRequests GameRequest[]
+  owners          UserGame[]
+  wants           UserGameWant[]
+  ratings         GameRating[]
+  playSessions    PlaySession[]
+  eventTables     EventTable[]
+  gameRequests    GameRequest[]
+  recommendations UserRecommendation[]
 }
 
 model UserGameWant {
@@ -242,4 +244,17 @@ model GameRequest {
   event Event? @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@unique([gameId, userId, eventId])
+}
+
+model UserRecommendation {
+  id        String   @id @default(cuid())
+  userId    String
+  gameId    String
+  reason    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId])
 }

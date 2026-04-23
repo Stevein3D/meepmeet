@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(tree:*)",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(sorted\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(sorted\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\\)\")",
+      "Bash(ls /Users/lemon/Desktop/projects/meepmeet/src/app/api/meeps/[id]/)"
     ],
     "additionalDirectories": [
       "/Users/lemon/Desktop/projects/meepmeet/src/app/api/events/[id]/poll",

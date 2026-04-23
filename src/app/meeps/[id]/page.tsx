@@ -10,6 +10,7 @@ import GameRatingInput from '@/components/GameRatingInput'
 import GameInfoButton from '@/components/GameInfoButton'
 import RatingInfoButton from '@/components/RatingInfoButton'
 import InterestedGamesSection from '@/components/InterestedGamesSection'
+import ProfileRecommendations from '@/components/ProfileRecommendations'
 
 // ── MMR helpers (same as meeps/page.tsx) ────────────────────────────────────
 
@@ -131,7 +132,7 @@ export default async function MeepProfilePage({
 
   // ── Events + games played + ratings ──────────────────────────────────────
 
-  const [allEvents, tablePlayers, ratings, wantedGames] = await Promise.all([
+  const [allEvents, tablePlayers, ratings, wantedGames, savedRecs] = await Promise.all([
     prisma.event.findMany({
       orderBy: { date: 'desc' },
       select: {
@@ -181,6 +182,15 @@ export default async function MeepProfilePage({
         },
       },
     }),
+    isOwner
+      ? prisma.userRecommendation.findMany({
+          where: { userId: profileId },
+          include: {
+            game: { select: { id: true, bggId: true, name: true, image: true, description: true, categories: true, mechanisms: true, minPlayers: true, maxPlayers: true, playtime: true, complexity: true, yearPublished: true } },
+          },
+          orderBy: { createdAt: 'asc' },
+        })
+      : Promise.resolve([]),
   ])
 
   type GameInfo = {
@@ -314,6 +324,14 @@ export default async function MeepProfilePage({
             ))}
           </div>
         </div>
+
+        {/* ── Recommendations (owner only) ─────────────────────────── */}
+        {isOwner && (
+          <ProfileRecommendations
+            userId={profileId}
+            initialRecs={savedRecs}
+          />
+        )}
 
         {/* ── Interested Games ─────────────────────────────────────────── */}
         <section className="mb-8">

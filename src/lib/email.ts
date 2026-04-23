@@ -86,6 +86,49 @@ export async function sendDateConfirmedEmail({
   await batchSend(recipients, `Date confirmed: ${eventTitle}`, html)
 }
 
+export async function sendNewUserNotificationEmail({
+  name,
+  email,
+  clerkId,
+}: {
+  name: string
+  email: string
+  clerkId: string
+}) {
+  if (!process.env.RESEND_API_KEY) return
+
+  const profileUrl = `${APP_URL}/admin/users`
+
+  const html = baseLayout(`
+    <h2 style="margin:0 0 16px;font-size:1.5rem;color:#c9a84c;letter-spacing:0.02em;">New Member Signup</h2>
+    <p style="margin:0 0 16px;color:#d4c9a8;font-size:1.1rem;line-height:1.5;">A new member has joined Meep Meet!</p>
+    <table style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+      <tr>
+        <td style="padding:8px 0;color:#c9a84c;font-weight:600;font-size:1rem;width:80px;">Name</td>
+        <td style="padding:8px 0;color:#e8d5b0;font-size:1rem;">${name}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;color:#c9a84c;font-weight:600;font-size:1rem;">Email</td>
+        <td style="padding:8px 0;color:#e8d5b0;font-size:1rem;">${email}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;color:#c9a84c;font-weight:600;font-size:1rem;">Clerk ID</td>
+        <td style="padding:8px 0;color:#d4c9a8;font-size:0.9rem;font-family:monospace;">${clerkId}</td>
+      </tr>
+    </table>
+    <div style="margin-top:8px;">
+      <a href="${profileUrl}" style="display:inline-block;padding:10px 22px;background:#5a7a4a;color:#e8d5b0;text-decoration:none;border-radius:6px;font-weight:700;font-size:0.9rem;border:1px solid #6d9458;">View All Users</a>
+    </div>
+  `)
+
+  await resend.emails.send({
+    from: FROM,
+    to: 'meepmail@meepmeet.club',
+    subject: `New member: ${name}`,
+    html,
+  })
+}
+
 export async function sendPollOpenEmail({
   eventTitle,
   eventId,
