@@ -20,7 +20,7 @@ async function resolveUser() {
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { eventId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await resolveUser();
   if (!userId) {
@@ -32,7 +32,7 @@ export async function POST(
     return NextResponse.json({ error: 'gameId required' }, { status: 400 });
   }
 
-  const { eventId } = params;
+  const { id: eventId } = await params;
 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) {
@@ -60,15 +60,17 @@ export async function POST(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { eventId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await resolveUser();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id: eventId } = await params;
+
   const requests = await prisma.gameRequest.findMany({
-    where: { eventId: params.eventId },
+    where: { eventId },
     include: {
       game: {
         select: {
