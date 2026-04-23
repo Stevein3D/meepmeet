@@ -160,6 +160,15 @@ export default function GameAdvisor({ eventId }: GameAdvisorProps) {
     }
   }
 
+  function renderContent(text: string) {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) =>
+      part.startsWith('**') && part.endsWith('**')
+        ? <strong key={i}>{part.slice(2, -2)}</strong>
+        : part
+    );
+  }
+
   return (
     <>
       {/* Floating trigger button */}
@@ -192,7 +201,7 @@ export default function GameAdvisor({ eventId }: GameAdvisorProps) {
             {messages.map((msg, i) => (
               <div key={i} className={styles.messageGroup}>
                 <div className={`${styles.bubble} ${styles[msg.role]}`}>
-                  {msg.content}
+                  {renderContent(msg.content)}
                   {isStreaming && i === messages.length - 1 && msg.role === 'assistant' && (
                     <span className={styles.cursor} aria-hidden="true" />
                   )}
