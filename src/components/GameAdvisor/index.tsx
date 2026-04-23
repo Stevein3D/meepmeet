@@ -46,7 +46,7 @@ export default function GameAdvisor({ eventId }: GameAdvisorProps) {
   function buildHistory(): { role: string; content: string }[] {
     return messages.map(m => ({
       role: m.role,
-      content: m.content.replace(/\nGAMES_JSON:\[.*?\]$/s, '').trim()
+      content: m.content.replace(/\nGAMES_JSON:\[[\s\S]*?\]$/, '').trim()
     }));
   }
 
@@ -54,7 +54,7 @@ export default function GameAdvisor({ eventId }: GameAdvisorProps) {
     cleanText: string;
     games: SuggestedGame[];
   } {
-    const match = text.match(/\nGAMES_JSON:(\[.*?\])$/s);
+    const match = text.match(/\nGAMES_JSON:(\[[\s\S]*?\])$/);
     if (!match) return { cleanText: text, games: [] };
 
     try {
