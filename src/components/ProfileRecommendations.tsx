@@ -13,13 +13,14 @@ type Recommendation = {
 interface ProfileRecommendationsProps {
   userId: string
   initialRecs: Recommendation[]
+  wantedGameIds: string[]
 }
 
 const PANEL_STYLE: React.CSSProperties = {
   border: '3px solid #8B6F47',
   borderRadius: '8px',
   backgroundImage: 'url(/wood-bg.jpg)',
-  backgroundSize: '100%',
+  backgroundSize: 'cover',
   backgroundRepeat: 'repeat-y',
   backgroundPosition: 'center',
   backgroundColor: 'rgba(28, 16, 8, 0.6)',
@@ -43,9 +44,48 @@ function SkeletonCard() {
   )
 }
 
-function RecCard({ rec }: { rec: Recommendation }) {
+function RecCard({
+  rec,
+  userId,
+  isWanted,
+  onWantToggle,
+  onDismiss,
+}: {
+  rec: Recommendation
+  userId: string
+  isWanted: boolean
+  onWantToggle: (gameId: string, wanted: boolean) => void
+  onDismiss: (recId: string) => void
+}) {
   const [showModal, setShowModal] = useState(false)
+  const [wantPending, setWantPending] = useState(false)
+  const [dismissPending, setDismissPending] = useState(false)
   const topMechs = rec.game.mechanisms.slice(0, 3)
+
+  async function handleWant() {
+    setWantPending(true)
+    try {
+      const res = await fetch(`/api/games/${rec.game.id}/want`, { method: 'POST' })
+      const data = await res.json()
+      onWantToggle(rec.game.id, data.wanted)
+    } finally {
+      setWantPending(false)
+    }
+  }
+
+  async function handleDismiss() {
+    setDismissPending(true)
+    try {
+      await fetch(`/api/meeps/${userId}/recommendations`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recId: rec.id }),
+      })
+      onDismiss(rec.id)
+    } catch {
+      setDismissPending(false)
+    }
+  }
 
   return (
     <>
@@ -75,22 +115,58 @@ function RecCard({ rec }: { rec: Recommendation }) {
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          {/* Title — clickable, no underline */}
-          <button
-            onClick={() => setShowModal(true)}
-            className="font-semibold text-sm leading-tight mb-0.5 text-left w-full"
-            style={{
-              color: '#F5E6D3',
-              fontFamily: 'var(--font-caudex)',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              textDecoration: 'none',
-            }}
-          >
-            {rec.game.name}
-          </button>
+          {/* Title row */}
+          <div className="flex items-start justify-between gap-2">
+            <button
+              onClick={() => setShowModal(true)}
+              className="font-semibold text-sm leading-tight mb-0.5 text-left"
+              style={{
+                color: '#F5E6D3',
+                fontFamily: 'var(--font-caudex)',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                textDecoration: 'none',
+              }}
+            >
+              {rec.game.name}
+            </button>
+
+            {/* Action buttons */}
+            <div className="flex gap-1 flex-shrink-0">
+              <button
+                onClick={handleWant}
+                disabled={wantPending}
+                title={isWanted ? 'Remove from Interested' : 'Add to Interested'}
+                className="w-7 h-7 rounded flex items-center justify-center text-sm transition-opacity"
+                style={{
+                  background: isWanted ? 'rgba(201,169,97,0.25)' : 'rgba(201,169,97,0.08)',
+                  border: `1px solid ${isWanted ? 'rgba(201,169,97,0.6)' : 'rgba(201,169,97,0.25)'}`,
+                  color: isWanted ? '#C9A961' : 'rgba(201,169,97,0.5)',
+                  cursor: wantPending ? 'default' : 'pointer',
+                  opacity: wantPending ? 0.5 : 1,
+                }}
+              >
+                ♥
+              </button>
+              <button
+                onClick={handleDismiss}
+                disabled={dismissPending}
+                title="Not interested"
+                className="w-7 h-7 rounded flex items-center justify-center text-sm transition-opacity"
+                style={{
+                  background: 'rgba(180,80,80,0.08)',
+                  border: '1px solid rgba(180,80,80,0.25)',
+                  color: 'rgba(180,80,80,0.5)',
+                  cursor: dismissPending ? 'default' : 'pointer',
+                  opacity: dismissPending ? 0.5 : 1,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
 
           {/* Mechanics */}
           {topMechs.length > 0 && (
@@ -117,8 +193,9 @@ function RecCard({ rec }: { rec: Recommendation }) {
   )
 }
 
-export default function ProfileRecommendations({ userId, initialRecs }: ProfileRecommendationsProps) {
+export default function ProfileRecommendations({ userId, initialRecs, wantedGameIds }: ProfileRecommendationsProps) {
   const [recs, setRecs] = useState<Recommendation[]>(initialRecs)
+  const [wanted, setWanted] = useState<Set<string>>(new Set(wantedGameIds))
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -155,6 +232,18 @@ export default function ProfileRecommendations({ userId, initialRecs }: ProfileR
     generate(message.trim() || undefined)
   }
 
+  function handleWantToggle(gameId: string, isWanted: boolean) {
+    setWanted(prev => {
+      const next = new Set(prev)
+      isWanted ? next.add(gameId) : next.delete(gameId)
+      return next
+    })
+  }
+
+  function handleDismiss(recId: string) {
+    setRecs(prev => prev.filter(r => r.id !== recId))
+  }
+
   const skeletonCount = recs.length || 3
 
   return (
@@ -167,7 +256,16 @@ export default function ProfileRecommendations({ userId, initialRecs }: ProfileR
         <div className="flex flex-col gap-3 mb-4">
           {loading
             ? Array.from({ length: skeletonCount }).map((_, i) => <SkeletonCard key={i} />)
-            : recs.map(rec => <RecCard key={rec.id} rec={rec} />)}
+            : recs.map(rec => (
+                <RecCard
+                  key={rec.id}
+                  rec={rec}
+                  userId={userId}
+                  isWanted={wanted.has(rec.game.id)}
+                  onWantToggle={handleWantToggle}
+                  onDismiss={handleDismiss}
+                />
+              ))}
 
           {!loading && recs.length === 0 && !error && (
             <p className="text-sm opacity-60 py-2" style={{ color: '#E8D4B8' }}>

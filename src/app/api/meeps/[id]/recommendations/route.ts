@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const { id: userId } = await params;
 
   const recs = await prisma.userRecommendation.findMany({
-    where: { userId },
+    where: { userId, dismissed: false },
     include: {
       game: {
         select: { id: true, bggId: true, name: true, image: true, description: true, categories: true, mechanisms: true, minPlayers: true, maxPlayers: true, playtime: true, complexity: true, yearPublished: true },
@@ -21,6 +21,25 @@ export async function GET(_req: NextRequest, { params }: Params) {
   });
 
   return NextResponse.json({ recommendations: recs });
+}
+
+// PATCH — dismiss a recommendation
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const { id: profileUserId } = await params;
+  const { userId: clerkUserId } = await auth();
+
+  if (!clerkUserId || clerkUserId !== profileUserId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { recId } = await req.json();
+
+  await prisma.userRecommendation.updateMany({
+    where: { id: recId, userId: profileUserId },
+    data: { dismissed: true },
+  });
+
+  return NextResponse.json({ ok: true });
 }
 
 // POST — generate and persist new recommendations (owner only)
@@ -40,6 +59,12 @@ export async function POST(req: NextRequest, { params }: Params) {
     where: { userId: profileUserId },
     include: { game: { select: { name: true, mechanisms: true } } },
     orderBy: { rating: 'desc' },
+  });
+
+  // Fetch dismissed game IDs to exclude from AI prompt
+  const dismissed = await prisma.userRecommendation.findMany({
+    where: { userId: profileUserId, dismissed: true },
+    select: { gameId: true, game: { select: { name: true } } },
   });
 
   // Fetch full game library
@@ -77,6 +102,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     ? `The player is currently looking for: "${message}"`
     : '';
 
+  const dismissedSection = dismissed.length
+    ? `Games the player is NOT interested in (do not recommend these): ${dismissed.map(d => d.game.name).join(', ')}`
+    : '';
+
   const prompt = `You are a board game recommendation engine.
 Recommend exactly ${count} games from the library this player would enjoy.
 Reply ONLY with a valid JSON array — no prose, no markdown, no explanation:
@@ -87,6 +116,8 @@ ${ratedSection}
 ${mechSection}
 
 ${messageSection}
+
+${dismissedSection}
 
 Exclude any games the player has already rated highly (8+) — they know those.
 Only use IDs from the game library below.
@@ -134,21 +165,25 @@ ${gameList}`;
     return NextResponse.json({ error: 'No valid recommendations returned' }, { status: 500 });
   }
 
-  // Replace existing recommendations atomically
-  await prisma.$transaction([
-    prisma.userRecommendation.deleteMany({ where: { userId: profileUserId } }),
-    prisma.userRecommendation.createMany({
-      data: valid.map(r => ({
+  // Replace only non-dismissed recommendations, leaving dismissed ones intact
+  const dismissedGameIds = new Set(dismissed.map(d => d.gameId));
+  await prisma.userRecommendation.deleteMany({
+    where: { userId: profileUserId, dismissed: false },
+  });
+  await prisma.userRecommendation.createMany({
+    data: valid
+      .filter(r => !dismissedGameIds.has(r.id))
+      .map(r => ({
         userId: profileUserId,
         gameId: r.id,
         reason: r.reason,
       })),
-    }),
-  ]);
+    skipDuplicates: true,
+  });
 
   // Return saved recs with game data
   const saved = await prisma.userRecommendation.findMany({
-    where: { userId: profileUserId },
+    where: { userId: profileUserId, dismissed: false },
     include: {
       game: {
         select: { id: true, bggId: true, name: true, image: true, description: true, categories: true, mechanisms: true, minPlayers: true, maxPlayers: true, playtime: true, complexity: true, yearPublished: true },

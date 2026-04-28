@@ -50,7 +50,7 @@ const PANEL_STYLE: React.CSSProperties = {
   border: '3px solid #8B6F47',
   borderRadius: '8px',
   backgroundImage: 'url(/wood-bg.jpg)',
-  backgroundSize: '100%',
+  backgroundSize: 'cover',
   backgroundRepeat: 'repeat-y',
   backgroundPosition: 'center',
   backgroundColor: 'rgba(28, 16, 8, 0.6)',
@@ -330,6 +330,7 @@ export default async function MeepProfilePage({
           <ProfileRecommendations
             userId={profileId}
             initialRecs={savedRecs}
+            wantedGameIds={interestedGames.map(g => g.id)}
           />
         )}
 
