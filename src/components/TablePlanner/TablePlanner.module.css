@@ -5,16 +5,29 @@
 }
 
 .tableCard {
+  position: relative;
   border: 2px solid #8B6F47;
   border-radius: 8px;
   overflow: hidden;
   background-image: url(/wood-bg.jpg);
-  background-size: 100%;
-  background-repeat: repeat-y;
+  background-size: cover;
   background-position: center;
-  background-color: rgba(28, 16, 8, 0.6);
-  background-blend-mode: multiply;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(201, 169, 97, 0.3);
+}
+
+/* Tint overlay — replaces background-blend-mode so the body gradient doesn't bleed through on mobile */
+.tableCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 8, 3, 0.68);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tableCard > * {
+  position: relative;
+  z-index: 1;
 }
 
 .cardHeader {

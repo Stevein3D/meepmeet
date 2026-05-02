@@ -103,13 +103,12 @@ export default function EventCard({ event, userId, dbUserId: currentUserId, loca
       border: '4px solid #8B6F47',
       borderRadius: '8px',
       backgroundImage: 'url(/wood-bg.jpg)',
-      backgroundSize: '100%',
-      backgroundRepeat: 'repeat-y',
+      backgroundSize: 'cover',
       backgroundPosition: 'center',
-      backgroundColor: 'rgba(28, 16, 8, 0.6)',
-      backgroundBlendMode: 'multiply',
       boxShadow: '0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,169,97,0.3)'
     }}>
+      {/* Tint overlay — replaces backgroundBlendMode so the body gradient doesn't bleed through on mobile */}
+      <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'rgba(16, 8, 3, 0.68)', pointerEvents: 'none', zIndex: 0 }} />
       {/* Toggle button — Game Masters only */}
       <GameMasterOnly>
         <button
@@ -135,7 +134,7 @@ export default function EventCard({ event, userId, dbUserId: currentUserId, loca
         </button>
       </GameMasterOnly>
 
-      <div className="p-4 flex flex-col h-full">
+      <div className="p-4 flex flex-col h-full" style={{ position: 'relative', zIndex: 1 }}>
         <div className="flex justify-between mb-2">
           <h3 className="text-xl font-bold mb-3" style={{
             color: '#F5E6D3',

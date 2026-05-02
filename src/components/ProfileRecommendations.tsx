@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import GameDetailsModal from './GameDetailsModal'
+import WoodPanel from './WoodPanel'
 import type { BaseGame } from '@/lib/types'
 
 type Recommendation = {
@@ -16,17 +17,6 @@ interface ProfileRecommendationsProps {
   wantedGameIds: string[]
 }
 
-const PANEL_STYLE: React.CSSProperties = {
-  border: '3px solid #8B6F47',
-  borderRadius: '8px',
-  backgroundImage: 'url(/wood-bg.jpg)',
-  backgroundSize: 'cover',
-  backgroundRepeat: 'repeat-y',
-  backgroundPosition: 'center',
-  backgroundColor: 'rgba(28, 16, 8, 0.6)',
-  backgroundBlendMode: 'multiply',
-  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-}
 
 function SkeletonCard() {
   return (
@@ -252,7 +242,7 @@ export default function ProfileRecommendations({ userId, initialRecs, wantedGame
         Recommended for You
       </h2>
 
-      <div style={PANEL_STYLE} className="p-4">
+      <WoodPanel className="p-4">
         <div className="flex flex-col gap-3 mb-4">
           {loading
             ? Array.from({ length: skeletonCount }).map((_, i) => <SkeletonCard key={i} />)
@@ -307,7 +297,7 @@ export default function ProfileRecommendations({ userId, initialRecs, wantedGame
             {loading ? '…' : '↺ Refresh'}
           </button>
         </form>
-      </div>
+      </WoodPanel>
     </section>
   )
 }

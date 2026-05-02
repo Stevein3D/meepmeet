@@ -11,6 +11,7 @@ import GameInfoButton from '@/components/GameInfoButton'
 import RatingInfoButton from '@/components/RatingInfoButton'
 import InterestedGamesSection from '@/components/InterestedGamesSection'
 import ProfileRecommendations from '@/components/ProfileRecommendations'
+import WoodPanel from '@/components/WoodPanel'
 
 // ── MMR helpers (same as meeps/page.tsx) ────────────────────────────────────
 
@@ -46,17 +47,6 @@ function formatDate(date: Date) {
   })
 }
 
-const PANEL_STYLE: React.CSSProperties = {
-  border: '3px solid #8B6F47',
-  borderRadius: '8px',
-  backgroundImage: 'url(/wood-bg.jpg)',
-  backgroundSize: 'cover',
-  backgroundRepeat: 'repeat-y',
-  backgroundPosition: 'center',
-  backgroundColor: 'rgba(28, 16, 8, 0.6)',
-  backgroundBlendMode: 'multiply',
-  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-}
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -243,7 +233,7 @@ export default async function MeepProfilePage({
         </div>
 
         {/* ── Profile header ───────────────────────────────────────────── */}
-        <div className="mb-8 p-6" style={PANEL_STYLE}>
+        <WoodPanel className="mb-8 p-6">
           <div className="flex gap-5 items-start">
             {/* Avatar */}
             <div
@@ -323,7 +313,7 @@ export default async function MeepProfilePage({
               </div>
             ))}
           </div>
-        </div>
+        </WoodPanel>
 
         {/* ── Recommendations (owner only) ─────────────────────────── */}
         {isOwner && (
@@ -361,7 +351,7 @@ export default async function MeepProfilePage({
               {attendedEvents.map(event => {
                 const games = gamesByEvent.get(event.id)
                 return (
-                  <div key={event.id} style={{ ...PANEL_STYLE, padding: '0.875rem 1rem' }}>
+                  <WoodPanel key={event.id} style={{ padding: '0.875rem 1rem' }}>
                     {/* Event row */}
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="flex-1 min-w-0">
@@ -419,7 +409,7 @@ export default async function MeepProfilePage({
                         ))}
                       </div>
                     )}
-                  </div>
+                  </WoodPanel>
                 )
               })}
             </div>
@@ -438,10 +428,9 @@ export default async function MeepProfilePage({
 
             <div className="flex flex-col gap-2">
               {otherEvents.map(event => (
-                <div
+                <WoodPanel
                   key={event.id}
                   className="flex items-center justify-between gap-3 flex-wrap px-4 py-3"
-                  style={PANEL_STYLE}
                 >
                   <div className="flex-1 min-w-0">
                     <Link
@@ -463,7 +452,7 @@ export default async function MeepProfilePage({
                       isOwner={isOwner}
                     />
                   )}
-                </div>
+                </WoodPanel>
               ))}
             </div>
           </section>

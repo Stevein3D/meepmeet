@@ -61,29 +61,56 @@
 
 /* Shared wood card base style */
 .woodCardBase {
+  position: relative;
+  overflow: hidden;
   border: 4px solid var(--wood-border);
   border-radius: 8px;
   background-image: url(/wood-bg.jpg);
-  background-size: 100%;
-  background-repeat: repeat-y;
+  background-size: cover;
   background-position: center;
-  background-color: var(--wood-bg-dark);
-  background-blend-mode: multiply;
   box-shadow: var(--shadow-card);
+}
+
+.woodCardBase::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 8, 3, 0.68);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.woodCardBase > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Wood panel — form container with gold border */
 .wood-panel {
+  position: relative;
+  overflow: hidden;
   background-image: url(/wood-bg.jpg);
-  background-size: 100%;
-  background-repeat: repeat-y;
+  background-size: cover;
   background-position: center;
-  background-color: rgba(28, 16, 8, 0.65);
-  background-blend-mode: multiply;
   border: 2px solid var(--wood-accent);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(201, 169, 97, 0.2);
   padding: 1.75rem;
+}
+
+/* Tint overlay — replaces background-blend-mode so the body gradient doesn't bleed through on mobile */
+.wood-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 8, 3, 0.68);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wood-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Inputs/textareas inside a wood panel */
