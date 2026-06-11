@@ -43,7 +43,7 @@ export default function AttendedButton({ eventId, targetUserId, initialAttended,
       disabled={loading}
       className={`px-3 py-1 text-sm rounded font-medium transition-all disabled:opacity-50 flex-shrink-0 toggle-btn${attended ? ' toggle-btn--green' : ''}`}
     >
-      {loading ? '…' : attended ? '✓ Attended' : 'Attended'}
+      {loading ? '…' : attended ? '✓ Attended' : 'Attended?'}
     </button>
   )
 }

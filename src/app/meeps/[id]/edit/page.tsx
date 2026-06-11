@@ -215,15 +215,7 @@ export default function EditMeepPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
-                    style={{
-                      padding: '0.35rem 0.85rem',
-                      background: 'rgba(201,169,97,0.1)',
-                      border: '1px solid rgba(201,169,97,0.5)',
-                      borderRadius: '4px',
-                      color: '#C9A961',
-                      fontSize: '0.8rem',
-                      cursor: uploading ? 'wait' : 'pointer',
-                    }}
+                    className="btn btn-sm btn-secondary disabled:opacity-50"
                   >
                     {uploading ? 'Uploading…' : 'Upload photo'}
                   </button>
@@ -231,15 +223,7 @@ export default function EditMeepPage() {
                     <button
                       type="button"
                       onClick={() => setAvatarUrl(null)}
-                      style={{
-                        padding: '0.35rem 0.85rem',
-                        background: 'none',
-                        border: '1px solid rgba(180,60,60,0.4)',
-                        borderRadius: '4px',
-                        color: '#d97070',
-                        fontSize: '0.8rem',
-                        cursor: 'pointer',
-                      }}
+                      className="btn btn-sm btn-danger"
                     >
                       Remove photo
                     </button>

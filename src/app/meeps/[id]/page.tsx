@@ -219,15 +219,7 @@ export default async function MeepProfilePage({
 
         {/* ── Top nav ──────────────────────────────────────────────────── */}
         <div className="flex justify-end mb-4">
-          <Link
-            href="/meeps"
-            className="px-3 py-1.5 text-sm rounded font-medium"
-            style={{
-              border: '2px solid rgba(201,169,97,0.5)',
-              color: 'rgba(201,169,97,0.8)',
-              background: 'rgba(201,169,97,0.06)',
-            }}
-          >
+          <Link href="/meeps" className="btn btn-sm btn-ghost">
             ← All Meeps
           </Link>
         </div>
@@ -282,12 +274,7 @@ export default async function MeepProfilePage({
             {canEdit && (
               <Link
                 href={`/meeps/${profileUser.id}/edit`}
-                className="flex-shrink-0 px-3 py-1.5 text-sm rounded font-medium"
-                style={{
-                  border: '2px solid #C9A961',
-                  color: '#C9A961',
-                  background: 'rgba(201,169,97,0.1)',
-                }}
+                className="flex-shrink-0 btn btn-sm btn-secondary"
               >
                 Edit
               </Link>
@@ -362,7 +349,7 @@ export default async function MeepProfilePage({
                         >
                           {event.title}
                         </Link>
-                        <div className="text-xs mt-0.5 opacity-70" style={{ color: '#E8D4B8' }}>
+                        <div className="text-xs mt-0.5" style={{ color: 'rgba(232,212,184,0.9)' }}>
                           {formatDate(event.date)}
                         </div>
                       </div>
@@ -428,30 +415,29 @@ export default async function MeepProfilePage({
 
             <div className="flex flex-col gap-2">
               {otherEvents.map(event => (
-                <WoodPanel
-                  key={event.id}
-                  className="flex items-center justify-between gap-3 flex-wrap px-4 py-3"
-                >
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      href={`/events/${event.id}`}
-                      className="font-medium hover:underline"
-                      style={{ color: '#F5E6D3' }}
-                    >
-                      {event.title}
-                    </Link>
-                    <div className="text-xs mt-0.5 opacity-70" style={{ color: '#E8D4B8' }}>
-                      {formatDate(event.date)}
+                <WoodPanel key={event.id} style={{ padding: '0.75rem 1rem' }}>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <Link
+                        href={`/events/${event.id}`}
+                        className="font-medium hover:underline"
+                        style={{ color: '#F5E6D3' }}
+                      >
+                        {event.title}
+                      </Link>
+                      <div className="text-xs mt-0.5" style={{ color: 'rgba(232,212,184,0.9)' }}>
+                        {formatDate(event.date)}
+                      </div>
                     </div>
+                    {canInteract && (
+                      <AttendedButton
+                        eventId={event.id}
+                        targetUserId={profileId}
+                        initialAttended={false}
+                        isOwner={isOwner}
+                      />
+                    )}
                   </div>
-                  {canInteract && (
-                    <AttendedButton
-                      eventId={event.id}
-                      targetUserId={profileId}
-                      initialAttended={false}
-                      isOwner={isOwner}
-                    />
-                  )}
                 </WoodPanel>
               ))}
             </div>

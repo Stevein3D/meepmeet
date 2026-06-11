@@ -143,7 +143,7 @@ export default function GameCard({ game, userId, isGameMaster = false, userOwnsG
         {/* Slide-up Edit/Delete controls */}
         {(showControls || isClosing) && isGameMaster && (
           <div className={`${styles.controls} ${isClosing ? styles.slideDown : styles.slideUp}`}>
-            <Link href={`/games/${game.id}/edit`} className={styles.editLink}>
+            <Link href={`/games/${game.id}/edit`} className="flex-1 text-center btn btn-sm btn-secondary">
               Edit
             </Link>
             <DeleteGameButton gameId={game.id} gameName={game.name} />

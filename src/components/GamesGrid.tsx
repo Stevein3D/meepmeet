@@ -251,8 +251,7 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
               <button
                 onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
-                className="filter-input"
-                style={{ cursor: 'pointer', padding: '0.6rem 2rem', borderColor: 'rgba(201,169,97,0.5)', fontSize: '0.9375rem' }}
+                className="btn btn-md btn-secondary"
               >
                 Load More ({remaining} more)
               </button>

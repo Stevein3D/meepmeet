@@ -89,7 +89,7 @@ export default function EventCard({ event, userId, dbUserId: currentUserId, loca
     })
   }
 
-  const getAttendeeCountByStatus = (attendees: any[]) => {
+  const getAttendeeCountByStatus = (attendees: { rsvpStatus: string }[]) => {
     const yesCount = attendees.filter(a => a.rsvpStatus === 'yes').length
     const maybeCount = attendees.filter(a => a.rsvpStatus === 'maybe').length
     const noCount = attendees.filter(a => a.rsvpStatus === 'no').length
@@ -145,12 +145,7 @@ export default function EventCard({ event, userId, dbUserId: currentUserId, loca
           <div className="min-w-fit">
             <Link
               href={`/events/${event.id}`}
-              className="block text-center py-2 px-4 rounded text-sm font-medium transition-all"
-              style={{
-                border: '1px solid rgba(201,169,97,0.4)',
-                color: '#C9A961',
-                background: 'rgba(201,169,97,0.06)',
-              }}
+              className="block text-center btn btn-sm btn-ghost"
             >
               View Details
             </Link>
@@ -246,12 +241,7 @@ export default function EventCard({ event, userId, dbUserId: currentUserId, loca
             >
               <Link
                 href={`/events/${event.id}/edit`}
-                className="flex-1 px-3 py-2 text-center rounded font-medium transition-all"
-                style={{
-                  border: '2px solid #C9A961',
-                  color: '#C9A961',
-                  background: 'rgba(201,169,97,0.1)'
-                }}
+                className="flex-1 text-center btn btn-sm btn-secondary"
               >
                 Edit
               </Link>

@@ -55,7 +55,7 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
 
   return (
     <div
-      className="flex flex-col overflow-hidden shadow-xl"
+      className="h-full flex flex-col overflow-hidden shadow-xl"
       style={{
         position: 'relative',
         border: '4px solid #8B6F47',
@@ -69,60 +69,77 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
     >
       {/* Overlay — replaces backgroundBlendMode for consistent iOS rendering */}
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(28, 16, 8, 0.6)', pointerEvents: 'none', zIndex: 0 }} />
-      <div className="p-4 flex flex-col items-center text-center gap-3" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Avatar */}
-        <Link href={`/meeps/${user.id}`} style={{ textDecoration: 'none' }}>
-        <div
-          className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center text-2xl font-bold flex-shrink-0"
-          style={{
-            border: '3px solid #C9A961',
-            background: 'linear-gradient(135deg, #3a2010, #5c3a1e)',
-            color: '#F5E6D3',
-          }}
-        >
-          {user.avatar ? (
-            <Image src={user.avatar} alt={user.name} fill className="object-cover" unoptimized />
-          ) : (
-            <span>{initials}</span>
-          )}
-        </div>
-        </Link>
-
-        {/* Name — links to profile page */}
-        
-        <h2
-          className="text-xl font-bold leading-tight relative hover:opacity-80 transition-opacity"
-          style={{ color: '#F5E6D3', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
-        >
-          {user.alias ? <span className={styles.displayAlias}>{user.alias}</span> : <span>{user.name}</span>}
-          <span className={styles.displayName}>{user.name}</span>
-        </h2>
-
-        {/* Role badge */}
-        <span
-          className="text-xs font-semibold px-3 py-1 rounded-full"
-          style={{
-            background: roleColors[user.role] + '33',
-            border: `1px solid ${roleColors[user.role]}`,
-            color: '#E8D4B8',
-          }}
-        >
-          {roleLabel[user.role]}
-        </span>
-
-        {/* Tagline */}
-        {user.tagline && (
-          <p
-            className="text-xs text-center leading-snug"
-            style={{ color: 'rgba(232,212,184,0.85)', fontStyle: 'italic' }}
+      <div className="p-4 flex-1 flex flex-col gap-3" style={{ position: 'relative', zIndex: 1 }}>
+        {/* Header — horizontal on mobile (like the meep view page), stacked + centered on sm+ */}
+        <div className="flex items-center gap-3 sm:flex-col sm:gap-3">
+          {/* Avatar */}
+          <Link href={`/meeps/${user.id}`} className="flex-shrink-0" style={{ textDecoration: 'none' }}>
+          <div
+            className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden flex items-center justify-center text-xl sm:text-2xl font-bold flex-shrink-0"
+            style={{
+              border: '3px solid #C9A961',
+              background: 'linear-gradient(135deg, #3a2010, #5c3a1e)',
+              color: '#F5E6D3',
+            }}
           >
-            {user.tagline}
-          </p>
-        )}
+            {user.avatar ? (
+              <Image src={user.avatar} alt={user.name} fill className="object-cover" unoptimized />
+            ) : (
+              <span>{initials}</span>
+            )}
+          </div>
+          </Link>
 
-        {/* Stats — Row 1: library & event counts */}
+          {/* Name + badge + tagline */}
+          <div className="flex-1 min-w-0 flex flex-col items-start gap-1.5 text-left sm:items-center sm:text-center sm:gap-3">
+            <h2
+              className="text-lg sm:text-xl font-bold leading-tight relative hover:opacity-80 transition-opacity"
+              style={{ color: '#F5E6D3', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+            >
+              {user.alias ? <span className={styles.displayAlias}>{user.alias}</span> : <span>{user.name}</span>}
+              <span className={styles.displayName}>{user.name}</span>
+            </h2>
+
+            {/* Role badge */}
+            <span
+              className="text-xs font-semibold px-3 py-1 rounded-full"
+              style={{
+                background: roleColors[user.role] + '33',
+                border: `1px solid ${roleColors[user.role]}`,
+                color: '#E8D4B8',
+              }}
+            >
+              {roleLabel[user.role]}
+            </span>
+
+            {/* Tagline */}
+            {user.tagline && (
+              <p
+                className="text-xs leading-snug"
+                style={{ color: 'rgba(232,212,184,0.85)', fontStyle: 'italic' }}
+              >
+                {user.tagline}
+              </p>
+            )}
+          </div>
+
+          {/* Mobile actions — top right of the header, like the meep view page */}
+          <div className="flex flex-col gap-1.5 flex-shrink-0 self-start sm:hidden">
+            <Link href={`/meeps/${user.id}`} className="text-center btn btn-sm btn-ghost">
+              View
+            </Link>
+            {canEdit && (
+              <Link href={`/meeps/${user.id}/edit`} className="text-center btn btn-sm btn-secondary">
+                Edit
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Stats — Row 1: library & event counts. mt-auto pins stats + buttons to the
+            card bottom so they align across tiles even when the tagline is missing */}
         <div
-          className="w-full grid grid-cols-3 gap-2 mt-1 pt-3 text-sm"
+          className="w-full grid grid-cols-3 gap-2 mt-auto pt-3 text-sm"
           style={{ borderTop: '1px solid rgba(201,169,97,0.3)', color: '#E8D4B8' }}
         >
           
@@ -177,27 +194,18 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
           </div>
         </div>
 
-        <div className="mt-3 flex gap-2 w-full">
+        {/* Desktop actions — bottom of the tile; mobile shows them in the header instead */}
+        <div className="mt-3 hidden sm:flex gap-2 w-full">
           <Link
             href={`/meeps/${user.id}`}
-            className="flex-1 text-center py-2 rounded text-sm font-medium transition-all"
-            style={{
-              border: '2px solid #C9A961',
-              color: '#C9A961',
-              background: 'rgba(201,169,97,0.1)',
-            }}
+            className="flex-1 text-center btn btn-sm btn-ghost"
           >
             View
           </Link>
           {canEdit && (
             <Link
               href={`/meeps/${user.id}/edit`}
-              className="flex-1 text-center py-2 rounded text-sm font-medium transition-all"
-              style={{
-                border: '2px solid rgba(201,169,97,0.5)',
-                color: 'rgba(201,169,97,0.8)',
-                background: 'rgba(201,169,97,0.06)',
-              }}
+              className="flex-1 text-center btn btn-sm btn-secondary"
             >
               Edit
             </Link>

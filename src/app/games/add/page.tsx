@@ -155,22 +155,14 @@ export default function AddGamePage() {
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setMode('manual')}
-          className={`btn btn-md ${
-            mode === 'manual'
-              ? 'btn-primary'
-              : 'btn-success'
-          }`}
+          className={`btn btn-md ${mode === 'manual' ? 'btn-primary' : 'btn-secondary'}`}
         >
           Manual Entry
         </button>
         <MemberOnly>
         <button
           onClick={() => setMode('search')}
-          className={`btn btn-md ${
-            mode === 'search'
-              ? 'btn-primary'
-              : 'btn-success'
-          }`}
+          className={`btn btn-md ${mode === 'search' ? 'btn-primary' : 'btn-secondary'}`}
         >
           Search BGG
         </button>
@@ -251,12 +243,12 @@ export default function AddGamePage() {
                       <button
                         onClick={() => handleAddFromBGG(game.id, ownedGames[game.id] || false)}
                         disabled={addingGameId !== null}
-                        className={`btn btn-sm ${
+                        className={`btn btn-sm btn-success ${
                           isAdding
-                            ? 'btn-success cursor-wait'
+                            ? 'cursor-wait'
                             : addingGameId !== null
-                            ? 'btn-success opacity-50 cursor-not-allowed'
-                            : 'btn-success hover:bg-green-700'
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
                         }`}
                       >
                         {isAdding

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import ConfirmModal from './ConfirmModal'
 
 interface PollVote {
   userId: string
@@ -47,6 +48,7 @@ export default function EventDatePoll({
   const [options, setOptions] = useState(initial)
   const [busy, setBusy] = useState<string | null>(null)
   const [confirming, setConfirming] = useState<string | null>(null)
+  const [confirmTarget, setConfirmTarget] = useState<string | null>(null)
 
   if (dateConfirmed || options.length === 0) return null
 
@@ -75,7 +77,7 @@ export default function EventDatePoll({
   }
 
   const handleConfirm = async (optionId: string) => {
-    if (!confirm('Confirm this date? This will set the event date and notify all members.')) return
+    setConfirmTarget(null)
     setConfirming(optionId)
     const res = await fetch(`/api/events/${eventId}/poll/${optionId}`, {
       method: 'PATCH',
@@ -151,7 +153,7 @@ export default function EventDatePoll({
 
                 {isGameMaster && (
                   <button
-                    onClick={() => handleConfirm(opt.id)}
+                    onClick={() => setConfirmTarget(opt.id)}
                     disabled={!!confirming}
                     className="poll-confirm-btn"
                   >
@@ -180,6 +182,17 @@ export default function EventDatePoll({
           )
         })}
       </div>
+
+      {confirmTarget && (
+        <ConfirmModal
+          title="Confirm Date"
+          message={`Confirm ${formatPollDate(options.find(o => o.id === confirmTarget)?.date ?? '')}? This will set the event date and notify all members.`}
+          confirmLabel="Confirm Date"
+          busy={!!confirming}
+          onConfirm={() => handleConfirm(confirmTarget)}
+          onCancel={() => setConfirmTarget(null)}
+        />
+      )}
     </div>
   )
 }

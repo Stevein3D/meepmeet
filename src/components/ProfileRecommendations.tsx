@@ -129,14 +129,7 @@ function RecCard({
                 onClick={handleWant}
                 disabled={wantPending}
                 title={isWanted ? 'Remove from Interested' : 'Add to Interested'}
-                className="w-7 h-7 rounded flex items-center justify-center text-sm transition-opacity"
-                style={{
-                  background: isWanted ? 'rgba(201,169,97,0.25)' : 'rgba(201,169,97,0.08)',
-                  border: `1px solid ${isWanted ? 'rgba(201,169,97,0.6)' : 'rgba(201,169,97,0.25)'}`,
-                  color: isWanted ? '#C9A961' : 'rgba(201,169,97,0.5)',
-                  cursor: wantPending ? 'default' : 'pointer',
-                  opacity: wantPending ? 0.5 : 1,
-                }}
+                className={`rec-icon-btn rec-icon-btn--want${isWanted ? ' is-active' : ''}`}
               >
                 ♥
               </button>
@@ -144,14 +137,7 @@ function RecCard({
                 onClick={handleDismiss}
                 disabled={dismissPending}
                 title="Not interested"
-                className="w-7 h-7 rounded flex items-center justify-center text-sm transition-opacity"
-                style={{
-                  background: 'rgba(180,80,80,0.08)',
-                  border: '1px solid rgba(180,80,80,0.25)',
-                  color: 'rgba(180,80,80,0.5)',
-                  cursor: dismissPending ? 'default' : 'pointer',
-                  opacity: dismissPending ? 0.5 : 1,
-                }}
+                className="rec-icon-btn rec-icon-btn--dismiss"
               >
                 ✕
               </button>
@@ -160,17 +146,17 @@ function RecCard({
 
           {/* Mechanics */}
           {topMechs.length > 0 && (
-            <p className="text-xs mb-1" style={{ color: '#a8854a', fontFamily: 'var(--font-caudex)' }}>
+            <p className="text-xs mb-1" style={{ color: 'rgba(201,169,97,0.85)', fontFamily: 'var(--font-caudex)' }}>
               {topMechs.join(' · ')}
             </p>
           )}
 
           {/* Reason */}
-          <p className="text-xs leading-snug" style={{ color: 'rgba(232,212,184,0.75)', fontFamily: 'var(--font-caudex)' }}>
+          <p className="text-xs leading-snug" style={{ color: 'rgba(232,212,184,0.9)', fontFamily: 'var(--font-caudex)' }}>
             {rec.reason}
           </p>
 
-          <p className="text-xs mt-1 opacity-50" style={{ color: '#E8D4B8' }}>
+          <p className="text-xs mt-1" style={{ color: 'rgba(232,212,184,0.75)' }}>
             {rec.game.minPlayers}–{rec.game.maxPlayers}p · {rec.game.playtime}min
           </p>
         </div>
@@ -286,13 +272,7 @@ export default function ProfileRecommendations({ userId, initialRecs, wantedGame
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 text-sm font-semibold rounded flex-shrink-0"
-            style={{
-              background: loading ? 'rgba(201,169,97,0.15)' : 'rgba(201,169,97,0.2)',
-              border: '1px solid rgba(201,169,97,0.5)',
-              color: '#C9A961',
-              cursor: loading ? 'default' : 'pointer',
-            }}
+            className="flex-shrink-0 btn btn-sm btn-secondary disabled:opacity-50"
           >
             {loading ? '…' : '↺ Refresh'}
           </button>

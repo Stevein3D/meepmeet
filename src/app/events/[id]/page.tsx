@@ -148,19 +148,11 @@ export default async function EventDetailPage({
               {event.title}
             </h1>
             <div className="flex gap-2 flex-shrink-0">
-              <Link
-                href="/events"
-                className="px-3 py-1.5 text-sm rounded border"
-                style={{ borderColor: 'rgba(201,169,97,0.4)', color: '#C9A961' }}
-              >
+              <Link href="/events" className="btn btn-sm btn-ghost">
                 ← All Events
               </Link>
               {canManage && (
-                <Link
-                  href={`/events/${id}/edit`}
-                  className="px-3 py-1.5 text-sm rounded border"
-                  style={{ borderColor: 'rgba(201,169,97,0.4)', color: '#C9A961' }}
-                >
+                <Link href={`/events/${id}/edit`} className="btn btn-sm btn-secondary">
                   Edit Event
                 </Link>
               )}
@@ -252,11 +244,25 @@ export default async function EventDetailPage({
               return acc
             }, {})
             const allGuestNames = event.guests.map(g => g.name)
+            if (confirmedCount === 0 && allGuestNames.length === 0 && maybes.length === 0 && declines.length === 0) {
+              return null
+            }
             return (
-              <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div
+                className="rounded-lg p-4"
+                style={{
+                  background: 'rgba(28,16,8,0.55)',
+                  border: '1px solid rgba(139,111,71,0.5)',
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.4rem',
+                  maxWidth: '600px',
+                }}
+              >
                 {confirmedCount > 0 && (
-                  <div style={{ color: 'rgba(232,212,184,0.7)' }}>
-                    <span style={{ color: 'rgba(201,169,97,0.7)', fontWeight: 600 }}>
+                  <div style={{ color: '#E8D4B8' }}>
+                    <span style={{ color: '#C9A961', fontWeight: 600 }}>
                       Confirmed ({confirmedCount}):
                     </span>{' '}
                     {confirmed.map((a, i) => {
@@ -272,22 +278,22 @@ export default async function EventDetailPage({
                   </div>
                 )}
                 {allGuestNames.length > 0 && (
-                  <div style={{ color: 'rgba(232,212,184,0.7)' }}>
-                    <span style={{ color: 'rgba(201,169,97,0.7)', fontWeight: 600 }}>Guests ({allGuestNames.length}): </span>
+                  <div style={{ color: '#E8D4B8' }}>
+                    <span style={{ color: '#C9A961', fontWeight: 600 }}>Guests ({allGuestNames.length}): </span>
                     {allGuestNames.join(', ')}
                   </div>
                 )}
                 {maybes.length > 0 && (
-                  <div style={{ color: 'rgba(232,212,184,0.55)' }}>
-                    <span style={{ color: 'rgba(201,169,97,0.5)', fontWeight: 600 }}>Maybe ({maybes.length}): </span>
+                  <div style={{ color: 'rgba(232,212,184,0.8)' }}>
+                    <span style={{ color: 'rgba(201,169,97,0.8)', fontWeight: 600 }}>Maybe ({maybes.length}): </span>
                     {maybes.map((a, i) => (
                       <span key={a.id}>{a.alias || a.name}{i < maybes.length - 1 ? ', ' : ''}</span>
                     ))}
                   </div>
                 )}
                 {declines.length > 0 && (
-                  <div style={{ color: 'rgba(232,212,184,0.4)' }}>
-                    <span style={{ color: 'rgba(201,169,97,0.4)', fontWeight: 600 }}>Declined ({declines.length}): </span>
+                  <div style={{ color: 'rgba(232,212,184,0.65)' }}>
+                    <span style={{ color: 'rgba(201,169,97,0.65)', fontWeight: 600 }}>Declined ({declines.length}): </span>
                     {declines.map((a, i) => (
                       <span key={a.id}>{a.alias || a.name}{i < declines.length - 1 ? ', ' : ''}</span>
                     ))}

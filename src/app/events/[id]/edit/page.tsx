@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Header from '@/components/Header'
+import ConfirmModal from '@/components/ConfirmModal'
 
 interface EventData {
   id: string
@@ -58,6 +59,8 @@ export default function EditEventPage() {
   const [notified, setNotified] = useState(false)
   const [testNotifying, setTestNotifying] = useState(false)
   const [testNotified, setTestNotified] = useState(false)
+  const [notifyConfirmOpen, setNotifyConfirmOpen] = useState(false)
+  const [confirmDateTarget, setConfirmDateTarget] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -149,7 +152,7 @@ export default function EditEventPage() {
   }
 
   const handleNotifyMembers = async () => {
-    if (!confirm('Send a poll notification email to all members? This cannot be undone.')) return
+    setNotifyConfirmOpen(false)
     setNotifying(true)
     await fetch(`/api/events/${eventId}/poll`, {
       method: 'POST',
@@ -186,7 +189,7 @@ export default function EditEventPage() {
   }
 
   const handleConfirmDate = async (optionId: string) => {
-    if (!confirm('Confirm this date? This will set the event date and notify all members.')) return
+    setConfirmDateTarget(null)
     setPollBusy(true)
     const res = await fetch(`/api/events/${eventId}/poll/${optionId}`, {
       method: 'PATCH',
@@ -347,32 +350,14 @@ export default function EditEventPage() {
                     <button
                       onClick={handleTestNotify}
                       disabled={testNotifying}
-                      style={{
-                        padding: '0.25rem 0.7rem',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        borderRadius: '0.25rem',
-                        border: '1px solid rgba(201,169,97,0.25)',
-                        background: testNotified ? 'rgba(143,188,143,0.1)' : 'rgba(0,0,0,0.2)',
-                        color: testNotified ? '#8FBC8F' : 'rgba(201,169,97,0.5)',
-                        cursor: testNotifying ? 'default' : 'pointer',
-                      }}
+                      className={`btn btn-sm ${testNotified ? 'btn-success' : 'btn-ghost'} disabled:opacity-50`}
                     >
                       {testNotifying ? 'Sending...' : testNotified ? '✓ Test sent' : 'Test Email'}
                     </button>
                     <button
-                      onClick={handleNotifyMembers}
+                      onClick={() => setNotifyConfirmOpen(true)}
                       disabled={notifying || notified}
-                      style={{
-                        padding: '0.25rem 0.7rem',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        borderRadius: '0.25rem',
-                        border: '1px solid rgba(201,169,97,0.5)',
-                        background: notified ? 'rgba(143,188,143,0.15)' : 'rgba(201,169,97,0.1)',
-                        color: notified ? '#8FBC8F' : '#C9A961',
-                        cursor: notified ? 'default' : 'pointer',
-                      }}
+                      className={`btn btn-sm ${notified ? 'btn-success' : 'btn-primary'} ${notified ? '' : 'disabled:opacity-50'}`}
                     >
                       {notifying ? 'Sending...' : notified ? '✓ Members notified' : 'Notify Members'}
                     </button>
@@ -416,7 +401,7 @@ export default function EditEventPage() {
                     </span>
                     {!event.dateConfirmed && (
                       <button
-                        onClick={() => handleConfirmDate(opt.id)}
+                        onClick={() => setConfirmDateTarget(opt.id)}
                         disabled={pollBusy}
                         style={{
                           padding: '0.2rem 0.55rem',
@@ -502,6 +487,28 @@ export default function EditEventPage() {
             )}
           </div>
         </div>
+
+        {notifyConfirmOpen && (
+          <ConfirmModal
+            title="Notify Members"
+            message="Send a poll notification email to all members? This cannot be undone."
+            confirmLabel="Send Emails"
+            busy={notifying}
+            onConfirm={handleNotifyMembers}
+            onCancel={() => setNotifyConfirmOpen(false)}
+          />
+        )}
+
+        {confirmDateTarget && (
+          <ConfirmModal
+            title="Confirm Date"
+            message={`Confirm ${formatPollDate(pollOptions.find(o => o.id === confirmDateTarget)?.date ?? '')}? This will set the event date and notify all members.`}
+            confirmLabel="Confirm Date"
+            busy={pollBusy}
+            onConfirm={() => handleConfirmDate(confirmDateTarget)}
+            onCancel={() => setConfirmDateTarget(null)}
+          />
+        )}
       </main>
     </>
   )
