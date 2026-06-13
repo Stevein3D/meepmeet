@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { prisma } from '@/lib/prisma'
@@ -12,6 +11,7 @@ import RatingInfoButton from '@/components/RatingInfoButton'
 import InterestedGamesSection from '@/components/InterestedGamesSection'
 import ProfileRecommendations from '@/components/ProfileRecommendations'
 import WoodPanel from '@/components/WoodPanel'
+import AvatarViewer from '@/components/AvatarViewer'
 
 // ── MMR helpers (same as meeps/page.tsx) ────────────────────────────────────
 
@@ -227,21 +227,13 @@ export default async function MeepProfilePage({
         {/* ── Profile header ───────────────────────────────────────────── */}
         <WoodPanel className="mb-8 p-6">
           <div className="flex gap-5 items-start">
-            {/* Avatar */}
-            <div
-              className="relative w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center text-2xl font-bold"
-              style={{
-                border: '3px solid #C9A961',
-                background: 'linear-gradient(135deg, #3a2010, #5c3a1e)',
-                color: '#F5E6D3',
-              }}
-            >
-              {profileUser.avatar ? (
-                <Image src={profileUser.avatar} alt={profileUser.name} fill className="object-cover" unoptimized />
-              ) : (
-                <span>{initials}</span>
-              )}
-            </div>
+            {/* Avatar — enlarges to a lightbox on hover/tap when a photo exists */}
+            <AvatarViewer
+              src={profileUser.avatar}
+              alt={profileUser.alias ?? profileUser.name}
+              initials={initials}
+              circleClassName="w-20 h-20 text-2xl"
+            />
 
             {/* Name + role */}
             <div className="flex-1 min-w-0">

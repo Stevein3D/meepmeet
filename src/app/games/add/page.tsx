@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Header from '@/components/Header'
 import { MemberOnly } from '@/components/RoleGuard';
 
@@ -31,6 +32,7 @@ export default function AddGamePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<BGGSearchResult[]>([])
+  const [thumbnails, setThumbnails] = useState<Record<number, string>>({})
   const [addingGameId, setAddingGameId] = useState<number | null>(null)
   const [ownedGames, setOwnedGames] = useState<Record<number, boolean>>({}) // Track ownership per game
 
@@ -79,14 +81,22 @@ export default function AddGamePage() {
     setSearching(true)
     setError(null)
     setOwnedGames({}) // Reset ownership tracking on new search
+    setThumbnails({}) // Reset thumbnails on new search
     try {
       const response = await fetch(`/api/bgg/search?query=${encodeURIComponent(searchQuery)}`)
       if (!response.ok) throw new Error('Search failed')
-      
-      const results = await response.json()
+
+      const results: BGGSearchResult[] = await response.json()
       setSearchResults(results)
       if (results.length === 0) {
         setError('No games found')
+      } else {
+        // Fetch thumbnails progressively — results render immediately, images fill in
+        const ids = results.map(r => r.id)
+        fetch(`/api/bgg/thumbnails?ids=${ids.join(',')}`)
+          .then(r => r.ok ? r.json() : {})
+          .then((map: Record<number, string>) => setThumbnails(map))
+          .catch(() => {}) // non-critical
       }
     } catch (err) {
       console.error('Search failed:', err)
@@ -148,21 +158,21 @@ export default function AddGamePage() {
   return (
     <>
     <Header />
-    <main className="min-h-screen p-8">
-      <h1 className="text-4xl font-bold mb-8">Add Game</h1>
+    <main className="min-h-screen p-4 sm:p-8">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8">Add Game</h1>
 
-      {/* Mode Toggle */}
+      {/* Mode Toggle — equal-width on mobile, natural width on larger screens */}
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setMode('manual')}
-          className={`btn btn-md ${mode === 'manual' ? 'btn-primary' : 'btn-secondary'}`}
+          className={`btn rounded flex-1 sm:flex-none text-sm sm:text-[0.88rem] px-4 py-2.5 sm:px-9 sm:py-3.5 ${mode === 'manual' ? 'btn-primary' : 'btn-secondary'}`}
         >
           Manual Entry
         </button>
         <MemberOnly>
         <button
           onClick={() => setMode('search')}
-          className={`btn btn-md ${mode === 'search' ? 'btn-primary' : 'btn-secondary'}`}
+          className={`btn rounded flex-1 sm:flex-none text-sm sm:text-[0.88rem] px-4 py-2.5 sm:px-9 sm:py-3.5 ${mode === 'search' ? 'btn-primary' : 'btn-secondary'}`}
         >
           Search BGG
         </button>
@@ -178,28 +188,31 @@ export default function AddGamePage() {
       {mode === 'search' ? (
         <>
           <form onSubmit={handleSearch} className="mb-8">
-            <div className="flex gap-2">
+            {/* Full-width input on mobile; Search/Cancel drop to the line below */}
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for a game..."
-                className="flex-1 px-4 py-2 border rounded-lg"
+                className="w-full sm:flex-1 px-4 py-2 border rounded-lg"
               />
-              <button
-                type="submit"
-                disabled={searching}
-                className="btn btn-sm btn-primary"
-              >
-                {searching ? 'Searching...' : 'Search'}
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push('/games')}
-                className="btn btn-sm btn-secondary"
-              >
-                Cancel
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={searching}
+                  className="btn btn-sm btn-primary flex-1 sm:flex-none"
+                >
+                  {searching ? 'Searching...' : 'Search'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push('/games')}
+                  className="btn btn-sm btn-secondary flex-1 sm:flex-none"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </form>
 
@@ -208,30 +221,46 @@ export default function AddGamePage() {
               {searchResults.map((game) => {
                 const alreadyExists = existingBggIds.has(game.id)
                 const isAdding = addingGameId === game.id
+                const thumb = thumbnails[game.id]
                 return (
                   <div
                     key={game.id}
-                    className="flex items-center justify-between border rounded-lg p-4"
+                    className="flex flex-col sm:flex-row sm:items-center gap-3 border rounded-lg p-3 sm:p-4"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{game.name}</h3>
-                        {alreadyExists && (
-                          <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                            background: 'rgba(201,169,97,0.15)',
-                            border: '1px solid rgba(201,169,97,0.4)',
-                            color: '#C9A961',
-                          }}>
-                            In collection
-                          </span>
+                    {/* Image + title — stays a row on every breakpoint */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      {/* Thumbnail */}
+                      <div
+                        className="relative w-12 h-12 sm:w-14 sm:h-14 rounded flex-shrink-0 overflow-hidden flex items-center justify-center"
+                        style={{ background: 'rgba(201,169,97,0.08)', border: '1px solid rgba(201,169,97,0.2)' }}
+                      >
+                        {thumb ? (
+                          <Image src={thumb} alt={game.name} fill className="object-contain" unoptimized />
+                        ) : (
+                          <span style={{ color: 'rgba(201,169,97,0.35)', fontSize: '1.1rem' }}>🎲</span>
                         )}
                       </div>
-                      <p className="text-sm font-medium parchment-text">
-                        {game.yearPublished || 'Year unknown'}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold">{game.name}</h3>
+                          {alreadyExists && (
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                              background: 'rgba(201,169,97,0.15)',
+                              border: '1px solid rgba(201,169,97,0.4)',
+                              color: '#C9A961',
+                            }}>
+                              In collection
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium parchment-text">
+                          {game.yearPublished || 'Year unknown'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <label className="flex items-center gap-2 text-sm">
+                    {/* Controls — drop to their own row on mobile */}
+                    <div className="flex items-center justify-between gap-2 sm:gap-3 sm:justify-normal flex-shrink-0">
+                      <label className="flex items-center gap-1.5 text-xs sm:text-sm">
                         <input
                           type="checkbox"
                           checked={ownedGames[game.id] || false}

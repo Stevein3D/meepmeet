@@ -362,6 +362,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    white-space: nowrap;
   }
 
   .btn-md {
@@ -1197,6 +1198,46 @@
     border-color: rgba(180, 80, 80, 0.6);
     color: #d98080;
     transform: translateY(-1px);
+  }
+
+  /* ─────────────────────────────────────────────
+     Avatar lightbox (enlarged circular photo)
+     ───────────────────────────────────────────── */
+  .avatar-trigger {
+    padding: 0;
+    cursor: zoom-in;
+    appearance: none;
+  }
+  .avatar-trigger img {
+    transition: transform 0.2s ease;
+  }
+  .avatar-trigger:hover img {
+    transform: scale(1.08);
+  }
+
+  .avatar-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: avatarFadeIn 0.15s ease;
+  }
+  .avatar-lightbox-img {
+    position: relative;
+    width: min(85vw, 420px);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #C9A961;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(201, 169, 97, 0.3);
+    cursor: zoom-out;
+  }
+  @keyframes avatarFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
   /* ─────────────────────────────────────────────

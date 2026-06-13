@@ -1,5 +1,5 @@
-import Image from 'next/image'
 import Link from 'next/link'
+import AvatarViewer from '../AvatarViewer'
 import styles from './MeepCard.module.css'
 
 interface PlayerStats {
@@ -72,23 +72,13 @@ export default function MeepCard({ user, playerStats, canEdit = false }: MeepCar
       <div className="p-4 flex-1 flex flex-col gap-3" style={{ position: 'relative', zIndex: 1 }}>
         {/* Header — horizontal on mobile (like the meep view page), stacked + centered on sm+ */}
         <div className="flex items-center gap-3 sm:flex-col sm:gap-3">
-          {/* Avatar */}
-          <Link href={`/meeps/${user.id}`} className="flex-shrink-0" style={{ textDecoration: 'none' }}>
-          <div
-            className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden flex items-center justify-center text-xl sm:text-2xl font-bold flex-shrink-0"
-            style={{
-              border: '3px solid #C9A961',
-              background: 'linear-gradient(135deg, #3a2010, #5c3a1e)',
-              color: '#F5E6D3',
-            }}
-          >
-            {user.avatar ? (
-              <Image src={user.avatar} alt={user.name} fill className="object-cover" unoptimized />
-            ) : (
-              <span>{initials}</span>
-            )}
-          </div>
-          </Link>
+          {/* Avatar — enlarges to a lightbox on hover/tap when a photo exists */}
+          <AvatarViewer
+            src={user.avatar}
+            alt={user.alias ?? user.name}
+            initials={initials}
+            circleClassName="w-16 h-16 sm:w-20 sm:h-20 text-xl sm:text-2xl"
+          />
 
           {/* Name + badge + tagline */}
           <div className="flex-1 min-w-0 flex flex-col items-start gap-1.5 text-left sm:items-center sm:text-center sm:gap-3">

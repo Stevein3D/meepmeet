@@ -116,6 +116,72 @@ export async function searchBGG(query: string): Promise<BGGSearchResult[]> {
   }
 }
 
+// Normalize BGG image URLs (occasionally protocol-relative)
+function normalizeImageUrl(url: string): string {
+  if (!url) return ''
+  return url.startsWith('//') ? `https:${url}` : url
+}
+
+/**
+ * Fetch thumbnails for a batch of BGG IDs in a single `thing` request.
+ * Returns a map of id → thumbnail URL ('' when none). Cached per-id so
+ * repeat searches don't re-hit the API.
+ */
+export async function getBGGThumbnails(ids: number[]): Promise<Record<number, string>> {
+  const result: Record<number, string> = {}
+  const missing: number[] = []
+
+  for (const id of ids) {
+    const cached = cache.get<string>(`bgg:thumb:${id}`)
+    if (cached !== null) result[id] = cached
+    else missing.push(id)
+  }
+
+  if (missing.length === 0) return result
+
+  try {
+    await delay(1000) // Rate limiting
+
+    const url = `https://boardgamegeek.com/xmlapi2/thing?id=${missing.join(',')}`
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${BGG_API_TOKEN}`,
+        'Accept': 'application/xml',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`BGG returned ${response.status}`)
+    }
+
+    const xml = await response.text()
+    const parsed = parser.parse(xml)
+    const items = parsed.items?.item
+      ? (Array.isArray(parsed.items.item) ? parsed.items.item : [parsed.items.item])
+      : []
+
+    for (const item of items) {
+      const id = parseInt(item['@_id'])
+      const thumb = normalizeImageUrl(item.thumbnail ? String(item.thumbnail) : '')
+      result[id] = thumb
+      cache.set(`bgg:thumb:${id}`, thumb, GAME_CACHE_TTL)
+    }
+
+    // Cache misses as empty so we don't keep retrying them
+    for (const id of missing) {
+      if (!(id in result)) {
+        result[id] = ''
+        cache.set(`bgg:thumb:${id}`, '', GAME_CACHE_TTL)
+      }
+    }
+  } catch (error) {
+    console.error('BGG thumbnail fetch error:', error)
+    // Return whatever we resolved from cache; missing ids stay absent
+  }
+
+  return result
+}
+
 export async function getBGGGame(id: number): Promise<BGGGame | null> {
   // Check cache first
   const cacheKey = `bgg:game:${id}`
