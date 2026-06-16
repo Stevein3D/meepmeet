@@ -171,7 +171,7 @@ export default function EventDatePoll({
                     border: voted ? '1px solid rgba(143,188,143,0.4)' : '1px solid rgba(201,169,97,0.2)',
                     borderTop: 'none',
                     fontSize: '0.7rem',
-                    color: 'rgba(232,212,184,0.5)',
+                    color: 'rgba(232,212,184,1)',
                     lineHeight: 1.4,
                   }}
                 >

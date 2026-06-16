@@ -1131,7 +1131,7 @@ export default function TablePlanner({
       )}
 
       {rounds.length === 0 && (
-        <p style={{ color: 'rgba(232,212,184,0.5)', fontStyle: 'italic' }}>
+        <p style={{ color: 'rgba(232,212,184,1)', fontStyle: 'italic' }}>
           No rounds yet.{canManage ? ' Add one above.' : ''}
         </p>
       )}

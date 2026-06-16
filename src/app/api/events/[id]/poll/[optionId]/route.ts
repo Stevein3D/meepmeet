@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
 import { getDatabaseUserId } from '@/lib/user-helper'
 
-// PATCH — { action: 'vote' } or { action: 'confirm' }
+// PATCH — { action: 'vote' | 'confirm' | 'unconfirm' }
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string; optionId: string }> }
@@ -67,6 +67,32 @@ export async function PATCH(
     ])
 
     return NextResponse.json({ confirmed: true, date: option.date })
+  }
+
+  if (action === 'unconfirm') {
+    // The host (Sage or GM) or any Game Master may re-open a confirmed date
+    const [caller, hostInfo] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+      prisma.event.findUnique({ where: { id: eventId }, select: { hostId: true } }),
+    ])
+    if (hostInfo?.hostId !== userId && caller?.role !== 'GAME_MASTER') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Clear the confirmation and re-open voting. Votes are left untouched; the
+    // event keeps its previously-set date until a new option is confirmed.
+    await prisma.$transaction([
+      prisma.eventDatePoll.update({
+        where: { id: optionId, eventId },
+        data: { confirmedAt: null },
+      }),
+      prisma.event.update({
+        where: { id: eventId },
+        data: { dateConfirmed: false },
+      }),
+    ])
+
+    return NextResponse.json({ confirmed: false })
   }
 
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 })

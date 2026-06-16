@@ -61,6 +61,7 @@ export default function EditEventPage() {
   const [testNotified, setTestNotified] = useState(false)
   const [notifyConfirmOpen, setNotifyConfirmOpen] = useState(false)
   const [confirmDateTarget, setConfirmDateTarget] = useState<string | null>(null)
+  const [unconfirmOpen, setUnconfirmOpen] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -205,6 +206,23 @@ export default function EditEventPage() {
     if (res.ok) {
       const { date } = await res.json()
       setEvent(prev => prev ? { ...prev, dateConfirmed: true, date } : prev)
+    }
+    setPollBusy(false)
+  }
+
+  const handleUnconfirmDate = async () => {
+    setUnconfirmOpen(false)
+    const confirmedOpt = pollOptions.find(o => o.confirmedAt)
+    if (!confirmedOpt) return
+    setPollBusy(true)
+    const res = await fetch(`/api/events/${eventId}/poll/${confirmedOpt.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'unconfirm' }),
+    })
+    if (res.ok) {
+      setEvent(prev => prev ? { ...prev, dateConfirmed: false } : prev)
+      setPollOptions(prev => prev.map(o => o.confirmedAt ? { ...o, confirmedAt: null } : o))
     }
     setPollBusy(false)
   }
@@ -370,13 +388,22 @@ export default function EditEventPage() {
                   </>
                 )}
                 {event.dateConfirmed && (
-                  <span style={{ fontSize: '0.75rem', color: '#8FBC8F', fontWeight: 600 }}>✓ Date confirmed</span>
+                  <>
+                    <span style={{ fontSize: '0.75rem', color: '#8FBC8F', fontWeight: 600 }}>✓ Date confirmed</span>
+                    <button
+                      onClick={() => setUnconfirmOpen(true)}
+                      disabled={pollBusy}
+                      className="btn btn-sm btn-ghost disabled:opacity-50"
+                    >
+                      Un-confirm date
+                    </button>
+                  </>
                 )}
               </div>
             </div>
 
             {!event.dateConfirmed && pollOptions.length === 0 && (
-              <p style={{ fontSize: '0.85rem', color: 'rgba(232,212,184,0.5)', marginBottom: '0.75rem' }}>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(232,212,184,0.8)', marginBottom: '0.75rem' }}>
                 Add date options for members to vote on, then notify them when ready.
               </p>
             )}
@@ -508,11 +535,22 @@ export default function EditEventPage() {
         {confirmDateTarget && (
           <ConfirmModal
             title="Confirm Date"
-            message={`Confirm ${formatPollDate(pollOptions.find(o => o.id === confirmDateTarget)?.date ?? '')}? This will set the event date and notify all members.`}
+            message={`Confirm ${formatPollDate(pollOptions.find(o => o.id === confirmDateTarget)?.date ?? '')}? This will set the event date. Use Compose Email to notify members.`}
             confirmLabel="Confirm Date"
             busy={pollBusy}
             onConfirm={() => handleConfirmDate(confirmDateTarget)}
             onCancel={() => setConfirmDateTarget(null)}
+          />
+        )}
+
+        {unconfirmOpen && (
+          <ConfirmModal
+            title="Un-confirm Date"
+            message="Re-open voting for this event? The confirmed date will be cleared and members can vote again. All existing votes are kept. If you already emailed members, you'll want to let them know."
+            confirmLabel="Un-confirm"
+            busy={pollBusy}
+            onConfirm={handleUnconfirmDate}
+            onCancel={() => setUnconfirmOpen(false)}
           />
         )}
       </main>

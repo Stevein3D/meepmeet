@@ -65,9 +65,11 @@ const labelStyle: CSSProperties = { color: '#C9A961' }
 export default function EmailComposer({
   events,
   initialEventId,
+  memberCount,
 }: {
   events: EventOption[]
   initialEventId?: string
+  memberCount: number
 }) {
   const [subject, setSubject] = useState('')
   const [heading, setHeading] = useState('')
@@ -288,8 +290,8 @@ export default function EmailComposer({
       {confirmOpen && (
         <ConfirmModal
           title="Send to all members"
-          message="This emails every member (not just Game Masters). Send a test first if you haven't. Continue?"
-          confirmLabel="Send to everyone"
+          message={`This will email ${memberCount} ${memberCount === 1 ? 'member' : 'members'} (everyone except visitors). Send a test first if you haven't.`}
+          confirmLabel={`Send to ${memberCount} ${memberCount === 1 ? 'member' : 'members'}`}
           busy={sending === 'members'}
           onConfirm={() => send('members')}
           onCancel={() => setConfirmOpen(false)}

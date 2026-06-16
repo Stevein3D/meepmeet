@@ -174,7 +174,7 @@ export default function MeepsGrid({ meeps, viewerUserId, viewerIsGM }: MeepsGrid
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <p style={{ color: 'rgba(232,212,184,0.5)' }}>No meeps match your filters.</p>
+        <p style={{ color: 'rgba(232,212,184,1)' }}>No meeps match your filters.</p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filtered.map(({ user, playerStats }) => (

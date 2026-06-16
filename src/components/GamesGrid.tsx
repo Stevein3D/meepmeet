@@ -229,7 +229,7 @@ export default function GamesGrid({ games, userId, canEditGames = false, canDele
         {/* Game cards column */}
         <div className="flex-1 min-w-0">
           {filtered.length === 0 ? (
-            <p style={{ color: 'rgba(232,212,184,0.5)' }}>No games match your filters.</p>
+            <p style={{ color: 'rgba(232,212,184,1)' }}>No games match your filters.</p>
           ) : (
             <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(min(315px, 100%), 1fr))' }}>
               {visible.map(game => (

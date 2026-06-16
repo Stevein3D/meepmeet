@@ -27,6 +27,13 @@ export default async function AdminEmailPage({
     take: 50,
   })
 
+  // Count real member recipients exactly as the send route does (everyone but
+  // visitors, excluding placeholder @temp.local accounts) so the confirmation
+  // can show how many people will actually receive the email.
+  const memberCount = (
+    await prisma.user.findMany({ where: { role: { not: 'VISITOR' } }, select: { email: true } })
+  ).filter((r) => r.email && !r.email.endsWith('@temp.local')).length
+
   const { eventId } = await searchParams
   const fromEventId = eventId && events.some((e) => e.id === eventId) ? eventId : undefined
 
@@ -48,6 +55,7 @@ export default async function AdminEmailPage({
         <EmailComposer
           events={events.map((e) => ({ id: e.id, title: e.title, date: e.date.toISOString() }))}
           initialEventId={fromEventId}
+          memberCount={memberCount}
         />
       </main>
     </>
