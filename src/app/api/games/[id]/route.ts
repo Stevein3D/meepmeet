@@ -2,14 +2,31 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
 import { getDatabaseUserId } from '@/lib/user-helper'
+import { hasPermission } from '@/lib/roles'
 
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { userId: clerkUserId } = await auth()
+    if (!clerkUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const userId = await getDatabaseUserId(clerkUserId)
+    if (!userId) {
+      return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 })
+    }
+
+    // Only Game Masters may delete games
+    const caller = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+    if (!hasPermission(caller?.role, 'canDeleteGames')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { id } = await params
-    
+
     await prisma.game.delete({
       where: { id },
     })
@@ -76,6 +93,12 @@ export async function PUT(
         { error: 'Failed to create user record' },
         { status: 500 }
       )
+    }
+
+    // Only Sages and Game Masters may edit games
+    const caller = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+    if (!hasPermission(caller?.role, 'canEditGames')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { id } = await params

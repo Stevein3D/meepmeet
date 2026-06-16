@@ -32,12 +32,18 @@ export async function POST(
   const userId = await getDatabaseUserId(clerkUserId)
   if (!userId) return NextResponse.json({ error: 'Failed to resolve user' }, { status: 500 })
 
-  const caller = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
-  if (caller?.role !== 'GAME_MASTER') {
+  const { id } = await params
+
+  // The host (Sage or GM) or any Game Master may manage this event's poll
+  const [caller, hostInfo] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+    prisma.event.findUnique({ where: { id }, select: { hostId: true } }),
+  ])
+  const canManageEvent = hostInfo?.hostId === userId || caller?.role === 'GAME_MASTER'
+  if (!canManageEvent) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { id } = await params
   const body = await req.json()
 
   // action: 'notify' — send poll-open email to all members
@@ -86,12 +92,17 @@ export async function DELETE(
   const userId = await getDatabaseUserId(clerkUserId)
   if (!userId) return NextResponse.json({ error: 'Failed to resolve user' }, { status: 500 })
 
-  const caller = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
-  if (caller?.role !== 'GAME_MASTER') {
+  const { id } = await params
+
+  // The host (Sage or GM) or any Game Master may manage this event's poll
+  const [caller, hostInfo] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+    prisma.event.findUnique({ where: { id }, select: { hostId: true } }),
+  ])
+  if (hostInfo?.hostId !== userId && caller?.role !== 'GAME_MASTER') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { id } = await params
   const { optionId } = await req.json()
 
   await prisma.eventDatePoll.delete({ where: { id: optionId, eventId: id } })

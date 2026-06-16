@@ -21,7 +21,7 @@ interface EventDatePollProps {
   options: PollOption[]
   currentUserId: string
   currentUserAlias: string
-  isGameMaster: boolean
+  canManage: boolean
   dateConfirmed: boolean
 }
 
@@ -41,7 +41,7 @@ export default function EventDatePoll({
   options: initial,
   currentUserId,
   currentUserAlias,
-  isGameMaster,
+  canManage,
   dateConfirmed,
 }: EventDatePollProps) {
   const router = useRouter()
@@ -151,7 +151,7 @@ export default function EventDatePoll({
                   {count} {count === 1 ? 'vote' : 'votes'}
                 </span>
 
-                {isGameMaster && (
+                {canManage && (
                   <button
                     onClick={() => setConfirmTarget(opt.id)}
                     disabled={!!confirming}
@@ -186,7 +186,7 @@ export default function EventDatePoll({
       {confirmTarget && (
         <ConfirmModal
           title="Confirm Date"
-          message={`Confirm ${formatPollDate(options.find(o => o.id === confirmTarget)?.date ?? '')}? This will set the event date and notify all members.`}
+          message={`Confirm ${formatPollDate(options.find(o => o.id === confirmTarget)?.date ?? '')}? This will set the event date. Use Compose Email to notify members.`}
           confirmLabel="Confirm Date"
           busy={!!confirming}
           onConfirm={() => handleConfirm(confirmTarget)}

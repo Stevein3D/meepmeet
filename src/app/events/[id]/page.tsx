@@ -139,7 +139,9 @@ export default async function EventDetailPage({
   const isGameMaster = currentUser?.role === 'GAME_MASTER'
   const isVisitor = currentUser?.role === 'VISITOR'
   const canManage = isHost || isGameMaster
-  const canManageTables = isGameMaster
+  // The host (Sage or GM) or any Game Master may manage seating — matches the
+  // rounds/tables API, which authorizes the event host as well as GMs.
+  const canManageTables = canManage
 
   const confirmed: AttendeeUser[] = []
   const maybes: AttendeeUser[] = []
@@ -194,35 +196,47 @@ export default async function EventDetailPage({
           {/* Details + Your RSVP — side by side (≈66/33) on large screens */}
           <div className="flex flex-col lg:flex-row gap-4 mb-4 items-stretch">
             <div
-              className={`rounded-lg p-5 space-y-2 ${showRsvp ? 'lg:w-2/3' : 'w-full'}`}
+              className={`rounded-lg p-5 ${showRsvp ? 'lg:w-2/3' : 'w-full'}`}
               style={{
                 background: 'rgba(28,16,8,0.55)',
                 border: '1px solid rgba(139,111,71,0.5)',
               }}
             >
-              <p style={{ color: '#E8D4B8' }}>
-                <span style={{ color: '#C9A961', fontWeight: 600 }}>When:</span>{' '}
-                {(event.dateConfirmed || isPast)
-                  ? formattedDate
-                  : <span style={{ color: 'rgba(201,169,97,0.6)', fontStyle: 'italic' }}>TBD — Vote below!</span>
-                }
-              </p>
-              {event.location && (
-                <p style={{ color: '#E8D4B8' }}>
-                  <span style={{ color: '#C9A961', fontWeight: 600 }}>Where:</span>{' '}
-                  {isVisitor
-                    ? <span style={{ color: 'rgba(232,212,184,0.4)', fontStyle: 'italic' }}>Members only</span>
-                    : event.location}
-                </p>
-              )}
-              <p style={{ color: '#E8D4B8' }}>
-                <span style={{ color: '#C9A961', fontWeight: 600 }}>Host:</span> {event.host.name}
-              </p>
-              {event.notes && (
-                <p style={{ color: '#E8D4B8', whiteSpace: 'pre-wrap' }}>
-                  <span style={{ color: '#C9A961', fontWeight: 600 }}>Notes:</span> {event.notes}
-                </p>
-              )}
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-2 flex-1 min-w-0">
+                  <p style={{ color: '#E8D4B8' }}>
+                    <span style={{ color: '#C9A961', fontWeight: 600 }}>When:</span>{' '}
+                    {(event.dateConfirmed || isPast)
+                      ? formattedDate
+                      : <span style={{ color: 'rgba(201,169,97,0.6)', fontStyle: 'italic' }}>TBD — Vote below!</span>
+                    }
+                  </p>
+                  {event.location && (
+                    <p style={{ color: '#E8D4B8' }}>
+                      <span style={{ color: '#C9A961', fontWeight: 600 }}>Where:</span>{' '}
+                      {isVisitor
+                        ? <span style={{ color: 'rgba(232,212,184,0.4)', fontStyle: 'italic' }}>Members only</span>
+                        : event.location}
+                    </p>
+                  )}
+                  <p style={{ color: '#E8D4B8' }}>
+                    <span style={{ color: '#C9A961', fontWeight: 600 }}>Host:</span> {event.host.name}
+                  </p>
+                  {event.notes && (
+                    <p style={{ color: '#E8D4B8', whiteSpace: 'pre-wrap' }}>
+                      <span style={{ color: '#C9A961', fontWeight: 600 }}>Notes:</span> {event.notes}
+                    </p>
+                  )}
+                </div>
+                {isGameMaster && (
+                  <Link
+                    href={`/admin/email?eventId=${id}`}
+                    className="btn btn-sm btn-secondary flex-shrink-0"
+                  >
+                    ✉ Compose Email
+                  </Link>
+                )}
+              </div>
             </div>
 
             {/* Your RSVP */}
@@ -265,7 +279,7 @@ export default async function EventDetailPage({
                 }))}
                 currentUserId={userId}
                 currentUserAlias={currentUser?.alias ?? currentUser?.name ?? ''}
-                isGameMaster={!!isGameMaster}
+                canManage={canManage}
                 dateConfirmed={event.dateConfirmed}
               />
             </div>

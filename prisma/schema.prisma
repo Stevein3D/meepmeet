@@ -17,7 +17,8 @@ datasource db {
 // Add this enum for user roles (if not already there)
 enum UserRole {
   VISITOR
-  MEMBER
+  MEEP
+  SAGE
   GAME_MASTER
 }
 

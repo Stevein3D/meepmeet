@@ -66,13 +66,13 @@ export default function EditEventPage() {
     Promise.all([
       fetch(`/api/events/${eventId}`).then(res => res.json()),
       fetch('/api/user/profile').then(res => res.json()),
-      fetch('/api/admin/users').then(res => res.json()),
       fetch(`/api/events/${eventId}/poll`).then(res => res.json()),
     ])
-      .then(([eventData, currentUser, allUsers, pollData]) => {
+      .then(([eventData, currentUser, pollData]) => {
         const isHost = eventData.hostId === currentUser.id
         const isGameMaster = currentUser.role === 'GAME_MASTER'
 
+        // Host (Sage or GM) or any Game Master may edit
         if (!isHost && !isGameMaster) {
           router.push('/events')
           return
@@ -82,8 +82,14 @@ export default function EditEventPage() {
         setCurrentUserRole(currentUser.role)
         setPollOptions(Array.isArray(pollData) ? pollData : [])
 
+        // Only Game Masters may reassign the host, so only they need the user list
         if (isGameMaster) {
-          setGameMasters(allUsers.filter((u: { role: string; id: string; name: string }) => u.role === 'GAME_MASTER'))
+          fetch('/api/admin/users')
+            .then(res => res.json())
+            .then((allUsers) => {
+              setGameMasters(allUsers.filter((u: { role: string; id: string; name: string }) => u.role === 'GAME_MASTER'))
+            })
+            .catch(console.error)
         }
 
         setLoading(false)

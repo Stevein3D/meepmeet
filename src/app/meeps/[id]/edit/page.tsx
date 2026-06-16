@@ -13,7 +13,7 @@ interface UserProfile {
   email: string
   avatar: string | null
   bggId: string | null
-  role: 'VISITOR' | 'MEMBER' | 'GAME_MASTER'
+  role: 'VISITOR' | 'MEEP' | 'SAGE' | 'GAME_MASTER'
 }
 
 export default function EditMeepPage() {
@@ -293,7 +293,8 @@ export default function EditMeepPage() {
                 <label htmlFor="role">Role</label>
                 <select id="role" name="role" defaultValue={profile.role}>
                   <option value="VISITOR">Visitor</option>
-                  <option value="MEMBER">Member</option>
+                  <option value="MEEP">Meep</option>
+                  <option value="SAGE">Sage</option>
                   <option value="GAME_MASTER">Game Master</option>
                 </select>
               </div>

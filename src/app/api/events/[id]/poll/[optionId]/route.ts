@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
 import { getDatabaseUserId } from '@/lib/user-helper'
-import { sendDateConfirmedEmail } from '@/lib/email'
 
 // PATCH — { action: 'vote' } or { action: 'confirm' }
 export async function PATCH(
@@ -38,8 +37,12 @@ export async function PATCH(
   }
 
   if (action === 'confirm') {
-    const caller = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
-    if (caller?.role !== 'GAME_MASTER') {
+    // The host (Sage or GM) or any Game Master may confirm the date
+    const [caller, hostInfo] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+      prisma.event.findUnique({ where: { id: eventId }, select: { hostId: true } }),
+    ])
+    if (hostInfo?.hostId !== userId && caller?.role !== 'GAME_MASTER') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -49,8 +52,10 @@ export async function PATCH(
     })
     if (!option) return NextResponse.json({ error: 'Option not found' }, { status: 404 })
 
-    // Mark poll option confirmed + update event date + set dateConfirmed
-    const [, event] = await prisma.$transaction([
+    // Mark poll option confirmed + update event date + set dateConfirmed.
+    // Member notification is handled manually via the Compose Email tool (no
+    // automatic "date confirmed" email is sent here).
+    await prisma.$transaction([
       prisma.eventDatePoll.update({
         where: { id: optionId },
         data: { confirmedAt: new Date() },
@@ -58,22 +63,8 @@ export async function PATCH(
       prisma.event.update({
         where: { id: eventId },
         data: { date: option.date, dateConfirmed: true },
-        select: { title: true, date: true, location: true },
       }),
     ])
-
-    // Send confirmation email to all non-visitor members
-    const members = await prisma.user.findMany({
-      where: { role: { not: 'VISITOR' } },
-      select: { email: true, name: true },
-    })
-    await sendDateConfirmedEmail({
-      eventTitle: event.title,
-      date: event.date,
-      location: event.location,
-      eventId,
-      recipients: members,
-    })
 
     return NextResponse.json({ confirmed: true, date: option.date })
   }

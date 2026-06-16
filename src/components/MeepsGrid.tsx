@@ -10,7 +10,7 @@ type MeepEntry = {
     alias: string | null
     tagline: string | null
     avatar: string | null
-    role: 'VISITOR' | 'MEMBER' | 'GAME_MASTER'
+    role: 'VISITOR' | 'MEEP' | 'SAGE' | 'GAME_MASTER'
     createdAt: Date
     _count: { ownedGames: number; hostedEvents: number; eventRsvps: number }
   }
@@ -32,7 +32,7 @@ interface MeepsGridProps {
 }
 
 type SortKey = 'name' | 'mmr' | 'gold' | 'silver' | 'bronze' | 'teaches' | 'events' | 'games' | 'played'
-type RoleFilter = 'ALL' | 'VISITOR' | 'MEMBER' | 'GAME_MASTER'
+type RoleFilter = 'ALL' | 'VISITOR' | 'MEEP' | 'SAGE' | 'GAME_MASTER'
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'name',    label: 'Sort: Name' },
@@ -49,7 +49,8 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 const ROLE_LABELS: { value: RoleFilter; label: string }[] = [
   { value: 'ALL',         label: 'All' },
   { value: 'GAME_MASTER', label: 'Game Master' },
-  { value: 'MEMBER',      label: 'Member' },
+  { value: 'SAGE',        label: 'Sage' },
+  { value: 'MEEP',        label: 'Meep' },
   { value: 'VISITOR',     label: 'Visitor' },
 ]
 

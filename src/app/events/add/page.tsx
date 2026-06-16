@@ -18,19 +18,29 @@ export default function AddEventPage() {
   const [isGameMaster, setIsGameMaster] = useState(false)
   const [gameMasters, setGameMasters] = useState<GameMaster[]>([])
   const [selectedHostId, setSelectedHostId] = useState<string>('')
+  // null = still loading the viewer's role
+  const [canCreate, setCanCreate] = useState<boolean | null>(null)
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/user/profile').then(r => r.json()),
-      fetch('/api/admin/users').then(r => r.json()),
-    ]).then(([profile, allUsers]) => {
-      setCurrentUserId(profile.id)
-      setSelectedHostId(profile.id)
-      if (profile.role === 'GAME_MASTER') {
-        setIsGameMaster(true)
-        setGameMasters(allUsers.filter((u: { role: string; id: string; name: string }) => u.role === 'GAME_MASTER'))
-      }
-    }).catch(console.error)
+    fetch('/api/user/profile')
+      .then(r => r.json())
+      .then((profile) => {
+        setCurrentUserId(profile.id)
+        setSelectedHostId(profile.id)
+        const isGM = profile.role === 'GAME_MASTER'
+        setCanCreate(isGM || profile.role === 'SAGE')
+        if (isGM) {
+          setIsGameMaster(true)
+          // Only Game Masters may reassign the host, so only they need the user list
+          fetch('/api/admin/users')
+            .then(r => r.json())
+            .then((allUsers) => {
+              setGameMasters(allUsers.filter((u: { role: string; id: string; name: string }) => u.role === 'GAME_MASTER'))
+            })
+            .catch(console.error)
+        }
+      })
+      .catch(console.error)
   }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -70,6 +80,21 @@ export default function AddEventPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Creating events is limited to Sages and Game Masters
+  if (canCreate === false) {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen p-8">
+          <h1 className="text-4xl font-bold text-white-700 mb-4">Create Game Night</h1>
+          <p style={{ color: 'rgba(232,212,184,0.8)' }}>
+            You don&apos;t have permission to create events. Ask a Sage or Game Master.
+          </p>
+        </main>
+      </>
+    )
   }
 
   return (

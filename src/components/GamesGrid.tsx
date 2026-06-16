@@ -8,7 +8,8 @@ import type { Game, MeepScore } from '@/lib/types'
 interface GamesGridProps {
   games: Game[]
   userId: string | null
-  isGameMaster?: boolean
+  canEditGames?: boolean
+  canDeleteGames?: boolean
   meepScores: Record<string, MeepScore>
   userRatings?: Record<string, number>
   sidebar?: React.ReactNode
@@ -16,7 +17,7 @@ interface GamesGridProps {
 
 const PAGE_SIZE = 50
 
-export default function GamesGrid({ games, userId, isGameMaster = false, meepScores, userRatings = {}, sidebar }: GamesGridProps) {
+export default function GamesGrid({ games, userId, canEditGames = false, canDeleteGames = false, meepScores, userRatings = {}, sidebar }: GamesGridProps) {
   const [showMobileStats, setShowMobileStats] = useState(false)
   const [search, setSearch] = useState('')
   const [playerCount, setPlayerCount] = useState<number | ''>('')
@@ -236,7 +237,8 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
                   key={game.id}
                   game={game}
                   userId={userId}
-                  isGameMaster={isGameMaster}
+                  canEditGames={canEditGames}
+                  canDeleteGames={canDeleteGames}
                   userOwnsGame={userId ? game.owners.some(o => o.userId === userId) : false}
                   userWantsGame={userId ? game.wants.some(w => w.userId === userId) : false}
                   wantCount={game.wants.length}
@@ -263,7 +265,7 @@ export default function GamesGrid({ games, userId, isGameMaster = false, meepSco
         {sidebar && (
           <div
             className="hidden lg:block"
-            style={{ width: 260, flexShrink: 0, position: 'sticky', top: '1.5rem', alignSelf: 'flex-start' }}
+            style={{ width: 260, flexShrink: 0, position: 'sticky', top: 'calc(72px + 1.5rem)', alignSelf: 'flex-start' }}
           >
             {sidebar}
           </div>

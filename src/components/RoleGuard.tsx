@@ -60,6 +60,32 @@ export function GameMasterOnly({ children, fallback }: { children: ReactNode; fa
   );
 }
 
+// Show only to Sages
+export function SageOnly({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
+  const { userRole, loading } = useUserRole();
+
+  if (loading) return <>{fallback}</>;
+
+  if (userRole !== 'SAGE') {
+    return <>{fallback}</>;
+  }
+
+  return <>{children}</>;
+}
+
+// Show to Sages and Game Masters (but not Meeps or Visitors)
+export function SageOrHigher({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
+  const { userRole, loading } = useUserRole();
+
+  if (loading) return <>{fallback}</>;
+
+  if (userRole === 'SAGE' || userRole === 'GAME_MASTER') {
+    return <>{children}</>;
+  }
+
+  return <>{fallback}</>;
+}
+
 export function CanAddGames({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
   return (
     <RoleGuard permission="canAddGames" fallback={fallback}>

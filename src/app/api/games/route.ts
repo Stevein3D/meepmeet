@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
 import { getDatabaseUserId } from '@/lib/user-helper'
+import { hasPermission } from '@/lib/roles'
 
 // Return all existing BGG IDs so the search form can flag already-added games
 export async function GET() {
@@ -23,6 +24,12 @@ export async function POST(request: Request) {
     const userId = await getDatabaseUserId(clerkUserId)
     if (!userId) {
       return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 })
+    }
+
+    // Only Sages and Game Masters may add games to the collection
+    const caller = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+    if (!hasPermission(caller?.role, 'canAddGames')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()

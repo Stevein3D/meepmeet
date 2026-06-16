@@ -15,7 +15,8 @@ import type { Game } from '@/lib/types'
 interface GameCardProps {
   game: Game
   userId: string | null
-  isGameMaster?: boolean
+  canEditGames?: boolean
+  canDeleteGames?: boolean
   userOwnsGame: boolean
   userWantsGame: boolean
   wantCount: number
@@ -23,7 +24,7 @@ interface GameCardProps {
   userRating?: number | null
 }
 
-export default function GameCard({ game, userId, isGameMaster = false, userOwnsGame, userWantsGame, wantCount, meepScore, userRating = null }: GameCardProps) {
+export default function GameCard({ game, userId, canEditGames = false, canDeleteGames = false, userOwnsGame, userWantsGame, wantCount, meepScore, userRating = null }: GameCardProps) {
   const [showControls, setShowControls] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
@@ -44,7 +45,7 @@ export default function GameCard({ game, userId, isGameMaster = false, userOwnsG
     <>
       <div className={styles.card}>
         {/* Toggle button for Edit/Delete controls */}
-        {isGameMaster && (
+        {canEditGames && (
           <button
             onClick={handleToggle}
             className={`${styles.toggleButton} ${showControls ? styles.expanded : styles.collapsed}`}
@@ -141,12 +142,12 @@ export default function GameCard({ game, userId, isGameMaster = false, userOwnsG
         </div>
 
         {/* Slide-up Edit/Delete controls */}
-        {(showControls || isClosing) && isGameMaster && (
+        {(showControls || isClosing) && canEditGames && (
           <div className={`${styles.controls} ${isClosing ? styles.slideDown : styles.slideUp}`}>
             <Link href={`/games/${game.id}/edit`} className="flex-1 text-center btn btn-sm btn-secondary">
               Edit
             </Link>
-            <DeleteGameButton gameId={game.id} gameName={game.name} />
+            {canDeleteGames && <DeleteGameButton gameId={game.id} gameName={game.name} />}
           </div>
         )}
       </div>

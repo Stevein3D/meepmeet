@@ -19,7 +19,7 @@ interface MeepCardProps {
     alias: string | null
     tagline: string | null
     avatar: string | null
-    role: 'VISITOR' | 'MEMBER' | 'GAME_MASTER'
+    role: 'VISITOR' | 'MEEP' | 'SAGE' | 'GAME_MASTER'
     createdAt: Date
     _count: {
       ownedGames: number
@@ -33,13 +33,15 @@ interface MeepCardProps {
 
 const roleLabel: Record<string, string> = {
   VISITOR: 'Visitor',
-  MEMBER: 'Member',
+  MEEP: 'Meep',
+  SAGE: 'Sage',
   GAME_MASTER: 'Game Master',
 }
 
 const roleColors: Record<string, string> = {
   VISITOR: '#8B6F47',
-  MEMBER: '#4a7c59',
+  MEEP: '#4a7c59',
+  SAGE: '#6d5a9c',
   GAME_MASTER: '#7a3b3b',
 }
 

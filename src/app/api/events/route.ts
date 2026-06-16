@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
 import { getDatabaseUserId } from '@/lib/user-helper'
+import { hasPermission } from '@/lib/roles'
 
 export async function GET() {
   try {
@@ -54,15 +55,18 @@ export async function POST(request: Request) {
       )
     }
 
+    // Only Sages and Game Masters may create events
+    const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+    if (!hasPermission(currentUser?.role, 'canCreateEvents')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const body = await request.json()
 
-    // Game Masters can assign a different host
+    // Game Masters can assign a different host (Sages always host their own events)
     let hostId = userId
-    if (body.hostId && body.hostId !== userId) {
-      const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
-      if (currentUser?.role === 'GAME_MASTER') {
-        hostId = body.hostId
-      }
+    if (body.hostId && body.hostId !== userId && currentUser?.role === 'GAME_MASTER') {
+      hostId = body.hostId
     }
 
     const event = await prisma.event.create({

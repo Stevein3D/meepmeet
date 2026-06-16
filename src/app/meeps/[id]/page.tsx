@@ -32,12 +32,14 @@ const BASE_POINTS: Record<number, number> = { 1: 100, 2: 50, 3: 25 }
 
 const roleLabel: Record<string, string> = {
   VISITOR: 'Visitor',
-  MEMBER: 'Member',
+  MEEP: 'Meep',
+  SAGE: 'Sage',
   GAME_MASTER: 'Game Master',
 }
 const roleColors: Record<string, string> = {
   VISITOR: '#8B6F47',
-  MEMBER: '#4a7c59',
+  MEEP: '#4a7c59',
+  SAGE: '#6d5a9c',
   GAME_MASTER: '#7a3b3b',
 }
 

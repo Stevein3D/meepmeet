@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Header from '@/components/Header'
-import { MemberOnly } from '@/components/RoleGuard';
+import { useUserRole } from '@/hooks/useUserRole'
+import { hasPermission } from '@/lib/roles'
 
 interface BGGSearchResult {
   id: number
@@ -14,6 +15,8 @@ interface BGGSearchResult {
 
 export default function AddGamePage() {
   const router = useRouter()
+  const { userRole, loading: roleLoading } = useUserRole()
+  const canAddGames = hasPermission(userRole, 'canAddGames')
   const [mode, setMode] = useState<'manual' | 'search'>('manual')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -155,6 +158,21 @@ export default function AddGamePage() {
     }))
   }
 
+  // Adding games is limited to Sages and Game Masters
+  if (!roleLoading && !canAddGames) {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen p-4 sm:p-8">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">Add Game</h1>
+          <p style={{ color: 'rgba(232,212,184,0.8)' }}>
+            You don&apos;t have permission to add games. Ask a Sage or Game Master.
+          </p>
+        </main>
+      </>
+    )
+  }
+
   return (
     <>
     <Header />
@@ -169,14 +187,12 @@ export default function AddGamePage() {
         >
           Manual Entry
         </button>
-        <MemberOnly>
         <button
           onClick={() => setMode('search')}
           className={`btn rounded flex-1 sm:flex-none text-sm sm:text-[0.88rem] px-4 py-2.5 sm:px-9 sm:py-3.5 ${mode === 'search' ? 'btn-primary' : 'btn-secondary'}`}
         >
           Search BGG
         </button>
-        </MemberOnly>
       </div>
 
       {error && (

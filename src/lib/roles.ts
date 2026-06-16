@@ -15,14 +15,26 @@ export const ROLE_PERMISSIONS = {
     canRSVP: false,
     canManageUsers: false,
   },
-  MEMBER: {
+  MEEP: {
     canViewGames: true,
     canViewEvents: true,
-    canAddGames: false,
+    canAddGames: true,
     canEditGames: false,
     canDeleteGames: false,
     canCreateEvents: false,
     canEditEvents: false,
+    canDeleteEvents: false,
+    canRSVP: true,
+    canManageUsers: false,
+  },
+  SAGE: {
+    canViewGames: true,
+    canViewEvents: true,
+    canAddGames: true,
+    canEditGames: true,
+    canDeleteGames: false,
+    canCreateEvents: true,
+    canEditEvents: true,
     canDeleteEvents: false,
     canRSVP: true,
     canManageUsers: false,
@@ -53,8 +65,10 @@ export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
     case 'VISITOR':
       return 'Visitor';
-    case 'MEMBER':
-      return 'Member';
+    case 'MEEP':
+      return 'Meep';
+    case 'SAGE':
+      return 'Sage';
     case 'GAME_MASTER':
       return 'Game Master';
     default:

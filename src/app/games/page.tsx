@@ -3,7 +3,8 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import { auth } from '@clerk/nextjs/server'
 import GamesGrid from '@/components/GamesGrid'
-import { MemberOnly } from '@/components/RoleGuard'
+import { CanAddGames } from '@/components/RoleGuard'
+import { hasPermission } from '@/lib/roles'
 import GamesSidebar from '@/components/GamesSidebar'
 import BackToTopButton from '@/components/BackToTopButton'
 import GameAdvisor from '@/components/GameAdvisor'
@@ -34,7 +35,8 @@ export default async function GamesPage() {
       : [],
   ])
 
-  const isGameMaster = currentUser?.role === 'GAME_MASTER'
+  const canEditGames = hasPermission(currentUser?.role, 'canEditGames')
+  const canDeleteGames = hasPermission(currentUser?.role, 'canDeleteGames')
 
   const userRatings: Record<string, number> = {}
   for (const r of userRatingRows) userRatings[r.gameId] = r.rating
@@ -96,14 +98,14 @@ export default async function GamesPage() {
       <main className="flex-1 p-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl sm:text-4xl font-bold">Game Collection</h1>
-          <MemberOnly>
+          <CanAddGames>
             <Link
               href="/games/add"
               className="px-4 py-2 btn btn-md btn-primary min-w-fit"
             >
               Add Game
             </Link>
-          </MemberOnly>
+          </CanAddGames>
         </div>
 
         {games.length === 0 ? (
@@ -112,7 +114,8 @@ export default async function GamesPage() {
           <GamesGrid
             games={games}
             userId={userId}
-            isGameMaster={isGameMaster}
+            canEditGames={canEditGames}
+            canDeleteGames={canDeleteGames}
             meepScores={meepScores}
             userRatings={userRatings}
             sidebar={

@@ -304,21 +304,63 @@
     color: var(--parchment);
   }
   /* ─────────────────────────────────────────────
-     Sticky header — gold border + blur fade in on scroll
+     Sticky header — CONSTANT bar height. On scroll (class on <html>, set in
+     Header.tsx) only the logo scales down and the gold border / blurred
+     background fade in; the bar height never changes, so the page never reflows
+     and the header cannot bounce or jump. Returns to default at the top.
      ───────────────────────────────────────────── */
+  /* Fixed header + a constant-height spacer that holds its place in flow. Because
+     the header is out of flow, changing its size never reflows the page, so it
+     cannot bounce/jump. Size is driven continuously by --mm-shrink (0 = full,
+     1 = compact), set from scroll position in Header.tsx — so the logo/bar shrink
+     in lockstep with scroll, no CSS transition (which would lag behind). The bar
+     delta matches the spacer so content stays tucked under it (no gap). */
   .mm-header {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 40;
     border-bottom: 1px solid transparent;
-    transition: background 0.3s ease, border-color 0.3s ease,
-      box-shadow 0.3s ease, backdrop-filter 0.3s ease;
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   }
-  .mm-header.is-scrolled {
-    background: rgba(20, 12, 6, 0.85);
-    backdrop-filter: blur(8px);
+  .mm-header-inner {
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: calc(80px - 24px * var(--mm-shrink, 0));
+    padding: 0 16px;
+  }
+  @media (min-width: 640px) {
+    .mm-header-inner {
+      height: calc(152px - 80px * var(--mm-shrink, 0));
+      padding: 0 32px;
+    }
+  }
+  .mm-logo {
+    width: calc(48px - 12px * var(--mm-shrink, 0));
+    height: calc(48px - 12px * var(--mm-shrink, 0));
+  }
+  @media (min-width: 640px) {
+    .mm-logo {
+      width: calc(120px - 64px * var(--mm-shrink, 0));
+      height: calc(120px - 64px * var(--mm-shrink, 0));
+    }
+  }
+
+  /* Spacer = full (unscrolled) header height. Never changes → document height is
+     constant → no scroll clamp → no bounce. */
+  .mm-header-spacer { height: 80px; }
+  @media (min-width: 640px) {
+    .mm-header-spacer { height: 152px; }
+  }
+
+  /* Background/border fade in as soon as you leave the very top */
+  html.mm-scrolled .mm-header {
+    background: rgba(20, 12, 6, 0.92);
     border-bottom-color: rgba(201, 169, 97, 0.5);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   }
 
   .main-nav-link {

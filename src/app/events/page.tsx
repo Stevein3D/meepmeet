@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import { auth } from '@clerk/nextjs/server'
 import EventCard from '@/components/EventCard/EventCard'
-import { GameMasterOnly } from '@/components/RoleGuard';
+import { CanCreateEvents } from '@/components/RoleGuard';
 import { getDatabaseUserId } from '@/lib/user-helper'
 
 export default async function EventsPage() {
@@ -50,14 +50,14 @@ export default async function EventsPage() {
       <main className="flex-1 p-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl sm:text-4xl font-bold">Game Nights</h1>
-          <GameMasterOnly>
+          <CanCreateEvents>
           <Link
             href="/events/add"
             className="btn btn-md btn-primary min-w-fit"
           >
             Add Event
           </Link>
-          </GameMasterOnly>
+          </CanCreateEvents>
         </div>
 
         {events.length === 0 ? (

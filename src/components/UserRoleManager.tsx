@@ -84,9 +84,11 @@ export function UserRoleManager() {
                 <td className="px-6 py-4 text-sm text-gray-900">{user.email}</td>
                 <td className="px-6 py-4 text-sm">
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    user.role === 'GAME_MASTER' 
+                    user.role === 'GAME_MASTER'
                       ? 'bg-purple-100 text-purple-800'
-                      : user.role === 'MEMBER'
+                      : user.role === 'SAGE'
+                      ? 'bg-indigo-100 text-indigo-800'
+                      : user.role === 'MEEP'
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}>
@@ -100,7 +102,8 @@ export function UserRoleManager() {
                     className="text-sm border border-gray-300 rounded px-2 py-1"
                   >
                     <option value="VISITOR">Visitor</option>
-                    <option value="MEMBER">Member</option>
+                    <option value="MEEP">Meep</option>
+                    <option value="SAGE">Sage</option>
                     <option value="GAME_MASTER">Game Master</option>
                   </select>
                 </td>

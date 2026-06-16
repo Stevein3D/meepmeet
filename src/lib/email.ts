@@ -38,6 +38,30 @@ function baseLayout(content: string): string {
 </html>`
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+// Convert plain editable text into email-safe paragraphs (blank line = new
+// paragraph, single newline = <br>). Escapes HTML so GM-entered text can't break
+// the layout or inject markup.
+function textToParagraphs(text: string): string {
+  return text
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map(
+      (block) =>
+        `<p style="margin:0 0 14px;color:#d4c9a8;font-size:1.05rem;line-height:1.5;">${escapeHtml(block).replace(/\n/g, '<br>')}</p>`,
+    )
+    .join('')
+}
+
 async function batchSend(
   recipients: { email: string; name: string }[],
   subject: string,
@@ -84,6 +108,40 @@ export async function sendDateConfirmedEmail({
   `)
 
   await batchSend(recipients, `Date confirmed: ${eventTitle}`, html)
+}
+
+/**
+ * Generic GM-composed email: editable heading + body, with an optional CTA
+ * button. Wrapped in the same logo/footer layout as every other email.
+ */
+export async function sendCustomEmail({
+  subject,
+  heading,
+  body,
+  buttonText,
+  buttonUrl,
+  recipients,
+}: {
+  subject: string
+  heading?: string
+  body: string
+  buttonText?: string
+  buttonUrl?: string
+  recipients: { email: string; name: string }[]
+}) {
+  if (!process.env.RESEND_API_KEY || recipients.length === 0) return
+
+  const headingHtml = heading
+    ? `<h2 style="margin:0 0 16px;font-size:1.4rem;color:#c9a84c;letter-spacing:0.02em;">${escapeHtml(heading)}</h2>`
+    : ''
+  const bodyHtml = textToParagraphs(body)
+  const buttonHtml =
+    buttonText && buttonUrl
+      ? `<div style="margin-top:22px;"><a href="${escapeHtml(buttonUrl)}" style="display:inline-block;padding:11px 24px;background:#5a7a4a;color:#e8d5b0;text-decoration:none;border-radius:6px;font-weight:700;font-size:1rem;border:1px solid #6d9458;">${escapeHtml(buttonText)}</a></div>`
+      : ''
+
+  const html = baseLayout(`${headingHtml}${bodyHtml}${buttonHtml}`)
+  await batchSend(recipients, subject, html)
 }
 
 export async function sendNewUserNotificationEmail({
@@ -151,5 +209,5 @@ export async function sendPollOpenEmail({
     </div>
   `)
 
-  await batchSend(recipients, `Welcome to MeepMail! 🎲`, html)
+  await batchSend(recipients, `Meep Meet Date Vote 🎲`, html)
 }
