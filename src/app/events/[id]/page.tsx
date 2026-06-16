@@ -2,14 +2,46 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import Header from '@/components/Header'
 import TablePlanner from '@/components/TablePlanner/TablePlannerClient'
 import EventDatePoll from '@/components/EventDatePoll'
 import EventGuestSection from '@/components/EventGuestSection'
 import RsvpButton from '@/components/RsvpButton'
+import CollapsibleSection from '@/components/CollapsibleSection'
 import { getDatabaseUserId } from '@/lib/user-helper'
 import GameAdvisor from '@/components/GameAdvisor'
 import RequestedGames from '@/components/RequestedGames'
+
+type AttendeeUser = { id: string; name: string; alias: string | null; avatar: string | null }
+
+function MiniAvatar({ user, size = 28 }: { user: AttendeeUser; size?: number }) {
+  const initials = (user.alias || user.name)
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+  return (
+    <div
+      className="relative rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center font-bold"
+      style={{
+        width: size,
+        height: size,
+        fontSize: size * 0.4,
+        border: '1px solid rgba(201,169,97,0.5)',
+        background: 'linear-gradient(135deg, #3a2010, #5c3a1e)',
+        color: '#F5E6D3',
+      }}
+    >
+      {user.avatar ? (
+        <Image src={user.avatar} alt="" fill className="object-cover" unoptimized />
+      ) : (
+        <span>{initials}</span>
+      )}
+    </div>
+  )
+}
 
 export default async function EventDetailPage({
   params,
@@ -109,7 +141,6 @@ export default async function EventDetailPage({
   const canManage = isHost || isGameMaster
   const canManageTables = isGameMaster
 
-  type AttendeeUser = { id: string; name: string; alias: string | null; avatar: string | null }
   const confirmed: AttendeeUser[] = []
   const maybes: AttendeeUser[] = []
   const declines: AttendeeUser[] = []
@@ -126,6 +157,7 @@ export default async function EventDetailPage({
 
   const confirmedCount = confirmed.length
   const isPast = new Date(event.date) < new Date()
+  const showRsvp = !isVisitor && !isPast && event.dateConfirmed
 
   const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
     weekday: 'long',
@@ -159,84 +191,87 @@ export default async function EventDetailPage({
             </div>
           </div>
 
-          <div
-            className="rounded-lg p-5 space-y-2 mb-4"
-            style={{
-              background: 'rgba(28,16,8,0.55)',
-              border: '1px solid rgba(139,111,71,0.5)',
-            }}
-          >
-            <p style={{ color: '#E8D4B8' }}>
-              <span style={{ color: '#C9A961', fontWeight: 600 }}>When:</span>{' '}
-              {(event.dateConfirmed || isPast)
-                ? formattedDate
-                : <span style={{ color: 'rgba(201,169,97,0.6)', fontStyle: 'italic' }}>TBD — Vote below!</span>
-              }
-            </p>
-            {event.location && (
+          {/* Details + Your RSVP — side by side (≈66/33) on large screens */}
+          <div className="flex flex-col lg:flex-row gap-4 mb-4 items-stretch">
+            <div
+              className={`rounded-lg p-5 space-y-2 ${showRsvp ? 'lg:w-2/3' : 'w-full'}`}
+              style={{
+                background: 'rgba(28,16,8,0.55)',
+                border: '1px solid rgba(139,111,71,0.5)',
+              }}
+            >
               <p style={{ color: '#E8D4B8' }}>
-                <span style={{ color: '#C9A961', fontWeight: 600 }}>Where:</span>{' '}
-                {isVisitor
-                  ? <span style={{ color: 'rgba(232,212,184,0.4)', fontStyle: 'italic' }}>Members only</span>
-                  : event.location}
+                <span style={{ color: '#C9A961', fontWeight: 600 }}>When:</span>{' '}
+                {(event.dateConfirmed || isPast)
+                  ? formattedDate
+                  : <span style={{ color: 'rgba(201,169,97,0.6)', fontStyle: 'italic' }}>TBD — Vote below!</span>
+                }
               </p>
-            )}
-            <p style={{ color: '#E8D4B8' }}>
-              <span style={{ color: '#C9A961', fontWeight: 600 }}>Host:</span> {event.host.name}
-            </p>
-            {event.notes && (
-              <p style={{ color: '#E8D4B8', whiteSpace: 'pre-wrap' }}>
-                <span style={{ color: '#C9A961', fontWeight: 600 }}>Notes:</span> {event.notes}
+              {event.location && (
+                <p style={{ color: '#E8D4B8' }}>
+                  <span style={{ color: '#C9A961', fontWeight: 600 }}>Where:</span>{' '}
+                  {isVisitor
+                    ? <span style={{ color: 'rgba(232,212,184,0.4)', fontStyle: 'italic' }}>Members only</span>
+                    : event.location}
+                </p>
+              )}
+              <p style={{ color: '#E8D4B8' }}>
+                <span style={{ color: '#C9A961', fontWeight: 600 }}>Host:</span> {event.host.name}
               </p>
+              {event.notes && (
+                <p style={{ color: '#E8D4B8', whiteSpace: 'pre-wrap' }}>
+                  <span style={{ color: '#C9A961', fontWeight: 600 }}>Notes:</span> {event.notes}
+                </p>
+              )}
+            </div>
+
+            {/* Your RSVP */}
+            {showRsvp && (
+              <div
+                className="rounded-lg p-5 lg:w-1/3"
+                style={{
+                  background: 'rgba(28,16,8,0.55)',
+                  border: '1px solid rgba(139,111,71,0.5)',
+                }}
+              >
+                <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: '#C9A961' }}>
+                  Your RSVP
+                </h3>
+                <RsvpButton eventId={id} initialStatus={myRsvpStatus} />
+                <EventGuestSection
+                  eventId={id}
+                  guests={event.guests.map(g => ({ ...g, bringer: g.bringer }))}
+                  currentUserId={userId}
+                  userRsvpStatus={myRsvpStatus}
+                  isGameMaster={!!isGameMaster}
+                />
+              </div>
             )}
           </div>
 
           {/* Date poll */}
           {!isVisitor && event.datePolls.length > 0 && (
-            <EventDatePoll
-              eventId={id}
-              options={event.datePolls.map(o => ({
-                id: o.id,
-                date: o.date.toISOString(),
-                confirmedAt: o.confirmedAt?.toISOString() ?? null,
-                votes: o.votes.map(v => ({
-                  userId: v.userId,
-                  userAlias: v.user.alias ?? v.user.name,
-                })),
-              }))}
-              currentUserId={userId}
-              currentUserAlias={currentUser?.alias ?? currentUser?.name ?? ''}
-              isGameMaster={!!isGameMaster}
-              dateConfirmed={event.dateConfirmed}
-            />
-          )}
-
-          {/* RSVP + guests */}
-          {!isVisitor && !isPast && event.dateConfirmed && (
-            <div
-              className="rounded-lg p-5 mb-4"
-              style={{
-                background: 'rgba(28,16,8,0.55)',
-                border: '1px solid rgba(139,111,71,0.5)',
-                maxWidth: '600px',
-                width: '100%',
-              }}
-            >
-              <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', fontWeight: 700, color: '#C9A961' }}>
-                Your RSVP
-              </h3>
-              <RsvpButton eventId={id} initialStatus={myRsvpStatus} />
-              <EventGuestSection
+            <div className="mb-4">
+              <EventDatePoll
                 eventId={id}
-                guests={event.guests.map(g => ({ ...g, bringer: g.bringer }))}
+                options={event.datePolls.map(o => ({
+                  id: o.id,
+                  date: o.date.toISOString(),
+                  confirmedAt: o.confirmedAt?.toISOString() ?? null,
+                  votes: o.votes.map(v => ({
+                    userId: v.userId,
+                    userAlias: v.user.alias ?? v.user.name,
+                  })),
+                }))}
                 currentUserId={userId}
-                userRsvpStatus={myRsvpStatus}
+                currentUserAlias={currentUser?.alias ?? currentUser?.name ?? ''}
                 isGameMaster={!!isGameMaster}
+                dateConfirmed={event.dateConfirmed}
               />
             </div>
           )}
 
-          {/* Attendee lists */}
+          {/* Who's coming */}
           {(() => {
             const guestsByBringer = event.guests.reduce<Record<string, string[]>>((acc, g) => {
               acc[g.bringerId] = acc[g.bringerId] ?? []
@@ -247,59 +282,100 @@ export default async function EventDetailPage({
             if (confirmedCount === 0 && allGuestNames.length === 0 && maybes.length === 0 && declines.length === 0) {
               return null
             }
+
+            const confirmedIds = new Set(confirmed.map(c => c.id))
+            const confirmedGuestCount = event.guests.filter(g => confirmedIds.has(g.bringerId)).length
+            const comingTotal = confirmedCount + confirmedGuestCount
+
+            const GuestChips = ({ names }: { names: string[] }) => (
+              <>
+                {names.map((name, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      fontSize: '0.75rem',
+                      padding: '0.1rem 0.5rem',
+                      borderRadius: '999px',
+                      background: 'rgba(201,169,97,0.12)',
+                      border: '1px solid rgba(201,169,97,0.3)',
+                      color: '#E8D4B8',
+                    }}
+                  >
+                    +1 {name}
+                  </span>
+                ))}
+              </>
+            )
+
+            const PersonRow = ({ user, dim = false }: { user: AttendeeUser; dim?: boolean }) => (
+              <div className="flex items-center gap-2 flex-wrap">
+                <MiniAvatar user={user} />
+                <span style={{ color: dim ? 'rgba(245,230,211,0.85)' : '#F5E6D3', fontWeight: 600, fontSize: '0.9rem' }}>
+                  {user.alias || user.name}
+                </span>
+                <GuestChips names={guestsByBringer[user.id] ?? []} />
+              </div>
+            )
+
             return (
-              <div
-                className="rounded-lg p-4"
+              <CollapsibleSection
+                className="rounded-lg p-4 lg:p-5"
                 style={{
                   background: 'rgba(28,16,8,0.55)',
                   border: '1px solid rgba(139,111,71,0.5)',
-                  fontSize: '0.875rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.4rem',
                   maxWidth: '600px',
                 }}
+                ariaLabel="attendee list"
+                bodyClassName="mt-3 pt-3"
+                bodyStyle={{ borderTop: '1px solid rgba(201,169,97,0.2)' }}
+                header={
+                  /* Prominent count — always visible */
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span style={{ fontSize: '2.25rem', fontWeight: 800, color: '#C9A961', lineHeight: 1 }}>
+                      {comingTotal}
+                    </span>
+                    <span style={{ color: '#E8D4B8', fontWeight: 600 }}>coming</span>
+                    {confirmedGuestCount > 0 && (
+                      <span style={{ color: 'rgba(232,212,184,0.8)', fontSize: '0.85rem' }}>
+                        · {confirmedCount} {confirmedCount === 1 ? 'meep' : 'meeps'} + {confirmedGuestCount} {confirmedGuestCount === 1 ? 'guest' : 'guests'}
+                      </span>
+                    )}
+                  </div>
+                }
               >
+                {/* Confirmed */}
                 {confirmedCount > 0 && (
-                  <div style={{ color: '#E8D4B8' }}>
-                    <span style={{ color: '#C9A961', fontWeight: 600 }}>
-                      Confirmed ({confirmedCount}):
-                    </span>{' '}
-                    {confirmed.map((a, i) => {
-                      const myGuests = guestsByBringer[a.id]
-                      return (
-                        <span key={a.id}>
-                          {a.alias || a.name}
-                          {myGuests && <span style={{ fontSize: '0.8rem' }}> +{myGuests.length}</span>}
-                          {i < confirmed.length - 1 ? ', ' : ''}
-                        </span>
-                      )
-                    })}
+                  <div className="flex flex-col gap-2">
+                    {confirmed.map(a => <PersonRow key={a.id} user={a} />)}
                   </div>
                 )}
-                {allGuestNames.length > 0 && (
-                  <div style={{ color: '#E8D4B8' }}>
-                    <span style={{ color: '#C9A961', fontWeight: 600 }}>Guests ({allGuestNames.length}): </span>
-                    {allGuestNames.join(', ')}
-                  </div>
-                )}
+
+                {/* Maybe */}
                 {maybes.length > 0 && (
-                  <div style={{ color: 'rgba(232,212,184,0.8)' }}>
-                    <span style={{ color: 'rgba(201,169,97,0.8)', fontWeight: 600 }}>Maybe ({maybes.length}): </span>
-                    {maybes.map((a, i) => (
-                      <span key={a.id}>{a.alias || a.name}{i < maybes.length - 1 ? ', ' : ''}</span>
-                    ))}
+                  <div className="mt-4 pt-3" style={{ borderTop: '1px solid rgba(201,169,97,0.15)' }}>
+                    <div style={{ color: '#DAA520', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                      Maybe · {maybes.length}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {maybes.map(a => <PersonRow key={a.id} user={a} dim />)}
+                    </div>
                   </div>
                 )}
+
+                {/* Declined */}
                 {declines.length > 0 && (
-                  <div style={{ color: 'rgba(232,212,184,0.65)' }}>
-                    <span style={{ color: 'rgba(201,169,97,0.65)', fontWeight: 600 }}>Declined ({declines.length}): </span>
-                    {declines.map((a, i) => (
-                      <span key={a.id}>{a.alias || a.name}{i < declines.length - 1 ? ', ' : ''}</span>
-                    ))}
+                  <div className="mt-4 pt-3" style={{ borderTop: '1px solid rgba(201,169,97,0.15)' }}>
+                    <span style={{ color: 'rgba(201,169,97,0.7)', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                      Declined · {declines.length}
+                    </span>{' '}
+                    <span style={{ color: 'rgba(232,212,184,0.75)', fontSize: '0.85rem' }}>
+                      {declines.map(a => a.alias || a.name).join(', ')}
+                    </span>
                   </div>
                 )}
-              </div>
+              </CollapsibleSection>
             )
           })()}
         </div>

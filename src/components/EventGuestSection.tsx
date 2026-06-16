@@ -81,10 +81,10 @@ export default function EventGuestSection({
     <div className="mt-3">
       {/* Summary line — shown when there are guests */}
       {totalGuests > 0 && (
-        <div style={{ fontSize: '0.8rem', color: 'rgba(232,212,184,0.6)', marginBottom: '0.4rem' }}>
+        <div style={{ fontSize: '0.8rem', color: 'rgba(232,212,184,0.9)', marginBottom: '0.4rem' }}>
           {Object.values(guestsByBringer).map(({ bringer, names }, i) => (
             <span key={bringer.id}>
-              <span style={{ color: 'rgba(201,169,97,0.7)' }}>{bringer.alias || bringer.name}</span>
+              <span style={{ color: '#C9A961', fontWeight: 600 }}>{bringer.alias || bringer.name}</span>
               {' +'}
               {names.join(', ')}
               {i < Object.keys(guestsByBringer).length - 1 ? ' · ' : ''}
